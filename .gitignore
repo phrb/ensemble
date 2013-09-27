@@ -1,0 +1,22 @@
+# Ignoring Media files #
+*.wav
+*.png
+# Ignoring Java Compiles #
+*.class
+# Package Files #
+#*.jar Needed for libs #
+#*.so                  #
+*.war
+*.ear
+# Ignoring Eclipse files #
+.metadata/
+.settings/
+
+# Ignoring Subversion #
+.svn/
+
+# Ignoring Compiles #
+bin/
+
+# Ignore Heavy Docs #
+javadoc/

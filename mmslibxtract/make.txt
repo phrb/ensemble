@@ -1,0 +1,2 @@
+gcc -m64 -I/System/Library/Frameworks/JavaVM.framework/Headers -c xtract_wrap.c -o xtract_wrap.o
+gcc -m64 -framework JavaVM -lxtract -bundle xtract_wrap.o -o libjxtract.jnilib

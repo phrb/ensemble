@@ -1,0 +1,9 @@
+libaubio:
+./configure CFLAGS="-arch x86_64" --enable-fftw3f
+make
+
+libmmsaubio:
+swig -java -package aubio aubio.i
+gcc -m64 -I/System/Library/Frameworks/JavaVM.framework/Headers/ -I../src -I../ext -c aubio_wrap.c -o aubio_wrap.o
+gcc -m64 -framework JavaVM -bundle aubio_wrap.o -laubio -laubioext -o libmmsaubio.jnilib
+cp libmmsaubio.jnilib ~/Documents/workspace/musicalagents/lib/

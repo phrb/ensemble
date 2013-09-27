@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <project name="mmsportaudio" default="OS-TEST" basedir=".">
+  	
+  	<property name="JAVA_HOME" 		 value="C:\Program Files (x86)\Java\jdk1.6.0_22"/>
+
+  	<property name="lib.dir"     value="lib"/>
+  	<property name="src.dir"     value="src"/>
+  	
+  	<property name="cp" 		value=".;${classes.dir}"/>
+  	
+    <!-- set the operating system test properties -->
+    <condition property="isMac">
+      <os family="mac" />
+    </condition>
+
+    <condition property="isWindows">
+      <os family="windows" />
+    </condition>
+
+    <condition property="isUnix">
+      <os family="unix" />
+    </condition>
+  	
+    <!-- define the operating system specific targets -->
+    <target name="doMac" if="isMac">
+    	<!-- Compiles c file -->
+        <exec executable="cc">
+          <arg line="-I/System/Library/Frameworks/JavaVM.framework/Headers -c mmsportaudio.c -o mmsportaudio.o" />
+        </exec>
+    	
+    	<!-- Creates the library --> 
+        <exec executable="cc">
+          <arg line="-framework JavaVM -bundle mmsportaudio.o -lportaudio -o libmmsportaudio.jnilib"/>
+        </exec>
+    </target>
+
+    <target name="doWindows" if="isWindows">
+      <echo message="Came into the Windows target" />
+    	
+        <exec executable="cl">
+          <arg line="-I%JAVA_HOME%\include -I%JAVA_HOME%\include\win32 -I&quot;./include&quot; &quot;./lib/portaudio_x86.lib&quot; -LD mmsportaudio.c"/>
+        </exec>
+
+    </target>
+
+    <target name="doUnix" if="isUnix">
+      <echo message="Came into the Unix target" />
+    </target>
+
+    <!-- define our main/default target -->
+    <target name="OS-TEST" depends="doMac, doWindows, doUnix">
+      <echo message="Running OS-TEST target" />
+    </target>
+
+  	<!-- - - - - - - - - - - - - - - - - - 
+          target: compile_java                      
+         - - - - - - - - - - - - - - - - - -->
+    <target name="compile_java" depends="">
+		<javac srcdir="${src.dir}"
+         destdir="${classes.dir}"
+         classpath="${cp}"
+         debug="off"
+	/>    </target>
+  	
+  </project>
