@@ -37,11 +37,11 @@ most of the technical problems to the framework.
 External Links
 ------
 
-    Project Official Page:
-        http://compmus.ime.usp.br/node/13
+Project Official Page:
+    http://compmus.ime.usp.br/node/13
 
-    This code is also avaiable at:
-        https://code.google.com/p/musicalagents/
+This code is also avaiable at:
+    https://code.google.com/p/musicalagents/
 
-    The documentation, in javadoc format, is avaiable at:
-        http://compmus.ime.usp.br/ensemble/doc/    
+The documentation, in javadoc format, is avaiable at:
+    http://compmus.ime.usp.br/ensemble/doc/    
