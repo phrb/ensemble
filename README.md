@@ -15,10 +15,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Ensemble.  If not, see <http://www.gnu.org/licenses/>.
 
-===
-
 Description
-======
+------
 
 Multiagent system technology is a promising new venue 
 for interactive musical performance. 
@@ -36,10 +34,8 @@ By using it, a user may develop a musical multiagent system
 focusing primarily in his/her musical needs, while leaving 
 most of the technical problems to the framework.
 
-===
-
 External Links
-======
+------
 
 This code is also avaiable at:
     https://code.google.com/p/musicalagents/
