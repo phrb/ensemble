@@ -1,1 +1,0 @@
-java -Djava.util.logging.config.file=logging.properties -XX:+ForceTimeHighResolution -cp .;bin;.\lib\jade.jar rt.RT_Main
