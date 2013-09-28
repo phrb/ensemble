@@ -9,15 +9,15 @@
 *.war
 *.ear
 # Ignoring Eclipse files #
-.metadata/
-.settings/
+.metadata
+.settings
 
 # Ignoring Subversion #
-.svn/
+.svn
 
 # Ignoring Compiles and Examples #
-musicalagents/
-bin/
+musicalagents
+bin
 
-# Ignore Heavy Docs #
-javadoc/
+# Ignoring Documentation (Available in External Links) #
+javadoc
