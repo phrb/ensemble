@@ -15,7 +15,8 @@
 # Ignoring Subversion #
 .svn/
 
-# Ignoring Compiles #
+# Ignoring Compiles and Examples #
+musicalagents/
 bin/
 
 # Ignore Heavy Docs #
