@@ -1,3 +1,7 @@
+/**
+ * @author Pedro Bruel
+ */
+
 package ensemble.apps.hello_world;
 
 import ensemble.world.World;
