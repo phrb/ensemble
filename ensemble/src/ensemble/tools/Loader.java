@@ -126,14 +126,14 @@ public class Loader {
 //	private Logger logger = Logger.getLogger("");
 
 	// JADE Variables
-	/** The rt. */
-    private static Runtime rt = null;
+	/** The jade_runtime. */
+    private static Runtime jade_runtime = null;
 	
-	/** The p. */
-	private static Profile p = null;
+	/** The jade_profile. */
+	private static Profile jade_profile = null;
 	
-	/** The cc. */
-	private static ContainerController cc = null;
+	/** The jade_container_controller. */
+	private static ContainerController jade_container_controller = null;
 	
 	//--------------------------------------------------------------------------------
 	// System initialization / termination
@@ -148,35 +148,35 @@ public class Loader {
 	private static void startJADE(Element elem_ensemble, boolean nogui) {
 
 		// Cria o Container JADE
-		rt = Runtime.instance();
-		p = new ProfileImpl();
-		p.setParameter(Profile.MAIN_HOST, "localhost");
+		jade_runtime = Runtime.instance();
+		jade_profile = new ProfileImpl();
+		jade_profile.setParameter(Profile.MAIN_HOST, "localhost");
 		String services = "ensemble.clock.VirtualClockService;" +
 							"ensemble.comm.direct.CommDirectService;";
 
 		// Load Global Parameters	
-		NodeList nl = elem_ensemble.getElementsByTagName(CONF_GLOBAL_PARAMETERS);
-		if (nl.getLength() == 1) {
-			Element elem_gp = (Element)nl.item(0);
-			p.setParameter(Constants.CLOCK_MODE, readAttribute(elem_gp, Constants.CLOCK_MODE, Constants.CLOCK_CPU));
-			p.setParameter(Constants.PROCESS_MODE, readAttribute(elem_gp, Constants.PROCESS_MODE, Constants.MODE_REAL_TIME));
-			p.setParameter(Constants.SCHEDULER_THREADS, readAttribute(elem_gp, Constants.SCHEDULER_THREADS, "5"));
+		NodeList global_parameters_node_list = elem_ensemble.getElementsByTagName(CONF_GLOBAL_PARAMETERS);
+		if (global_parameters_node_list.getLength() == 1) {
+			Element elem_gp = (Element)global_parameters_node_list.item(0);
+			jade_profile.setParameter(Constants.CLOCK_MODE, readAttribute(elem_gp, Constants.CLOCK_MODE, Constants.CLOCK_CPU));
+			jade_profile.setParameter(Constants.PROCESS_MODE, readAttribute(elem_gp, Constants.PROCESS_MODE, Constants.MODE_REAL_TIME));
+			jade_profile.setParameter(Constants.SCHEDULER_THREADS, readAttribute(elem_gp, Constants.SCHEDULER_THREADS, "5"));
 		}
 	
-		p.setParameter(Profile.SERVICES, services);
+		jade_profile.setParameter(Profile.SERVICES, services);
 
-		cc = rt.createMainContainer(p);
+		jade_container_controller = jade_runtime.createMainContainer(jade_profile);
 		
 		// Creates special agents (they live outside the Virtual Environment)
-		AgentController ac;
+		AgentController jade_agent_controller;
 		try {
 			// Command Router
-			ac = cc.createNewAgent("Router", "ensemble.router.RouterAgent", null);
-			ac.start();
+			jade_agent_controller = jade_container_controller.createNewAgent("Router", "ensemble.router.RouterAgent", null);
+			jade_agent_controller.start();
 			// Sniffer
 			if (!nogui) {
-				ac = cc.createNewAgent("Sniffer", "ensemble.sniffer.Sniffer", null);
-				ac.start();
+				jade_agent_controller = jade_container_controller.createNewAgent("Sniffer", "ensemble.sniffer.Sniffer", null);
+				jade_agent_controller.start();
 			}
 		} catch (StaleProxyException e) {
 			e.printStackTrace();
@@ -188,7 +188,7 @@ public class Loader {
 	 */
 	private static void stopJADE() {
 		
-		rt.shutDown();
+		jade_runtime.shutDown();
 		
 	}
 
@@ -202,17 +202,17 @@ public class Loader {
 	 */
 	private static String readAttribute(Element elem, String attributeName, String defaultValue) {
 
-		String ret;
+		String attribute_value;
 		
-		String attrib = elem.getAttribute(attributeName);
-		if (attrib != null && !attrib.equals("")) {
-			ret = attrib;
+		String read_attribute = elem.getAttribute(attributeName);
+		if (read_attribute != null && !read_attribute.equals("")) {
+			attribute_value = read_attribute;
 		} else {
 //			System.out.println("\tParameter " + attributeName + " not found in configuration file...");
-			ret = defaultValue;
+			attribute_value = defaultValue;
 		}
 		
-		return ret;
+		return attribute_value;
 
 	}
 	
@@ -226,11 +226,11 @@ public class Loader {
 
 		Parameters parameters = new Parameters();
 		
-		NodeList nl_attrib = elem.getElementsByTagName(CONF_ARG);
-		for (int j = 0; j < nl_attrib.getLength(); j++) {
-			Element elem_arg = (Element)nl_attrib.item(j);
-			if (elem_arg.getParentNode() == elem) {
-				parameters.put(readAttribute(elem_arg, CONF_NAME, null), readAttribute(elem_arg, CONF_VALUE, null));
+		NodeList attributes_node_list = elem.getElementsByTagName(CONF_ARG);
+		for (int j = 0; j < attributes_node_list.getLength(); j++) {
+			Element element_argument = (Element)attributes_node_list.item(j);
+			if (element_argument.getParentNode() == elem) {
+				parameters.put(readAttribute(element_argument, CONF_NAME, null), readAttribute(element_argument, CONF_VALUE, null));
 			}
 		}
 		
@@ -249,12 +249,12 @@ public class Loader {
 
 		Parameters parameters = new Parameters();
 		
-		NodeList nl_attrib = elem.getElementsByTagName(CONF_ARG_COMP);
-		for (int j = 0; j < nl_attrib.getLength(); j++) {
-			Element elem_arg = (Element)nl_attrib.item(j);
-			String comp = readAttribute(elem_arg, CONF_COMP, ""); 
-			if (comp.equals(component)) {
-				parameters.put(readAttribute(elem_arg, CONF_NAME, null), readAttribute(elem_arg, CONF_VALUE, null));
+		NodeList components_node_list = elem.getElementsByTagName(CONF_ARG_COMP);
+		for (int j = 0; j < components_node_list.getLength(); j++) {
+			Element element_argument = (Element)components_node_list.item(j);
+			String new_component = readAttribute(element_argument, CONF_COMP, ""); 
+			if (new_component.equals(component)) {
+				parameters.put(readAttribute(element_argument, CONF_NAME, null), readAttribute(element_argument, CONF_VALUE, null));
 			}
 		}
 		
@@ -272,10 +272,10 @@ public class Loader {
 
 		Parameters parameters = new Parameters();
 		
-		NodeList nl_attrib = elem.getElementsByTagName(CONF_FACT);
-		for (int j = 0; j < nl_attrib.getLength(); j++) {
-			Element elem_arg = (Element)nl_attrib.item(j);
-			parameters.put(readAttribute(elem_arg, CONF_NAME, null), readAttribute(elem_arg, CONF_VALUE, null));
+		NodeList fact_node_list = elem.getElementsByTagName(CONF_FACT);
+		for (int j = 0; j < fact_node_list.getLength(); j++) {
+			Element element_argument = (Element)fact_node_list.item(j);
+			parameters.put(readAttribute(element_argument, CONF_NAME, null), readAttribute(element_argument, CONF_VALUE, null));
 		}
 		
 		return parameters;
@@ -290,22 +290,22 @@ public class Loader {
 	 */
 	private static Document loadXMLFile(String xmlFile) {
 		
-		Document doc = null;
+		Document xml_document = null;
 		
 		System.out.println("[Loader] Loading configuration file for Ensemble: " + xmlFile);
 		
 		try {
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			dbf.setValidating(false);
-			DocumentBuilder db = dbf.newDocumentBuilder();
-			doc = db.parse(xmlFile);
+			DocumentBuilderFactory document_builder_factory = DocumentBuilderFactory.newInstance();
+			document_builder_factory.setValidating(false);
+			DocumentBuilder document_builder = document_builder_factory.newDocumentBuilder();
+			xml_document = document_builder.parse(xmlFile);
 		} catch (Exception e) {
 			System.err.println("Error while loading XML file!");
 			System.err.println(e.toString());
 			System.exit(1);
 		}
 		
-		return doc;
+		return xml_document;
 		
 	}
 	
@@ -316,52 +316,52 @@ public class Loader {
 	 */
 	private static void loadSystem(Element elem_ensemble) {
 		
-		NodeList nl;
+		NodeList loading_elements_node_list;
 
 		// Load Environment Agent
-		nl = elem_ensemble.getElementsByTagName(CONF_ENVIRONMENT_AGENT_CLASS);
-		if (nl.getLength() == 1) {
-			Element elem_ea = (Element)nl.item(0);
+		loading_elements_node_list = elem_ensemble.getElementsByTagName(CONF_ENVIRONMENT_AGENT_CLASS);
+		if (loading_elements_node_list.getLength() == 1) {
+			Element environment_agent_element = (Element)loading_elements_node_list.item(0);
 
-			String ea_name = Constants.ENVIRONMENT_AGENT;
-			String ea_class = readAttribute(elem_ea, CONF_CLASS, "ensemble.EnvironmentAgent");
-			Parameters ea_parameters = readArguments(elem_ea);
+			String environment_agent_name = Constants.ENVIRONMENT_AGENT;
+			String environment_agent_class_name = readAttribute(environment_agent_element, CONF_CLASS, "ensemble.EnvironmentAgent");
+			Parameters environment_agent_parameters = readArguments(environment_agent_element);
 			
 			try {
 				// Criar nova instância do EA solicitado
-				Class eaClass = Class.forName(ea_class);
-				EnvironmentAgent ea = (EnvironmentAgent)eaClass.newInstance();
+				Class<?> environment_agent_class = Class.forName(environment_agent_class_name);
+				EnvironmentAgent environment_agent = (EnvironmentAgent)environment_agent_class.newInstance();
 				Object[] arguments;
 				arguments = new Object[1];
-				arguments[0] = ea_parameters;
-				ea.setArguments(arguments);
+				arguments[0] = environment_agent_parameters;
+				environment_agent.setArguments(arguments);
 				
 				// Load World Parameters
-				nl = elem_ea.getElementsByTagName("WORLD");
-				if (nl.getLength() == 1) {
-					Element elem_gp = (Element)nl.item(0);
-					String world_class = readAttribute(elem_gp, CONF_CLASS, null);
-					if (world_class == null) {
+				loading_elements_node_list = environment_agent_element.getElementsByTagName("WORLD");
+				if (loading_elements_node_list.getLength() == 1) {
+					Element elem_gp = (Element)loading_elements_node_list.item(0);
+					String world_class_name = readAttribute(elem_gp, CONF_CLASS, null);
+					if (world_class_name == null) {
 						System.err.println("ERROR: World class not defined");
-						world_class = "ensemble.world.World";
+						world_class_name = "ensemble.world.World";
 					}
 					Parameters world_param = readArguments(elem_gp);
-					ea.addWorld(world_class, world_param);
-					nl = elem_gp.getElementsByTagName("LAW");
-					if (nl.getLength() > 0) {
-						for (int i = 0; i < nl.getLength(); i++) {
-							Element elem_law = (Element)nl.item(i);
+					environment_agent.addWorld(world_class_name, world_param);
+					loading_elements_node_list = elem_gp.getElementsByTagName("LAW");
+					if (loading_elements_node_list.getLength() > 0) {
+						for (int i = 0; i < loading_elements_node_list.getLength(); i++) {
+							Element elem_law = (Element)loading_elements_node_list.item(i);
 							String law_class = readAttribute(elem_law, CONF_CLASS, null);
 							Parameters law_param = readArguments(elem_law);
-							ea.getWorld().addLaw(law_class, law_param);
+							environment_agent.getWorld().addLaw(law_class, law_param);
 						}
 					}
 				}
 								
 				// Load Event Servers
-				nl = elem_ea.getElementsByTagName(CONF_EVENT_SERVER);
-				for (int i = 0; i < nl.getLength(); i++) {
-					Element elem_es = (Element)nl.item(i);
+				loading_elements_node_list = environment_agent_element.getElementsByTagName(CONF_EVENT_SERVER);
+				for (int i = 0; i < loading_elements_node_list.getLength(); i++) {
+					Element elem_es = (Element)loading_elements_node_list.item(i);
 					String es_class = readAttribute(elem_es, CONF_CLASS, null);
 					String es_comm_class = readAttribute(elem_es, CONF_COMM, "ensemble.comm.CommMessage");
 					String es_period = readAttribute(elem_es, CONF_PERIOD, "");
@@ -372,25 +372,25 @@ public class Loader {
 						parameters.put(Constants.PARAM_COMM_CLASS, es_comm_class);
 						parameters.put(Constants.PARAM_PERIOD, es_period);
 						parameters.merge(readArguments(elem_es));
-						ea.addEventServer(es_class, parameters);
+						environment_agent.addEventServer(es_class, parameters);
 					}
 				}
 
 				// Inserir o Agente no Jade
-				AgentController ac = cc.acceptNewAgent(ea_name, ea);
+				AgentController ac = jade_container_controller.acceptNewAgent(environment_agent_name, environment_agent);
 				ac.start();
 
 			} catch (ClassNotFoundException e) {
-				System.err.println("FATAL ERROR: Class " + ea_class + " not found");
+				System.err.println("FATAL ERROR: Class " + environment_agent_class_name + " not found");
 				System.exit(-1);
 			} catch (InstantiationException e) {
-				System.err.println("FATAL ERROR: Not possible to create an instance of " + ea_class);
+				System.err.println("FATAL ERROR: Not possible to create an instance of " + environment_agent_class_name);
 				System.exit(-1);
 			} catch (IllegalAccessException e) {
-				System.err.println("FATAL ERROR: Not possible to create an instance of " + ea_class);
+				System.err.println("FATAL ERROR: Not possible to create an instance of " + environment_agent_class_name);
 				System.exit(-1);
 			} catch (StaleProxyException e) {
-				System.err.println("FATAL ERROR: Not possible to insert agent " + ea_class + " in JADE");
+				System.err.println("FATAL ERROR: Not possible to insert agent " + environment_agent_class_name + " in JADE");
 				System.exit(-1);
 			}
 
@@ -401,10 +401,10 @@ public class Loader {
 		}
 		
 		// Load Musical Agents
-		nl = elem_ensemble.getElementsByTagName(CONF_MUSICAL_AGENT);
-		for (int i = 0; i < nl.getLength(); i++) {
+		loading_elements_node_list = elem_ensemble.getElementsByTagName(CONF_MUSICAL_AGENT);
+		for (int i = 0; i < loading_elements_node_list.getLength(); i++) {
 
-			Element elem_ma = (Element)nl.item(i);
+			Element elem_ma = (Element)loading_elements_node_list.item(i);
 			String ma_class = readAttribute(elem_ma, CONF_CLASS, "ensemble.MusicalAgent");
 			String ma_name_pre = readAttribute(elem_ma, CONF_NAME, ma_class);
 			int ma_quantiy = Integer.valueOf(readAttribute(elem_ma, CONF_QUANTITY, "1"));
@@ -533,7 +533,7 @@ public class Loader {
 							}
 	
 							// Inserir o Agente no Jade
-							AgentController ac = cc.acceptNewAgent(ma_name, ma);
+							AgentController ac = jade_container_controller.acceptNewAgent(ma_name, ma);
 							ac.start();
 							
 							break;
