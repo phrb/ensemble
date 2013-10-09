@@ -8,6 +8,7 @@
 media/
 # Ignoring Java Compiles #
 *.class
+bin/
 # Package Files #
 #*.jar Needed for libs #
 #*.so                  #
@@ -16,6 +17,17 @@ media/
 # Ignoring Eclipse files #
 .metadata/
 .settings/
+.project
+.metadata
+tmp/
+*.tmp
+*.bak
+*~.nib
+local.properties
+.classpath
+.loadpath
+# External tool builders
+# .externalToolBuilders/
 # Ignoring Compiles and Examples #
 musicalagents/
 bin/
