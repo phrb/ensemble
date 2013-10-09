@@ -26,6 +26,10 @@ tmp/
 local.properties
 .classpath
 .loadpath
+APDescription.txt
+COPYING
+logging.properties
+MTPs-Main-Container.txt
 # External tool builders
 .externalToolBuilders/
 # Ignoring Compiles and Examples #
