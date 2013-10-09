@@ -1,6 +1,11 @@
+# Swap and Stuff #
+*.~
+*.out
+*.swp
 # Ignoring Media files #
 *.wav
 *.png
+media/
 # Ignoring Java Compiles #
 *.class
 # Package Files #
@@ -9,15 +14,10 @@
 *.war
 *.ear
 # Ignoring Eclipse files #
-.metadata
-.settings
-
-# Ignoring Subversion #
-.svn
-
+.metadata/
+.settings/
 # Ignoring Compiles and Examples #
-musicalagents
-bin
-
+musicalagents/
+bin/
 # Ignoring Documentation (Available in External Links) #
-javadoc
+javadoc/
