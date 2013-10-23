@@ -590,7 +590,7 @@ public class Loader {
         // Loader.java to load from Pure Data patches that will 
         // be run from within C code (libpd), which will be
         // loaded into Ensemble through JNI.
-		boolean nogui = false;
+		boolean nogui = true;
 		String xml_filename = null;
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].equals("-f")) {
@@ -626,3 +626,4 @@ public class Loader {
 	}
 	
 }
+
