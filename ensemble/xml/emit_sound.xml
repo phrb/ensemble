@@ -18,6 +18,6 @@
   
   <!-- ********** MUSICAL AGENT INSTANCES ********** -->
 
-	<MUSICAL_AGENT NAME="creature" CLASS="AGENT" QUANTITY="1" />
+	<MUSICAL_AGENT NAME="creature" CLASS="AGENT" QUANTITY="3" />
 
 </ENSEMBLE>
