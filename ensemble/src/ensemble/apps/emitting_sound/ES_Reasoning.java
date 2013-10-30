@@ -6,6 +6,7 @@ package ensemble.apps.emitting_sound;
 
 import ensemble.*;
 import ensemble.memory.*;
+import java.util.Random;
 
 /*
  * A simple extension of Ensemble default Reasoning class. 
@@ -13,6 +14,20 @@ import ensemble.memory.*;
 
 public class ES_Reasoning extends Reasoning
 {
+	private final int MIN_MIDI = 36;
+	private final int MIDI_INTERVAL = 60;
+	private final int MAX_INTERVAL = 120;
+	
+	private Random note_generator;
+	private Random interval_generator;
+	/*
+	 * Period of sound emissions, 
+	 * measured in number of
+	 * process ( ) calls.
+	 * 
+	 */
+	private int sing_interval;
+	private int sing_time;
 	/* 
 	 * This reasoning will have its own
 	 * sound Actuator.
@@ -29,6 +44,10 @@ public class ES_Reasoning extends Reasoning
 	@Override
 	public boolean init ( ) 
 	{
+		note_generator = new Random ( );
+		interval_generator = new Random ( );
+		sing_time = 0;
+		sing_interval = 1 + interval_generator.nextInt ( MAX_INTERVAL );
 		System.err.println ( "Reasoning Says: Initialized." );
 		return true;
 	}
@@ -42,16 +61,25 @@ public class ES_Reasoning extends Reasoning
 	@Override
 	public void process ( ) 
 	{
-		try 
+		if ( sing_time % sing_interval == 0 )
 		{
-			speaker_memory.writeMemory( 84 );
-		} 
-		catch ( MemoryException e ) 
-		{
-			e.printStackTrace ( );
+			int note = MIN_MIDI + note_generator.nextInt ( MIDI_INTERVAL );
+			try 
+			{
+				speaker_memory.writeMemory( note );
+			} 
+			catch ( MemoryException e ) 
+			{
+				e.printStackTrace ( );
+			}
+			speaker.act ( );
 		}
-		speaker.act ( );
-		System.err.println ( "Reasoning Says: Processing..." );
+		sing_time++;
+		if ( sing_time >= sing_interval )
+		{
+			sing_interval = 1 + interval_generator.nextInt ( MAX_INTERVAL );
+			sing_time = 0;
+		}
 	}
 	/*
 	 * Called when and event handler is registered in the agent.

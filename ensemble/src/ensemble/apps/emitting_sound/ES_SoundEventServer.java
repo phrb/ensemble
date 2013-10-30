@@ -1,13 +1,10 @@
 package ensemble.apps.emitting_sound;
 
 import java.util.ArrayList;
-
 import ensemble.*;
+import ensemble.apps.emitting_sound.ES_World;
 
-import javax.sound.midi.MidiSystem;
-import javax.sound.midi.Synthesizer;
-import javax.sound.midi.MidiChannel;
-import javax.sound.midi.MidiUnavailableException;
+import javax.sound.midi.*;
 
 public class ES_SoundEventServer extends EventServer 
 {
@@ -20,11 +17,10 @@ public class ES_SoundEventServer extends EventServer
 	 */
 	Synthesizer	synth;
 	MidiChannel	channel;
-	
 	@Override
 	public boolean configure ( ) 
 	{
-		System.out.println ( "Sound_Event_Server: Configured." );
+		System.err.println ( "Sound_Event_Server: Configured." );
 		setEventType ( "SOUND" );
 		return true;
 	}
@@ -35,8 +31,11 @@ public class ES_SoundEventServer extends EventServer
 	@Override
 	public boolean init ( ) 
 	{
-		System.out.println ( "Sound_Event_Server: Initialized." );
-		world = ( ES_World ) envAgent.getWorld ( );	
+		System.err.println ( "Sound_Event_Server: Initialized." );
+		world = ( ES_World ) envAgent.getWorld ( );
+		/*
+		 * MIDI opening.
+		 */
 		try 
 		{
 			synth = MidiSystem.getSynthesizer ( );
@@ -52,13 +51,19 @@ public class ES_SoundEventServer extends EventServer
 		return true;
 	}
 	@Override
-	public void processSense ( Event event ) 
+	public boolean finit ( )
 	{
-		System.out.println ( "Sound_Event_Server: Note Emitted." );
-		int velocity = 100;
+		return true;
+	}
+	@Override
+	public void processSense ( Event event ) 
+	{		
+		/*
+		 * MIDI
+		 */
+		int velocity = 200;
 		int note = ( int ) event.objContent;
 		events.add ( event );
-		
-		channel.noteOn( note, velocity );		
+		channel.noteOn( note, velocity );
 	}
 }
