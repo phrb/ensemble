@@ -37,7 +37,7 @@ import jade.core.behaviours.WakerBehaviour;
  */
 public class Actuator extends EventHandler implements Acting {
 
-	/** The tbf. */
+	/** The threaded_behavior_factory. */
 	private ThreadedBehaviourFactory tbf = new ThreadedBehaviourFactory();
 
 	/** The clock. */
@@ -174,7 +174,7 @@ public class Actuator extends EventHandler implements Acting {
 	protected void setEventFrequency() {
 
 		actuatorState = AC_STATE.INITIALIZED;
-//		getAgent().addBehaviour(tbf.wrap(new ActionScheduler()));
+//		getAgent().addBehaviour(threaded_behavior_factory.wrap(new ActionScheduler()));
 		clock.execute(getAgent(), new ActionScheduler());
 //		(new Thread(new ActionScheduler())).start();
 
@@ -183,7 +183,7 @@ public class Actuator extends EventHandler implements Acting {
 			// TODO Arrumar para o caso do momento atual em que passar por aqui for maior que o 'deadline'
 //			if (automaticAction) {
 //				deadline = myStartTime + mySendDeadline - sendLag;
-//				getAgent().addBehaviour(tbf.wrap(new WakerBehaviour(getAgent(), new Date(deadline)) {
+//				getAgent().addBehaviour(threaded_behavior_factory.wrap(new WakerBehaviour(getAgent(), new Date(deadline)) {
 //					protected void onWake() {
 //						reset(new Date(this.getWakeupTime() + period));
 //						act();
@@ -248,7 +248,7 @@ public class Actuator extends EventHandler implements Acting {
 //				reset(new Date(frameTime + period));
 				// Interrompe os NeedActions que estiverem rodando
 //				for (NeedActionBehaviour nab : nabs) {
-//					Thread thread = tbf.getThread(nab);
+//					Thread thread = threaded_behavior_factory.getThread(nab);
 //					if (thread != null) {
 //						thread.interrupt();
 //					}
