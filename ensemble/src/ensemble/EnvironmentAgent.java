@@ -63,7 +63,7 @@ public class EnvironmentAgent extends EnsembleAgent {
 	/** The dfd. */
 	protected DFAgentDescription dfd;
 
-	/** The tbf. */
+	/** The threaded_behavior_factory. */
 	ThreadedBehaviourFactory tbf = new ThreadedBehaviourFactory();
 
 	/** Lock. */

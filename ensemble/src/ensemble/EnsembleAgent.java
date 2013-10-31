@@ -42,7 +42,7 @@ public abstract class EnsembleAgent extends Agent implements LifeCycle, RouterCl
 
 //	public static final Logger logger = Logger.getMyLogger(MusicalAgent.class.getName());
 
-	/** The tbf. */
+	/** The threaded_behavior_factory. */
     ThreadedBehaviourFactory tbf = new ThreadedBehaviourFactory();
 	
 	/** The rcv cmd behavior. */

@@ -48,7 +48,7 @@ import jade.lang.acl.MessageTemplate;
  */
 public class CommMessage extends Comm {
 
-	/** The tbf. */
+	/** The threaded_behavior_factory. */
 	ThreadedBehaviourFactory tbf = new ThreadedBehaviourFactory();
 	
 	/** The b. */

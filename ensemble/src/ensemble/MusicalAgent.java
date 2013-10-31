@@ -53,7 +53,7 @@ public class MusicalAgent extends EnsembleAgent {
 	// Agent attributes
 	//--------------------------------------------------------------------------------
 	
-	/** The tbf. */
+	/** The threaded_behavior_factory. */
 	ThreadedBehaviourFactory tbf = new ThreadedBehaviourFactory();
 
 	/** The lock. */
