@@ -15,7 +15,6 @@ public class Pd_World extends World
 	@Override
 	public boolean init ( ) 
 	{
-		System.err.println ( "World Says: Initialized." );
 		return true;
 	}
 }

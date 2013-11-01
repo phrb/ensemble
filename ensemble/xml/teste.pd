@@ -1,47 +1,52 @@
 #N canvas 0 48 1920 1032 10;
-#X obj 334 198 loadbang;
-#X obj 333 244 print;
-#X obj 367 411 dac~;
-#X obj 383 382 osc~;
-#X obj 383 358 + 440;
-#X obj 383 277 loadbang;
-#X msg 345 277 bang;
-#X obj 346 335 bang~;
-#X obj 700 111 r \$0dsp_on;
-#X msg 702 134 1;
-#X obj 729 162 switch~;
-#X obj 767 110 r \$0dsp_off;
-#X msg 763 134 0;
-#X obj 383 321 random 440;
-#X obj 735 329 f;
-#X obj 731 350 s \$0send_tick_size;
-#X msg 333 222 PURE_DATA:LOADED_PATCH_\$0;
-#X obj 736 287 r \$0get_tick_size;
-#X text 289 61 Create an object [ r \$0NOSOUND ] to avoid dsp cycles
+#X obj 375 483 dac~;
+#X obj 394 444 osc~;
+#X obj 394 420 + 440;
+#X obj 394 339 loadbang;
+#X msg 356 332 bang;
+#X obj 348 396 bang~;
+#X obj 360 188 r \$0dsp_on;
+#X msg 362 211 1;
+#X obj 389 239 switch~;
+#X obj 427 187 r \$0dsp_off;
+#X msg 423 211 0;
+#X obj 394 383 random 440;
+#X obj 679 184 f;
+#X text 267 63 Create an object [ r \$0NOSOUND ] to avoid dsp cycles
 in the patch.;
-#X text 318 159 Prints the patch ID to console.;
-#X text 682 66 These receive symbols are used by Ensemble to turn DSP
-on and off.;
-#X text 681 231 This pair of receivers is used to set the patch processing
+#X text 262 148 These receive symbols are used by Ensemble to turn
+DSP on and off.;
+#X msg 679 164 1024;
+#X obj 394 362 metro 800;
+#X obj 679 141 r get_tick_size;
+#X obj 677 205 s send_tick_size;
+#X msg 806 163 2;
+#X obj 807 184 f;
+#X obj 803 206 s \$0send_seconds;
+#X obj 386 98 r \$0NOSOUND;
+#X obj 803 141 r \$0get_seconds;
+#X text 266 286 Samples are sent to Ensemble via dac~. The patch can
+receive samples from the framework via adc~.;
+#X text 656 248;
+#X text 662 62 This pair of receivers is used to set the patch processing
 duration \, measured in Pd processing ticks. If not present \, Ensemble
-uses 64 ticks as default.;
-#X obj 383 300 metro 20;
-#X msg 736 310 1024;
-#X obj 408 96 r \$0NOSOUND;
-#X connect 0 0 16 0;
-#X connect 3 0 2 0;
-#X connect 3 0 2 1;
-#X connect 4 0 3 0;
-#X connect 5 0 22 0;
-#X connect 6 0 22 0;
-#X connect 7 0 4 0;
-#X connect 8 0 9 0;
+gives one second worth of samples to each patch \, as default. You
+can also set the processing duration by the number of seconds.;
+#X connect 1 0 0 0;
+#X connect 1 0 0 1;
+#X connect 2 0 1 0;
+#X connect 3 0 16 0;
+#X connect 4 0 16 0;
+#X connect 5 0 2 0;
+#X connect 6 0 7 0;
+#X connect 7 0 8 0;
 #X connect 9 0 10 0;
-#X connect 11 0 12 0;
-#X connect 12 0 10 0;
-#X connect 13 0 4 0;
-#X connect 14 0 15 0;
-#X connect 16 0 1 0;
-#X connect 17 0 23 0;
-#X connect 22 0 13 0;
-#X connect 23 0 14 0;
+#X connect 10 0 8 0;
+#X connect 11 0 2 0;
+#X connect 12 0 18 0;
+#X connect 15 0 12 0;
+#X connect 16 0 11 0;
+#X connect 17 0 15 0;
+#X connect 19 0 20 0;
+#X connect 20 0 21 0;
+#X connect 23 0 19 0;

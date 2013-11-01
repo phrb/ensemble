@@ -95,7 +95,7 @@ public class Reasoning extends MusicalAgentComponent
 			return false;
 		}
 		// Sets the agent's state to INITIALIZED
-		setState(EA_STATE.INITIALIZED);
+		setState ( EA_STATE.INITIALIZED );
 		// Informs the console
 		command = new Command ( getAddress ( ), "/console", "UPDATE" );
 		command.addParameter ( "AGENT", getAgent ( ).getAgentName ( ) );
