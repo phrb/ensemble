@@ -25,14 +25,12 @@ public class Pd_Agent extends MusicalAgent
 		 */
 		this.addComponent ( "Reasoning", "ensemble.apps.pd_testing.Pd_Reasoning", null );
 		this.addComponent ( "Speaker", "ensemble.apps.pd_testing.Pd_Speaker", new Parameters ( ) );
-		System.err.println ( "Agent Says: Reasoning Added." );
 		return true;	
 	}
 	@Override
 	public boolean init ( )
 	{
 		configure ( );
-		System.err.println ( "Agent Says: Initialized." );
 		return true;
 	}
 }

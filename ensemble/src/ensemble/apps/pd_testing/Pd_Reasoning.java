@@ -9,7 +9,11 @@ import ensemble.memory.*;
 import org.puredata.core.*;
 
 /*
- * A simple extension of Ensemble default Reasoning class. 
+ * This is a simple Reasoning,
+ * that assumes an instance of Pd
+ * opened with zero input channels,
+ * and two output channels.
+ * 
  */
 
 public class Pd_Reasoning extends Reasoning
@@ -24,18 +28,20 @@ public class Pd_Reasoning extends Reasoning
 	 * Buffers and constants for
 	 * initialising Pd.
 	 */
-    protected int SAMPLE_RATE = 44100;
-    protected int BYTES_PER_SAMPLE = 2;                
-    protected int ticks = 64;
+    protected float seconds = Pd_Constants.DEFAULT_SECONDS;
+    /* Number of Pd ticks to get one second worth of samples. */
+    protected int ticks = ( int ) ( seconds * ( Pd_Constants.SAMPLE_RATE / ( float ) PdBase.blockSize ( ) ) );
+    
 	protected int patch;
 	protected PdReceiver receiver;
 	private boolean pd_sound_output;
 	
     protected int frames;
-    protected short[ ] dummy;
-    protected short[ ] dummy_out;
+    protected short[ ] dummy_input;
+    protected short[ ] dummy_output;
     protected short[ ] samples;
     protected byte[ ] raw_samples;
+    
     protected ByteBuffer buf;
     protected ShortBuffer shortBuf;
     
@@ -50,7 +56,7 @@ public class Pd_Reasoning extends Reasoning
 	private void play ( int target_patch )
 	{
 		open_dsp ( target_patch );
-        PdBase.process ( ticks, dummy, samples );
+        PdBase.process ( ticks, dummy_input, samples );
         shortBuf.rewind ( );
         shortBuf.put ( samples );
         close_dsp ( target_patch );
@@ -65,16 +71,19 @@ public class Pd_Reasoning extends Reasoning
 	@Override
 	public boolean init ( ) 
 	{
+		
 		/*
 		 * Pd Setup
+		 * 
+		 * Each reasoning has its own
+		 * receiver.
+		 * 
 		 */
-		PdBase.openAudio ( 0, 2, 44100);
-		PdBase.computeAudio( true );
 		receiver = new Pd_Receiver ( );
 		PdBase.setReceiver ( receiver );
 		
-		dummy = new short[ 0 ];
-		dummy_out = new short [ PdBase.blockSize ( ) * 2 * BYTES_PER_SAMPLE ];
+		dummy_input = new short[ Pd_Constants.INPUT_CHANNELS ];
+		dummy_output = new short [ PdBase.blockSize ( ) * Pd_Constants.OUTPUT_CHANNELS * Pd_Constants.BYTES_PER_SAMPLE ];
         /*
          * Patch opening.
          */
@@ -85,6 +94,8 @@ public class Pd_Reasoning extends Reasoning
 			 * 		 from Agent initialisation.
 			 */
 			patch = PdBase.openPatch ( "teste.pd" );
+			close_dsp ( patch );
+			System.err.print( "PURE_DATA: OPENED PATCH. ID = " + patch + "\n" );
 		} 
 		catch ( IOException e ) 
 		{
@@ -106,28 +117,46 @@ public class Pd_Reasoning extends Reasoning
 		{
 			PdBase.subscribe ( patch + "send_tick_size" );
 			PdBase.sendBang( patch + "get_tick_size" );
-			PdBase.process( 1, dummy, dummy_out );
+			PdBase.process( 1, dummy_input, dummy_output );
 			PdBase.pollPdMessageQueue ( );
 			for ( Pd_Float number : ( ( Pd_Receiver ) receiver).get_float_list ( ) )
 			{
 				if ( number.get_name ( ).equals( patch + "send_tick_size" ) )
 				{
-					ticks = ( int )number.get_value ( );
+					ticks = ( int ) number.get_value ( );
+					seconds = ( float ) ticks / ( Pd_Constants.SAMPLE_RATE / ( float )PdBase.blockSize ( ) );
+					System.err.print ( "PURE_DATA_SETTING_SECONDS: " + seconds + "\n" );
 					System.err.print ( "PURE_DATA_SETTING_TICK_SIZE: " + ticks + "\n" );
 				}
 			}
 			( ( Pd_Receiver ) receiver ).start_new_turn ( );
 		}
-		close_dsp ( patch );
+		else if ( PdBase.exists ( patch + "get_seconds" ) )
+		{
+			PdBase.subscribe ( patch + "send_seconds" );
+			PdBase.sendBang( patch + "get_seconds" );
+			PdBase.process( 1, dummy_input, dummy_output );
+			PdBase.pollPdMessageQueue ( );
+			for ( Pd_Float number : ( ( Pd_Receiver ) receiver).get_float_list ( ) )
+			{
+				if ( number.get_name ( ).equals( patch + "send_seconds" ) )
+				{
+					seconds = number.get_value ( );
+					ticks = ( int ) ( seconds * ( Pd_Constants.SAMPLE_RATE / ( float ) PdBase.blockSize ( ) ) );
+					System.err.print ( "PURE_DATA_SETTING_SECONDS: " + seconds + "\n" );
+					System.err.print ( "PURE_DATA_SETTING_TICK_SIZE: " + ticks + "\n" );
+				}
+			}
+			( ( Pd_Receiver ) receiver ).start_new_turn ( );
+		}
 		/*
 		 * Initialising Pd audio buffers.
 		 */
 		frames = PdBase.blockSize ( ) * ticks;        
-		samples = new short[ frames * 2 ];       
-		raw_samples = new byte[ samples.length * BYTES_PER_SAMPLE ];
+		samples = new short[ frames * Pd_Constants.OUTPUT_CHANNELS ];       
+		raw_samples = new byte[ samples.length * Pd_Constants.BYTES_PER_SAMPLE ];
 		buf = ByteBuffer.wrap ( raw_samples );
 		shortBuf = buf.asShortBuffer ( );
-		System.err.println ( "Reasoning Says: Initialized." );
 		return true;
 	}
 	/*
@@ -164,7 +193,6 @@ public class Pd_Reasoning extends Reasoning
 	@Override
 	protected void eventHandlerRegistered ( EventHandler event_handler ) 
 	{
-		System.err.println ( "Reasoning Says: Registered Event Handler." );
 		speaker = ( Pd_Speaker ) event_handler;
 		speaker_memory = getAgent ( ).getKB ( ).getMemory ( speaker.getComponentName ( ) );
 	}

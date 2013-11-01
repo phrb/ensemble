@@ -1,5 +1,8 @@
 package ensemble.apps.pd_testing;
 
+import org.puredata.core.PdBase;
+import org.puredata.core.PdReceiver;
+
 import ensemble.EnvironmentAgent;
 import ensemble.Parameters;
 
@@ -10,6 +13,7 @@ import ensemble.Parameters;
 public class Pd_Environment extends EnvironmentAgent
 {
 	private static final long serialVersionUID = 1L;
+	public PdReceiver receiver;
 	/*
 	 * init and configure are called once when the
 	 * EnvironmentAgent is instantiated.
@@ -18,14 +22,18 @@ public class Pd_Environment extends EnvironmentAgent
 	public boolean configure ( )
 	{
 		this.addEventServer ( "ensemble.apps.pd_testing.Pd_SoundEventServer", new Parameters ( ) );
-		System.err.println ( "Environment Says: Configured!" );
 		return true;
 	}
 	@Override
 	public boolean init ( )
 	{
+		/*
+		 * Pd Setup
+		 */
+		PdBase.openAudio ( Pd_Constants.INPUT_CHANNELS, Pd_Constants.OUTPUT_CHANNELS, Pd_Constants.SAMPLE_RATE );
+		PdBase.computeAudio( true );
+		
 		configure ( );
-		System.err.println ( "Environment Says: Initialized." );
 		return true;
 	}
 }
