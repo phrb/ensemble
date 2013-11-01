@@ -32,7 +32,7 @@ public class Pd_Receiver extends PdDispatcher
 	{
 		return bang_list;
 	}
-	public void start_new_turn ( )
+	public void start_new_cycle ( )
 	{
 		float_list = new ArrayList< Pd_Float > ( );
 		bang_list = new ArrayList< String > ( );
