@@ -6,14 +6,11 @@
 
          A Musical Multiagent Framework
 
-Released: Oct 23 2013
 ================================================================================
 
     This is the current distribution of Ensemble.
     It contains all the main classes, and a few
     examples.
 
-    The bash script inside the xml directory runs Ensemble
-    with a specified .xml config file.
-
 ================================================================================
+01.11.13
