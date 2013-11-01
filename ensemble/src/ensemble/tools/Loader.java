@@ -230,7 +230,7 @@ public class Loader {
 		for (int j = 0; j < attributes_node_list.getLength(); j++) {
 			Element element_argument = (Element)attributes_node_list.item(j);
 			if (element_argument.getParentNode() == elem) {
-				parameters.put(readAttribute(element_argument, CONF_NAME, null), readAttribute(element_argument, CONF_VALUE, null));
+				parameters.put( readAttribute(element_argument, CONF_NAME, null), readAttribute(element_argument, CONF_VALUE, null ));
 			}
 		}
 		

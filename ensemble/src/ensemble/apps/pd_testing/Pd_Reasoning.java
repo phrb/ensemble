@@ -47,13 +47,40 @@ public class Pd_Reasoning extends Reasoning
     
     private void open_dsp ( int target_patch )
     {
-    	PdBase.sendBang ( target_patch + "dsp_on" );
+    	PdBase.sendBang ( target_patch + Pd_Constants.PROCESSING_ON );
     }
     private void close_dsp ( int target_patch )
     {
-    	PdBase.sendBang ( target_patch + "dsp_off" );
+    	PdBase.sendBang ( target_patch + Pd_Constants.PROCESSING_OFF );
     }
-	private void play ( int target_patch )
+    private void process_messages ( )
+    {
+    	PdBase.pollPdMessageQueue ( );
+    	for ( Pd_Float sent_float : ( ( Pd_Receiver ) receiver ).get_float_list ( ) )
+    	{
+    		System.err.println ( "PURE_DATA: FLOATS RECEIVED:" );
+    		System.err.print ( "NAME=" + sent_float.get_name ( ) + " VALUE=" + sent_float.get_value ( ) + "\n" );
+    	}
+    	for ( String sent_bang : ( ( Pd_Receiver ) receiver ).get_bang_list ( ) )
+    	{
+    		if ( sent_bang == patch + Pd_Constants.AUDIO_OFF )
+    		{
+    			pd_sound_output = false;
+    		}
+    		else if ( sent_bang == patch + Pd_Constants.AUDIO_ON )
+    		{
+    			pd_sound_output = true;
+    		}
+    		else if ( sent_bang == patch + Pd_Constants.AUDIO_TOGGLE )
+    		{
+    			pd_sound_output = ! ( pd_sound_output );
+    		}
+    		System.err.println ( "PURE_DATA: BANGS RECEIVED:" );
+    		System.err.print ( "SOURCE=" + sent_bang + "\n" );
+    	}
+    	( ( Pd_Receiver ) receiver ).start_new_cycle ( );
+    }
+	private void get_samples ( int target_patch )
 	{
 		open_dsp ( target_patch );
         PdBase.process ( ticks, dummy_input, samples );
@@ -89,13 +116,9 @@ public class Pd_Reasoning extends Reasoning
          */
 		try 
 		{
-			/*
-			 * TODO: Receive patch name dinamically,
-			 * 		 from Agent initialisation.
-			 */
-			patch = PdBase.openPatch ( "teste.pd" );
+			patch = PdBase.openPatch ( parameters.get( Pd_Constants.PATCH_ARGUMENT ) );
 			close_dsp ( patch );
-			System.err.print( "PURE_DATA: OPENED PATCH. ID = " + patch + "\n" );
+			System.err.print( "PURE_DATA: OPENED PATCH ID = " + patch + "\n" );
 		} 
 		catch ( IOException e ) 
 		{
@@ -105,6 +128,15 @@ public class Pd_Reasoning extends Reasoning
 		 * Checking for patches that output no sound.
 		 */
 		pd_sound_output = ! ( PdBase.exists ( patch + "NOSOUND" ) );
+		/*
+		 * Subscribing to known control symbols:
+		 */
+		PdBase.subscribe ( patch + Pd_Constants.AUDIO_ON );
+		PdBase.subscribe ( patch + Pd_Constants.AUDIO_OFF );
+		PdBase.subscribe ( patch + Pd_Constants.AUDIO_TOGGLE );
+		/* TODO: Subscribe to float outlets dinamically?
+		 *       Subscribe to bang outlests dinamically? 
+		 */
 		if ( ! ( pd_sound_output ) )
 		{
 			System.err.println ( "PURE_DATA: PATCH WITH NO SOUND OUTPUT." );			
@@ -113,15 +145,15 @@ public class Pd_Reasoning extends Reasoning
 		 * Setting tick size from
 		 * Pd patch.
 		 */
-		if ( PdBase.exists ( patch + "get_tick_size" ) )
+		if ( PdBase.exists ( patch + Pd_Constants.TICK_TARGET ) )
 		{
-			PdBase.subscribe ( patch + "send_tick_size" );
-			PdBase.sendBang( patch + "get_tick_size" );
+			PdBase.subscribe ( patch + Pd_Constants.TICK );
+			PdBase.sendBang( patch + Pd_Constants.TICK_TARGET );
 			PdBase.process( 1, dummy_input, dummy_output );
-			PdBase.pollPdMessageQueue ( );
+			process_messages ( );
 			for ( Pd_Float number : ( ( Pd_Receiver ) receiver).get_float_list ( ) )
 			{
-				if ( number.get_name ( ).equals( patch + "send_tick_size" ) )
+				if ( number.get_name ( ).equals( patch + Pd_Constants.TICK ) )
 				{
 					ticks = ( int ) number.get_value ( );
 					seconds = ( float ) ticks / ( Pd_Constants.SAMPLE_RATE / ( float )PdBase.blockSize ( ) );
@@ -129,17 +161,17 @@ public class Pd_Reasoning extends Reasoning
 					System.err.print ( "PURE_DATA_SETTING_TICK_SIZE: " + ticks + "\n" );
 				}
 			}
-			( ( Pd_Receiver ) receiver ).start_new_turn ( );
+			( ( Pd_Receiver ) receiver ).start_new_cycle ( );
 		}
-		else if ( PdBase.exists ( patch + "get_seconds" ) )
+		else if ( PdBase.exists ( patch + Pd_Constants.SECONDS_TARGET ) )
 		{
-			PdBase.subscribe ( patch + "send_seconds" );
-			PdBase.sendBang( patch + "get_seconds" );
+			PdBase.subscribe ( patch + Pd_Constants.SECONDS );
+			PdBase.sendBang( patch + Pd_Constants.SECONDS_TARGET );
 			PdBase.process( 1, dummy_input, dummy_output );
-			PdBase.pollPdMessageQueue ( );
+			process_messages ( );
 			for ( Pd_Float number : ( ( Pd_Receiver ) receiver).get_float_list ( ) )
 			{
-				if ( number.get_name ( ).equals( patch + "send_seconds" ) )
+				if ( number.get_name ( ).equals( patch + Pd_Constants.SECONDS ) )
 				{
 					seconds = number.get_value ( );
 					ticks = ( int ) ( seconds * ( Pd_Constants.SAMPLE_RATE / ( float ) PdBase.blockSize ( ) ) );
@@ -147,7 +179,7 @@ public class Pd_Reasoning extends Reasoning
 					System.err.print ( "PURE_DATA_SETTING_TICK_SIZE: " + ticks + "\n" );
 				}
 			}
-			( ( Pd_Receiver ) receiver ).start_new_turn ( );
+			( ( Pd_Receiver ) receiver ).start_new_cycle ( );
 		}
 		/*
 		 * Initialising Pd audio buffers.
@@ -169,9 +201,10 @@ public class Pd_Reasoning extends Reasoning
 	@Override
 	public void process ( ) 
 	{
+		get_samples ( patch );
+		process_messages ( );
 		if ( pd_sound_output )
 		{
-			play ( patch );
 			try 
 			{
 				speaker_memory.writeMemory( raw_samples );
@@ -182,7 +215,6 @@ public class Pd_Reasoning extends Reasoning
 			}
 			speaker.act ( );
 		}
-		PdBase.pollPdMessageQueue ( );
 	}
 	/*
 	 * Called when and event handler is registered in the agent.

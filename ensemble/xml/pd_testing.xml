@@ -1,9 +1,6 @@
 <ENSEMBLE NAME="Pd_Testing">
-
 	<GLOBAL_PARAMETERS CLOCK_MODE="CLOCK_USER" PROCESS_MODE="BATCH" OSC="FALSE" />
-
   	<!-- ********** ENVIRONMENT AGENT ********** -->
-
     <ENVIRONMENT_AGENT_CLASS NAME="ENVIRONMENT" CLASS="ensemble.apps.pd_testing.Pd_Environment">
         <WORLD CLASS="ensemble.apps.pd_testing.Pd_World">
             <PARAM DIMENSIONS="3" /> 
@@ -11,13 +8,10 @@
             <PARAM FORM="cube:100:loop" />
         </WORLD>
     </ENVIRONMENT_AGENT_CLASS>
-	
   <!-- ********** MUSICAL AGENT CLASSES ********** -->
-
-	<MUSICAL_AGENT_CLASS NAME="AGENT" CLASS="ensemble.apps.pd_testing.Pd_Agent" />
-  
+  <MUSICAL_AGENT_CLASS NAME="AGENT_1" CLASS="ensemble.apps.pd_testing.Pd_Agent" >
+      <ARG NAME="PATCH" VALUE="../pd/ensemble_help.pd" />
+  </MUSICAL_AGENT_CLASS>
   <!-- ********** MUSICAL AGENT INSTANCES ********** -->
-
-	<MUSICAL_AGENT NAME="creature" CLASS="AGENT" QUANTITY="1" />
-
+  <MUSICAL_AGENT NAME="type1" CLASS="AGENT_1" QUANTITY="1" />
 </ENSEMBLE>
