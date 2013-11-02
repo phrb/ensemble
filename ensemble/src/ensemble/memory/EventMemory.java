@@ -27,6 +27,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import ensemble.Parameters;
 import ensemble.clock.TimeUnit;
 
+import ensemble.Event;
 
 // TODO: Auto-generated Javadoc
 /**
