@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import ensemble.*;
 import ensemble.apps.pd_testing.Pd_World;
 import javax.sound.sampled.*;
-import org.puredata.core.*;
 
 public class Pd_SoundEventServer extends EventServer 
 {
@@ -50,7 +49,6 @@ public class Pd_SoundEventServer extends EventServer
 	@Override
 	public boolean finit ( )
 	{
-		PdBase.release ( );
         line.drain();
         line.stop();
 		return true;

@@ -36,4 +36,10 @@ public class Pd_Environment extends EnvironmentAgent
 		configure ( );
 		return true;
 	}
+	@Override
+	public boolean finit ( )
+	{
+		PdBase.release ( );
+		return true;
+	}
 }

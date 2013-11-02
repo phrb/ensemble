@@ -14,7 +14,7 @@ public class Pd_Float
 	{
 		return value;
 	}
-	public String get_name ( )
+	public String get_source ( )
 	{
 		return name;
 	}

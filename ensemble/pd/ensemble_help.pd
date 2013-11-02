@@ -1,58 +1,77 @@
 #N canvas 0 48 1920 1032 10;
-#X obj 576 472 dac~;
-#X obj 584 442 osc~;
-#X obj 584 418 + 440;
-#X obj 584 337 loadbang;
-#X obj 538 394 bang~;
-#X msg 123 340 1;
-#X obj 161 371 switch~;
-#X msg 210 340 0;
-#X obj 584 381 random 440;
-#X obj 492 197 f;
-#X text 47 79 Create an object [ r \$0NOSOUND ] to avoid dsp cycles
+#X obj 503 452 dac~;
+#X obj 511 422 osc~;
+#X obj 511 398 + 440;
+#X obj 509 331 loadbang;
+#X obj 470 376 bang~;
+#X msg 126 360 1;
+#X obj 164 387 switch~;
+#X msg 231 359 0;
+#X obj 510 376 random 440;
+#X obj 515 193 f;
+#X text 50 83 Create an object [ r \$0NOSOUND ] to avoid dsp cycles
 in the patch.;
-#X msg 492 177 1024;
-#X obj 584 360 metro 800;
-#X obj 492 154 r get_tick_size;
-#X obj 490 218 s send_tick_size;
-#X obj 622 200 f;
-#X obj 620 221 s \$0send_seconds;
-#X obj 616 154 r \$0get_seconds;
-#X text 463 74 This pair of receivers is used to set the patch processing
-duration \, measured in Pd processing ticks. If not present \, Ensemble
-gives one second worth of samples to each patch \, as default. You
-can also set the processing duration by the number of seconds.;
-#X obj 164 114 r \$0NOSOUND;
-#X obj 255 222 s \$0audio_toggle;
-#X obj 162 222 s \$0audio_off;
-#X obj 78 222 s \$0audio_on;
-#X obj 101 317 r \$0processing_on;
-#X obj 210 317 r \$0processing_off;
-#X text 45 273 These symbols let Ensemble control the execution flow
+#X obj 510 355 metro 800;
+#X obj 644 192 f;
+#X obj 260 256 s \$0audio_toggle;
+#X obj 167 256 s \$0audio_off;
+#X obj 104 337 r \$0processing_on;
+#X obj 231 336 r \$0processing_off;
+#X text 56 300 These symbols let Ensemble control the execution flow
 of individual patches \, by turning their DSP cycles on/off.;
-#X text 48 159 These symbols allow Ensemble to turn on/off this patch's
-sound output. If they receive a bang \, Ensemble stops/starts sending
-samples from this patch to audio card \, but still computes DSP cycles.
-;
-#X text 453 280 Samples are sent to Ensemble via [ dac~ ]. The patch
+#X text 456 272 Samples are sent to Ensemble via [ dac~ ]. The patch
 can receive samples from the framework via [ adc~ ]. This is a simple
 audio output to [ dac~ ].;
-#X msg 621 179 2;
 #X text 317 34 Using patches as Ensemble Reasonings;
+#X obj 80 255 s \$0audio_on;
+#X obj 167 118 r NOSOUND;
+#X obj 648 328 loadbang;
+#X obj 653 511 s \$0audio_toggle;
+#X msg 655 486 bang;
+#X floatatom 644 397 5 0 0 0 - - -;
+#X obj 655 377 line;
+#X obj 649 463 change;
+#X floatatom 653 440 5 0 0 0 - - -;
+#X obj 643 419 div 10;
+#X msg 515 173 500;
+#X msg 639 352 100 30000;
+#X obj 516 152 r get_tick_size;
+#X obj 513 214 s send_tick_size;
+#X obj 644 150 r \$0get_seconds;
+#X obj 643 213 s \$0send_seconds;
+#X msg 644 172 1;
+#X text 462 84 This pair of receivers is used to set the patch processing
+duration \, measured in Pd processing ticks \, or real seconds. If
+not present \, Ensemble gives one second worth of samples to each patch
+\, as default.;
+#X text 48 150 These symbols allow Ensemble to turn on/off this patch's
+sound output. If they receive a bang \, Ensemble stops/starts sending
+samples from this patch to audio card \, but still computes DSP cycles.
+Ensemble does not process audio toggling messages between sample-obtaining
+cycles. This means the temporal control of audio output should be done
+via signal handling.;
 #X connect 1 0 0 0;
 #X connect 1 0 0 1;
 #X connect 2 0 1 0;
-#X connect 3 0 12 0;
+#X connect 3 0 11 0;
 #X connect 4 0 2 0;
 #X connect 5 0 6 0;
 #X connect 7 0 6 0;
 #X connect 8 0 2 0;
-#X connect 9 0 14 0;
-#X connect 11 0 9 0;
-#X connect 12 0 8 0;
-#X connect 13 0 11 0;
-#X connect 15 0 16 0;
-#X connect 17 0 28 0;
-#X connect 23 0 5 0;
-#X connect 24 0 7 0;
-#X connect 28 0 15 0;
+#X connect 9 0 33 0;
+#X connect 11 0 8 0;
+#X connect 12 0 35 0;
+#X connect 15 0 5 0;
+#X connect 16 0 7 0;
+#X connect 22 0 31 0;
+#X connect 24 0 23 0;
+#X connect 25 0 29 0;
+#X connect 26 0 25 0;
+#X connect 27 0 24 0;
+#X connect 28 0 27 0;
+#X connect 29 0 28 0;
+#X connect 30 0 9 0;
+#X connect 31 0 26 0;
+#X connect 32 0 30 0;
+#X connect 34 0 36 0;
+#X connect 36 0 12 0;
