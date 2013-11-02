@@ -76,8 +76,7 @@ public class Event implements Serializable {
 	/**
 	 * Instantiates a new event.
 	 */
-	public Event() {
-	}
+	public Event() { } 
 	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
