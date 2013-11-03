@@ -6,7 +6,7 @@ public final class Pd_Constants
 	 * Numbers.
 	 */
 	public static final int SAMPLE_RATE = 44100;
-	public static final int PD_EVENT_BUFFER_SIZE = 200;
+	public static final int PD_EVENT_BUFFER_SIZE = 5;
 	public static final int BYTES_PER_SAMPLE = 2;
 	public static final int BITS_PER_SAMPLE = 8 * BYTES_PER_SAMPLE;
 	public static final int INPUT_CHANNELS = 0;

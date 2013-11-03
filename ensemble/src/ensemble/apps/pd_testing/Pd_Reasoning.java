@@ -11,11 +11,20 @@ import ensemble.memory.*;
 import org.puredata.core.*;
 
 /*
- * This is a simple Reasoning,
- * that assumes an instance of Pd
- * opened with zero input channels,
- * and two output channels.
+ * This ensemble.Reasoning extension
+ * uses a pure-data patch as a source
+ * of audio samples and other data.
  * 
+ * It is able to receive bangs, floats and
+ * messages from patches.
+ * 
+ * The method "process_pd_messages" is
+ * called once every pd processing cycle,
+ * and its extension can provide processing
+ * of information from the patch.
+ * 
+ *  Audio samples are directly sent to the event server
+ *  at this point.
  */
 
 public class Pd_Reasoning extends Reasoning
