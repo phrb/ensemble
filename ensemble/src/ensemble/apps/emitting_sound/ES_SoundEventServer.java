@@ -11,7 +11,8 @@ public class ES_SoundEventServer extends EventServer
 	ES_World world;
 	protected String agent_name;
 	protected String agent_component_name;
-	ArrayList< Event > events = new ArrayList< Event > ( );
+	private int event_pointer;
+	private ArrayList< ES_Note > events = new ArrayList< ES_Note > ( );
 	/*
 	 * MIDI
 	 */
@@ -33,7 +34,7 @@ public class ES_SoundEventServer extends EventServer
 	{
 		System.err.println ( "Sound_Event_Server: Initialized." );
 		world = ( ES_World ) envAgent.getWorld ( );
-		/*
+		event_pointer = 0;		/*
 		 * MIDI opening.
 		 */
 		try 
@@ -55,15 +56,26 @@ public class ES_SoundEventServer extends EventServer
 	{
 		return true;
 	}
+	public void process ( )
+	{
+		if ( event_pointer < events.size ( ) )
+		{
+			ES_Note event = events.get ( event_pointer );
+			event_pointer += 1;
+			if ( event != null )
+			{
+				/*
+				 * MIDI
+				 */
+				int velocity = event.get_velocity ( );
+				int note = event.get_note ( );
+				channel.noteOn( note, velocity );
+			}
+		}
+	}
 	@Override
 	public void processSense ( Event event ) 
 	{		
-		/*
-		 * MIDI
-		 */
-		int velocity = 200;
-		int note = ( int ) event.objContent;
-		events.add ( event );
-		channel.noteOn( note, velocity );
+		events.add ( ( ES_Note ) event.objContent );
 	}
 }

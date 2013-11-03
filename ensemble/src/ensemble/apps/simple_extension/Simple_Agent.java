@@ -2,7 +2,7 @@
  * @author Pedro Bruel
  */
 
-package ensemble.apps.hello_world;
+package ensemble.apps.simple_extension;
 
 import ensemble.MusicalAgent;
 
@@ -10,7 +10,7 @@ import ensemble.MusicalAgent;
  * A simple extension of Ensemble default MusicalAgent class.
  */
 
-public class Hello_World_Agent extends MusicalAgent
+public class Simple_Agent extends MusicalAgent
 {
 	private static final long serialVersionUID = 1L;
 	/*
@@ -26,14 +26,13 @@ public class Hello_World_Agent extends MusicalAgent
 		/*
 		 * Desired Components are added here.
 		 */
-		this.addComponent("Reasoning", "ensemble.apps.hello_world.Hello_World_Reasoning", null);
+		this.addComponent("Reasoning", "ensemble.apps.simple_extension.Simple_Reasoning", null);
 		System.err.println ( "Agent Says: Reasoning Added." );
 		return true;	
 	}
 	@Override
 	public boolean init ( )
 	{
-		configure ( );
 		System.err.println ( "Agent Says: Initialized." );
 		return true;
 	}

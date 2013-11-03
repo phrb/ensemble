@@ -27,7 +27,6 @@ public class ES_Environment extends EnvironmentAgent
 	@Override
 	public boolean init ( )
 	{
-		configure ( );
 		System.err.println ( "Environment Says: Initialized." );
 		return true;
 	}

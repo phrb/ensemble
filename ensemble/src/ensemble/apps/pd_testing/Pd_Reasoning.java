@@ -212,10 +212,10 @@ public class Pd_Reasoning extends Reasoning
 		byte[ ] output;
 		int current_instant = Integer.parseInt ( getAgent ( ).getKB ( ).readFact ( Pd_Constants.CURRENT_INSTANT ) );
 
+		process_pd_ticks ( patch );
 		process_ensemble_control_messages ( );
 		process_pd_messages ( );
-    	( ( Pd_Receiver ) receiver ).start_new_cycle ( );
-		process_pd_ticks ( patch );
+		( ( Pd_Receiver ) receiver ).start_new_cycle ( );
 		
 		if ( pd_audio_output && ! ( mute_patch ) )
 		{
