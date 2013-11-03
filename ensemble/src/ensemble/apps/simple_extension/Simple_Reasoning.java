@@ -2,7 +2,7 @@
  * @author Pedro Bruel
  */
 
-package ensemble.apps.hello_world;
+package ensemble.apps.simple_extension;
 
 import ensemble.Reasoning;
 
@@ -10,7 +10,7 @@ import ensemble.Reasoning;
  * A simple extension of Ensemble default Reasoning class. 
  */
 
-public class Hello_World_Reasoning extends Reasoning
+public class Simple_Reasoning extends Reasoning
 {
 	/*
 	 * The init method will be called once every time this
@@ -22,7 +22,7 @@ public class Hello_World_Reasoning extends Reasoning
 	@Override
 	public boolean init ( ) 
 	{
-		System.err.println ( "Reasoning Says: Initialized. Hello, World!" );
+		System.err.println ( "Reasoning Says: Initialized." );
 		return true;
 	}
 	/*

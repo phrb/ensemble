@@ -2,7 +2,7 @@
  * @author Pedro Bruel
  */
 
-package ensemble.apps.hello_world;
+package ensemble.apps.simple_extension;
 
 import ensemble.EnvironmentAgent;
 
@@ -10,7 +10,7 @@ import ensemble.EnvironmentAgent;
  * A simple extension of Ensemble default EnvironmentAgent class.
  */
 
-public class Hello_World_Environment extends EnvironmentAgent
+public class Simple_Environment extends EnvironmentAgent
 {
 	private static final long serialVersionUID = 1L;
 	/*
@@ -26,7 +26,6 @@ public class Hello_World_Environment extends EnvironmentAgent
 	@Override
 	public boolean init ( )
 	{
-		configure ( );
 		System.err.println ( "Environment Says: Initialized." );
 		return true;
 	}

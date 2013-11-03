@@ -14,9 +14,10 @@ import java.util.Random;
 
 public class ES_Reasoning extends Reasoning
 {
-	private final int MIN_MIDI = 36;
-	private final int MIDI_INTERVAL = 60;
-	private final int MAX_INTERVAL = 120;
+	private int MIN_MIDI;
+	private int MIDI_INTERVAL;
+	private int MAX_INTERVAL;
+	private int VELOCITY;
 	
 	private Random note_generator;
 	private Random interval_generator;
@@ -44,6 +45,10 @@ public class ES_Reasoning extends Reasoning
 	@Override
 	public boolean init ( ) 
 	{
+		MIN_MIDI = Integer.parseInt ( parameters.get ( ES_Constants.MIDI_MIN ) );
+		MIDI_INTERVAL = Integer.parseInt ( parameters.get ( ES_Constants.MIDI_INTERVAL ) );
+		MAX_INTERVAL = Integer.parseInt ( parameters.get ( ES_Constants.MAX_INTERVAL ) );
+		VELOCITY = Integer.parseInt( parameters.get ( ES_Constants.VELOCITY ) );
 		note_generator = new Random ( );
 		interval_generator = new Random ( );
 		sing_time = 0;
@@ -66,7 +71,7 @@ public class ES_Reasoning extends Reasoning
 			int note = MIN_MIDI + note_generator.nextInt ( MIDI_INTERVAL );
 			try 
 			{
-				speaker_memory.writeMemory( note );
+				speaker_memory.writeMemory( new ES_Note ( note, VELOCITY ) );
 			} 
 			catch ( MemoryException e ) 
 			{

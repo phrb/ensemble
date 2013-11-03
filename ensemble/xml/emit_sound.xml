@@ -1,9 +1,6 @@
 <ENSEMBLE NAME="Hello_World">
-
-	<GLOBAL_PARAMETERS CLOCK_MODE="CLOCK_USER" PROCESS_MODE="BATCH" OSC="FALSE" />
-
-  	<!-- ********** ENVIRONMENT AGENT ********** -->
-
+    <GLOBAL_PARAMETERS CLOCK_MODE="CLOCK_USER" PROCESS_MODE="BATCH" OSC="FALSE" />
+    <!-- ********** ENVIRONMENT AGENT ********** -->
     <ENVIRONMENT_AGENT_CLASS NAME="ENVIRONMENT" CLASS="ensemble.apps.emitting_sound.ES_Environment">
         <WORLD CLASS="ensemble.apps.emitting_sound.ES_World">
             <PARAM DIMENSIONS="3" /> 
@@ -11,13 +8,27 @@
             <PARAM FORM="cube:100:loop" />
         </WORLD>
     </ENVIRONMENT_AGENT_CLASS>
-	
   <!-- ********** MUSICAL AGENT CLASSES ********** -->
-
-	<MUSICAL_AGENT_CLASS NAME="AGENT" CLASS="ensemble.apps.emitting_sound.ES_Agent" />
-  
+  <MUSICAL_AGENT_CLASS NAME="AGENT0" CLASS="ensemble.apps.emitting_sound.ES_Agent">
+      <ARG NAME="VELOCITY" VALUE="1200"/>
+      <ARG NAME="MIDI_MIN" VALUE="36"/>
+      <ARG NAME="MIDI_INTERVAL" VALUE="20"/>
+      <ARG NAME="MAX_INTERVAL" VALUE="2"/>
+  </MUSICAL_AGENT_CLASS>
+  <MUSICAL_AGENT_CLASS NAME="AGENT1" CLASS="ensemble.apps.emitting_sound.ES_Agent">
+      <ARG NAME="VELOCITY" VALUE="300"/>
+      <ARG NAME="MIDI_MIN" VALUE="66"/>
+      <ARG NAME="MIDI_INTERVAL" VALUE="30"/>
+      <ARG NAME="MAX_INTERVAL" VALUE="7"/>
+  </MUSICAL_AGENT_CLASS>
+  <MUSICAL_AGENT_CLASS NAME="AGENT2" CLASS="ensemble.apps.emitting_sound.ES_Agent">
+      <ARG NAME="VELOCITY" VALUE="100"/>
+      <ARG NAME="MIDI_MIN" VALUE="66"/>
+      <ARG NAME="MIDI_INTERVAL" VALUE="60"/>
+      <ARG NAME="MAX_INTERVAL" VALUE="6"/>
+  </MUSICAL_AGENT_CLASS>
   <!-- ********** MUSICAL AGENT INSTANCES ********** -->
-
-	<MUSICAL_AGENT NAME="creature" CLASS="AGENT" QUANTITY="3" />
-
+  <MUSICAL_AGENT NAME="bass" CLASS="AGENT0" QUANTITY="1" />
+  <MUSICAL_AGENT NAME="mid" CLASS="AGENT1" QUANTITY="1" />
+  <MUSICAL_AGENT NAME="high" CLASS="AGENT2" QUANTITY="1" />
 </ENSEMBLE>

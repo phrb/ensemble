@@ -1,11 +1,11 @@
-<ENSEMBLE NAME="Hello_World">
+<ENSEMBLE NAME="simple_extension">
 
 	<GLOBAL_PARAMETERS CLOCK_MODE="CLOCK_USER" PROCESS_MODE="BATCH" OSC="FALSE" />
 
   	<!-- ********** ENVIRONMENT AGENT ********** -->
 
-    <ENVIRONMENT_AGENT_CLASS NAME="ENVIRONMENT" CLASS="ensemble.apps.hello_world.Hello_World_Environment">
-        <WORLD CLASS="ensemble.apps.hello_world.Hello_World_World">
+    <ENVIRONMENT_AGENT_CLASS NAME="ENVIRONMENT" CLASS="ensemble.apps.simple_extension.Simple_Environment">
+        <WORLD CLASS="ensemble.apps.simple_extension.Simple_World">
             <PARAM DIMENSIONS="3" /> 
             <PARAM STRUCTURE="continuous" />
             <PARAM FORM="cube:100:loop" />
@@ -14,7 +14,7 @@
 	
   <!-- ********** MUSICAL AGENT CLASSES ********** -->
 
-	<MUSICAL_AGENT_CLASS NAME="AGENT" CLASS="ensemble.apps.hello_world.Hello_World_Agent" />
+	<MUSICAL_AGENT_CLASS NAME="AGENT" CLASS="ensemble.apps.simple_extension.Simple_Agent" />
   
   <!-- ********** MUSICAL AGENT INSTANCES ********** -->
 

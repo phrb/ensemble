@@ -44,19 +44,18 @@ public class Pd_SoundEventServer extends EventServer
 			events.add ( i, null );
 		}
 		agent_number = Integer.parseInt ( envAgent.getParameter ( Pd_Constants.AGENT_NUMBER_ARGUMENT ) );
-        AudioFormat format = new AudioFormat ( ( float ) Pd_Constants.SAMPLE_RATE, Pd_Constants.BITS_PER_SAMPLE, Pd_Constants.OUTPUT_CHANNELS, true, true );
-        DataLine.Info info = new DataLine.Info ( SourceDataLine.class, format );        
-        try 
-        {
+		AudioFormat format = new AudioFormat ( ( float ) Pd_Constants.SAMPLE_RATE, Pd_Constants.BITS_PER_SAMPLE, Pd_Constants.OUTPUT_CHANNELS, true, true );
+		DataLine.Info info = new DataLine.Info ( SourceDataLine.class, format );        
+		try 
+		{
 			line = ( SourceDataLine ) AudioSystem.getLine ( info );
-	        line.open ( format );
-
+		    line.open ( format );
 		} 
-        catch ( LineUnavailableException e ) 
-        {
+		catch ( LineUnavailableException e ) 
+		{
 			e.printStackTrace();
 		}
-        line.start ( );
+		line.start ( );
 		return true;
 	}
 	@Override
