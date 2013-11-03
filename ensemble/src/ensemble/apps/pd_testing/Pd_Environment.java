@@ -32,8 +32,6 @@ public class Pd_Environment extends EnvironmentAgent
 		 */
 		PdBase.openAudio ( Pd_Constants.INPUT_CHANNELS, Pd_Constants.OUTPUT_CHANNELS, Pd_Constants.SAMPLE_RATE );
 		PdBase.computeAudio( true );
-		
-		configure ( );
 		return true;
 	}
 	@Override

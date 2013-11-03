@@ -42,7 +42,6 @@ public class Pd_Agent extends MusicalAgent
 	@Override
 	public boolean init ( )
 	{
-		configure ( );
 		return true;
 	}
 }
