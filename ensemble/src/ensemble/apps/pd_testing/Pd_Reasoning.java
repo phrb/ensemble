@@ -6,7 +6,7 @@ import java.nio.ShortBuffer;
 import java.util.ArrayList;
 
 import ensemble.*;
-import ensemble.apps.pd_testing.Pd_Constants.CONTROL_SYMBOLS;
+import ensemble.apps.pd_testing.Pd_Constants;
 import ensemble.memory.*;
 import org.puredata.core.*;
 
@@ -26,7 +26,6 @@ import org.puredata.core.*;
  *  Audio samples are directly sent to the event server
  *  at this point.
  */
-
 public class Pd_Reasoning extends Reasoning
 {
 	/* 
@@ -35,6 +34,8 @@ public class Pd_Reasoning extends Reasoning
 	 */
 	private Actuator speaker;
 	private Memory speaker_memory;
+	private Control_Symbols control_symbols;
+	private Control_Symbols user_control_symbols;
 	/*
 	 * Buffers and constants for
 	 * initialising Pd.
@@ -44,7 +45,7 @@ public class Pd_Reasoning extends Reasoning
     private int ticks = ( int ) ( seconds * ( Pd_Constants.SAMPLE_RATE / ( float ) PdBase.blockSize ( ) ) );
     
 	private int patch;
-	private PdReceiver receiver;
+	private Pd_Receiver receiver;
 	private boolean pd_audio_output = true;
 	private boolean mute_patch = false;
 	
@@ -73,43 +74,57 @@ public class Pd_Reasoning extends Reasoning
     	 * 
     	 */
     	PdBase.pollPdMessageQueue ( );
-    	ArrayList< Pd_Float > floats = ( ( Pd_Receiver ) receiver ).get_float_list ( );
-    	ArrayList< String > bangs = ( ( Pd_Receiver ) receiver ).get_bang_list ( );
+    	ArrayList< Pd_Message > messages = receiver.get_messages ( );
+    	ArrayList< Pd_Float > floats = receiver.get_floats ( );
+    	ArrayList< String > bangs = receiver.get_bangs ( );
+    	for ( Pd_Message message : messages )
+    	{
+    		if ( message.get_source ( ).equals ( Pd_Constants.SUBSCRIPTION ) )
+    		{
+				System.err.println ( "PURE_DATA: REGISTERED_USER_SYMBOL: " + message.get_symbol ( ) );
+    			user_control_symbols.register_symbol( message.get_symbol ( ) );
+				PdBase.subscribe ( message.get_symbol ( ) );
+    		}
+    		else if ( message.get_source ( ).equals ( Pd_Constants.UNSUBSCRIPTION ) )
+    		{
+				System.err.println ( "PURE_DATA: DEREGISTERED_USER_SYMBOL: " + message.get_symbol ( ) );
+    			user_control_symbols.deregister_symbol ( message.get_symbol ( ) );
+				PdBase.unsubscribe ( message.get_symbol ( ) );
+    		}
+    	}
     	for ( Pd_Float sent_float : floats )
     	{
-			if ( sent_float.get_source ( ).equals ( CONTROL_SYMBOLS.TICK.get_value ( ) ) )
+			if ( sent_float.get_source ( ).equals ( Pd_Constants.TICK ) )
 			{
 				ticks = ( int ) sent_float.get_value ( );
-				seconds = ( float ) ticks / ( Pd_Constants.SAMPLE_RATE / ( float )PdBase.blockSize ( ) );
-				System.err.print ( "PURE_DATA_SETTING_SECONDS: " + seconds + "\n" );
+				seconds = ( float ) ticks / ( Pd_Constants.SAMPLE_RATE / ( float ) PdBase.blockSize ( ) );
 				System.err.print ( "PURE_DATA_SETTING_TICK_SIZE: " + ticks + "\n" );
 			}
-			else if ( sent_float.get_source ( ).equals ( CONTROL_SYMBOLS.SECONDS.get_value ( ) ) )
+			else if ( sent_float.get_source ( ).equals ( Pd_Constants.SECONDS ) )
 			{
 				seconds = sent_float.get_value ( );
 				ticks = ( int ) ( seconds * ( Pd_Constants.SAMPLE_RATE / ( float ) PdBase.blockSize ( ) ) );
 				System.err.print ( "PURE_DATA_SETTING_SECONDS: " + seconds + "\n" );
-				System.err.print ( "PURE_DATA_SETTING_TICK_SIZE: " + ticks + "\n" );
 			}
     	}
     	for ( String sent_bang : bangs )
     	{
-    		if ( sent_bang.equals ( CONTROL_SYMBOLS.AUDIO_OFF.get_value ( ) ) )
+    		if ( sent_bang.equals ( Pd_Constants.AUDIO_OFF ) )
     		{
     			pd_audio_output = false;
     			System.err.println ( "PURE_DATA: AUDIO_OFF" );
     		}
-    		else if ( sent_bang.equals ( CONTROL_SYMBOLS.AUDIO_ON.get_value ( ) ) )
+    		else if ( sent_bang.equals ( Pd_Constants.AUDIO_ON ) )
     		{
     			pd_audio_output = true;
     			System.err.println ( "PURE_DATA: AUDIO_ON" );
     		}
-    		else if ( sent_bang.equals ( CONTROL_SYMBOLS.AUDIO_TOGGLE.get_value ( ) ) )
+    		else if ( sent_bang.equals ( Pd_Constants.AUDIO_TOGGLE ) )
     		{			
     			pd_audio_output = ! ( pd_audio_output );
     			System.err.println ( "PURE_DATA: AUDIO_TOGGLED" );
     		}
-    		else if ( sent_bang.equals ( CONTROL_SYMBOLS.MUTE.get_value ( ) ) )
+    		else if ( sent_bang.equals ( Pd_Constants.MUTE ) )
     		{
     			mute_patch = true;
     			pd_audio_output = ! ( mute_patch );
@@ -128,7 +143,42 @@ public class Pd_Reasoning extends Reasoning
 	/*
 	 * User can implement message checking here.
 	 */
-    private void process_pd_messages ( ) { };
+    private void process_pd_messages ( ) 
+    { 
+    	ArrayList< Pd_Message > messages = receiver.get_messages ( );
+    	ArrayList< Pd_Float > floats = receiver.get_floats ( );
+    	ArrayList< String > bangs = receiver.get_bangs ( );
+    	for ( Pd_Message message : messages )
+    	{
+			for ( String symbol : user_control_symbols.get_list ( ) )
+			{				
+				if ( message.get_source ( ).equals( symbol ) )
+				{
+					System.err.println ( "PURE_DATA: MESSAGE: SRC=" + message.get_source ( ) + " SYM=" + message.get_symbol ( ) );
+				}
+			}
+    	}
+    	for ( Pd_Float sent_float : floats )
+    	{
+			for ( String symbol : user_control_symbols.get_list ( ) )
+			{
+				if ( sent_float.get_source ( ).equals( symbol ) )
+				{
+					System.err.println ( "PURE_DATA: FLOAT: SRC=" + sent_float.get_source ( ) + " NUM=" + sent_float.get_value ( ) );
+				}
+			}
+    	}
+    	for ( String sent_bang : bangs )
+    	{
+			for ( String symbol : user_control_symbols.get_list ( ) )
+			{
+				if ( sent_bang.equals( symbol ) )
+				{
+					System.err.println ( "PURE_DATA: BANG: SRC=" + sent_bang );
+				}
+			}
+    	}
+    }
 	/*
 	 * The init method will be called once every time this
 	 * Reasoning is included in an Agent's Components.
@@ -140,6 +190,16 @@ public class Pd_Reasoning extends Reasoning
 	public boolean init ( ) 
 	{
 		getAgent ( ).getKB ( ).registerFact ( Pd_Constants.CURRENT_INSTANT, String.valueOf ( Pd_Constants.START_INSTANT ), false );
+		user_control_symbols = new Control_Symbols ( );
+		control_symbols = new Control_Symbols ( );
+		control_symbols.register_symbol ( Pd_Constants.AUDIO_TOGGLE );
+		control_symbols.register_symbol ( Pd_Constants.AUDIO_ON );
+		control_symbols.register_symbol ( Pd_Constants.AUDIO_OFF );
+		control_symbols.register_symbol ( Pd_Constants.TICK );
+		control_symbols.register_symbol ( Pd_Constants.SECONDS );
+		control_symbols.register_symbol ( Pd_Constants.MUTE );
+		control_symbols.register_symbol ( Pd_Constants.SUBSCRIPTION );
+		control_symbols.register_symbol ( Pd_Constants.UNSUBSCRIPTION );
 		/*
 		 * Pd Setup
 		 * 
@@ -154,9 +214,22 @@ public class Pd_Reasoning extends Reasoning
 		/*
 		 * Subscribing to known control symbols.
 		 */
-		for ( CONTROL_SYMBOLS symbol : CONTROL_SYMBOLS.values( ) )
+		for ( String symbol : control_symbols.get_list ( ) )
 		{
-			PdBase.subscribe( symbol.get_value ( ) );
+			PdBase.subscribe ( symbol );
+		}
+		/* TODO: Subscribe to float outlets dinamically?
+		 *       Subscribe to bang outlets dinamically? 
+		 */
+		for ( int i = 0; i < Pd_Constants.BANG_OUTLETS; i++ )
+		{
+			user_control_symbols.register_symbol ( Pd_Constants.BANG + i );
+			PdBase.subscribe(  Pd_Constants.BANG + i );
+		}
+		for ( int i = 0; i < Pd_Constants.FLOAT_OUTLETS; i++ )
+		{
+			user_control_symbols.register_symbol ( Pd_Constants.FLOAT + i );
+			PdBase.subscribe(  Pd_Constants.FLOAT + i );
 		}
 		/*
          * Patch opening.
@@ -164,18 +237,15 @@ public class Pd_Reasoning extends Reasoning
 		try 
 		{
 			patch = PdBase.openPatch ( parameters.get( Pd_Constants.PATCH_ARGUMENT ) );
+			System.err.println ( "PURE_DATA: PATCH_ID=" + patch + " PATH=" + "\"" + parameters.get( Pd_Constants.PATCH_ARGUMENT ) + "\"" );
 			process_ensemble_control_messages ( );
 			process_pd_messages ( );
 	    	( ( Pd_Receiver ) receiver ).start_new_cycle ( );
-			System.err.print ( "PURE_DATA: OPENED PATCH ID=" + patch + "\n" );
 		} 
 		catch ( IOException e ) 
 		{
 			e.printStackTrace ( );
 		}
-		/* TODO: Subscribe to float outlets dinamically?
-		 *       Subscribe to bang outlets dinamically? 
-		 */
 		/*
 		 * Initialising Pd audio buffers.
 		 */
@@ -238,7 +308,7 @@ public class Pd_Reasoning extends Reasoning
 		speaker.act ( );
 	}
 	/*
-	 * Called when and event handler is registered in the agent.
+	 * Called when an event handler is registered in the agent.
 	 * 
 	 * (non-Javadoc)
 	 * @see ensemble.Reasoning#eventHandlerRegistered(ensemble.EventHandler)
@@ -248,5 +318,29 @@ public class Pd_Reasoning extends Reasoning
 	{
 		speaker = ( Pd_Speaker ) event_handler;
 		speaker_memory = getAgent ( ).getKB ( ).getMemory ( speaker.getComponentName ( ) );
+	}
+	/*
+	 * Class to manage subscribed symbols.
+	 * 
+	 */
+	public final class Control_Symbols
+	{
+		ArrayList< String > symbols;
+		public Control_Symbols ( )
+		{
+			symbols = new ArrayList< String > ( );
+		}
+		public void register_symbol ( String new_symbol )
+		{
+			symbols.add ( new_symbol );
+		}
+		public void deregister_symbol ( String target )
+		{
+			symbols.remove ( target );
+		}
+		public ArrayList< String > get_list ( )
+		{
+			return symbols;
+		}
 	}
 }
