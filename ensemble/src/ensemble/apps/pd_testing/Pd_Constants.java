@@ -16,7 +16,7 @@ public final class Pd_Constants
 	public static final int FLOAT_OUTLETS = 5; 	
 	public static final int START_INSTANT = 0;
 	
-	public static final float DEFAULT_SECONDS = 1;
+	public static final float DEFAULT_SECONDS = 5;
 	/*
 	 * Text:
 	 */

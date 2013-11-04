@@ -75,7 +75,7 @@ public class Pd_SoundEventServer extends EventServer
 			{
 				if ( i < previous_samples.length )
 				{
-					samples[ i ] += previous_samples[ i ];
+					samples[ i ] = ( byte ) ( samples[ i ] + previous_samples[ i ] );
 				}
 			}
 			return samples;
@@ -86,7 +86,7 @@ public class Pd_SoundEventServer extends EventServer
 			{
 				if ( i < samples.length )
 				{
-					previous_samples[ i ] += samples[ i ];
+					previous_samples[ i ] = ( byte ) ( previous_samples[ i ] + samples[ i ] );
 				}
 			}
 			return previous_samples;

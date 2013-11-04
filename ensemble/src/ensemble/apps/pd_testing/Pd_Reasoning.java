@@ -49,6 +49,7 @@ public class Pd_Reasoning extends Reasoning
 	private boolean pd_audio_output = true;
 	private boolean mute_patch = false;
 	
+	private int current_instant;
     private int frames;
     private short[ ] dummy_pd_input;
     private short[ ] samples;
@@ -189,7 +190,7 @@ public class Pd_Reasoning extends Reasoning
 	@Override
 	public boolean init ( ) 
 	{
-		getAgent ( ).getKB ( ).registerFact ( Pd_Constants.CURRENT_INSTANT, String.valueOf ( Pd_Constants.START_INSTANT ), false );
+		current_instant = Pd_Constants.START_INSTANT;
 		user_control_symbols = new Control_Symbols ( );
 		control_symbols = new Control_Symbols ( );
 		control_symbols.register_symbol ( Pd_Constants.AUDIO_TOGGLE );
@@ -280,7 +281,6 @@ public class Pd_Reasoning extends Reasoning
 	public void process ( ) 
 	{
 		byte[ ] output;
-		int current_instant = Integer.parseInt ( getAgent ( ).getKB ( ).readFact ( Pd_Constants.CURRENT_INSTANT ) );
 
 		process_pd_ticks ( patch );
 		process_ensemble_control_messages ( );
@@ -304,7 +304,6 @@ public class Pd_Reasoning extends Reasoning
 			e.printStackTrace ( );
 		}
 		current_instant += 1;
-		getAgent ( ).getKB ( ).updateFact ( Pd_Constants.CURRENT_INSTANT, String.valueOf ( current_instant ) );
 		speaker.act ( );
 	}
 	/*
