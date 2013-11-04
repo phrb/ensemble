@@ -1,14 +1,12 @@
 #N canvas 0 48 1920 1032 10;
-#X obj 726 850 dac~;
-#X msg 664 547 1;
-#X obj 723 576 switch~;
-#X msg 776 547 0;
-#X obj 664 525 r \$0processing_on;
-#X obj 776 524 r \$0processing_off;
-#X text 602 477 These symbols let Ensemble control the execution flow
-of individual patches \, by turning their DSP cycles on/off.;
-#X text 658 32 Using patches as Ensemble Reasonings;
-#X text 590 62 These symbols allow Ensemble to turn on/off this patch's
+#X obj 778 928 dac~;
+#X msg 705 460 1;
+#X obj 764 489 switch~;
+#X msg 817 460 0;
+#X obj 705 438 r \$0processing_on;
+#X obj 817 437 r \$0processing_off;
+#X text 703 36 Using patches as Ensemble Reasonings;
+#X text 635 66 These symbols allow Ensemble to turn on/off this patch's
 sound output. If they receive a bang \, Ensemble stops/starts sending
 samples from this patch to audio card \, but still computes DSP cycles.
 Ensemble does not process audio toggling messages between sample-obtaining
@@ -16,34 +14,42 @@ cycles. This means the temporal control of audio output should be done
 via signal handling. If the MUTE symbol receives a bang \, it mutes
 the patch completely \, and audio output can't be turned on again for
 this patch.;
-#X text 594 628 This pair of symbols is used to set the patch processing
-duration \, measured in Pd processing ticks \, or real seconds. If
-not present \, Ensemble gives one second worth of samples to each patch
-\, as default.;
-#X obj 640 229 s audio_on;
-#X obj 727 230 s audio_off;
-#X obj 820 230 s audio_toggle;
-#X obj 670 724 s set_ticks;
-#X obj 754 721 s set_seconds;
-#X obj 672 703 f 690;
-#X obj 742 196 s MUTE;
-#X obj 753 700 f 1;
-#X msg 636 404 \; MUTE bang;
-#X msg 636 365 \; set_seconds 1;
-#X msg 815 285 \; set_ticks 690;
-#X msg 814 324 \; audio_toggle bang;
-#X msg 815 360 \; audio_off bang;
-#X msg 815 398 \; audio_on bang;
-#X text 590 759 Samples are sent to Ensemble via [ dac~ ]. The patch
+#X obj 685 233 s audio_on;
+#X obj 772 234 s audio_off;
+#X obj 865 234 s audio_toggle;
+#X obj 645 614 s set_ticks;
+#X obj 729 611 s set_seconds;
+#X obj 647 593 f 690;
+#X obj 787 200 s MUTE;
+#X obj 728 590 f 1;
+#X msg 720 287 \; MUTE bang;
+#X msg 876 579 \; set_seconds 1;
+#X msg 875 619 \; set_ticks 690;
+#X msg 836 293 \; audio_toggle bang;
+#X msg 837 329 \; audio_off bang;
+#X msg 720 328 \; audio_on bang;
+#X text 641 851 Samples are sent to Ensemble via [ dac~ ]. The patch
 can receive samples from the framework via [ adc~ ].;
-#X msg 640 284 \; subscribe user_symbol;
-#X msg 638 327 \; unsubscribe user_symbol;
-#X obj 734 820 osc~ 440;
+#X msg 744 750 \; subscribe user_symbol;
+#X msg 742 793 \; unsubscribe user_symbol;
+#X obj 785 903 osc~ 440;
+#X text 651 380 These symbols let Ensemble control the execution flow
+of individual patches \, by turning their DSP cycles on/off. Every
+patch loaded into Ensemble has to have those.;
+#X text 648 524 This pair of symbols is used to set the patch processing
+duration \, measured in Pd processing ticks \, or real seconds. If
+not present \, Ensemble gives five seconds worth of samples to each
+patch \, as default.;
+#X text 645 665 These messages are used to tell Ensemble to listen
+or stop listening to user defined symbols. The actions performed when
+Ensemble receives a float \, bang or message from a user-registered
+symbol should be defined in the user Java code. For more information
+\, see Java source and documentation.;
 #X connect 1 0 2 0;
 #X connect 3 0 2 0;
 #X connect 4 0 1 0;
 #X connect 5 0 3 0;
-#X connect 15 0 13 0;
-#X connect 17 0 14 0;
-#X connect 27 0 0 0;
-#X connect 27 0 0 1;
+#X connect 13 0 11 0;
+#X connect 15 0 12 0;
+#X connect 25 0 0 0;
+#X connect 25 0 0 1;

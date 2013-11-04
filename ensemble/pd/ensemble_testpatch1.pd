@@ -8,7 +8,7 @@
 #X obj 101 123 s MUTE;
 #X obj 406 228 osc~ 200;
 #X obj 459 272 *~;
-#X obj 487 224 osc~ 5;
+#X obj 487 224 osc~ 4;
 #X connect 1 0 2 0;
 #X connect 3 0 2 0;
 #X connect 4 0 1 0;
