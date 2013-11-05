@@ -2,7 +2,7 @@
     <GLOBAL_PARAMETERS CLOCK_MODE="CLOCK_USER" PROCESS_MODE="BATCH" OSC="FALSE" />
     <!-- ********** ENVIRONMENT AGENT ********** -->
     <ENVIRONMENT_AGENT_CLASS NAME="ENVIRONMENT" CLASS="ensemble.apps.pd_testing.Pd_Environment">
-        <ARG NAME="AGENTS" VALUE="1" />
+        <ARG NAME="AGENTS" VALUE="3" />
         <WORLD CLASS="ensemble.apps.pd_testing.Pd_World">
             <PARAM DIMENSIONS="3" /> 
             <PARAM STRUCTURE="continuous" />
@@ -21,6 +21,6 @@
     </MUSICAL_AGENT_CLASS>
     <!-- ********** MUSICAL AGENT INSTANCES ********** -->
     <MUSICAL_AGENT NAME="type1" CLASS="AGENT_1" QUANTITY="1" />
-    <!--<MUSICAL_AGENT NAME="type2" CLASS="AGENT_2" QUANTITY="3" />-->
-    <!--<MUSICAL_AGENT NAME="type3" CLASS="AGENT_3" QUANTITY="5" />-->
+    <MUSICAL_AGENT NAME="type2" CLASS="AGENT_2" QUANTITY="1" />
+    <MUSICAL_AGENT NAME="type3" CLASS="AGENT_3" QUANTITY="1" />
 </ENSEMBLE>
