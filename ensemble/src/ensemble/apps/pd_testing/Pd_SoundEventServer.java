@@ -65,9 +65,8 @@ public class Pd_SoundEventServer extends EventServer
         line.stop ( );
 		return true;
 	}
-	private byte[ ] add_buffers ( Pd_Audio_Buffer new_buffer, Pd_Audio_Buffer old_buffer )
+	private byte[ ] add_buffers ( byte[ ] samples, Pd_Audio_Buffer old_buffer )
 	{
-		byte[ ] samples = new_buffer.get_audio_samples ( );
 		byte[ ] previous_samples = old_buffer.get_audio_samples ( );
 		
 		if ( samples.length >= previous_samples.length )
@@ -76,11 +75,7 @@ public class Pd_SoundEventServer extends EventServer
 			{
 				if ( i < previous_samples.length )
 				{
-					samples[ i ] = ( byte ) ( ( samples[ i ] + previous_samples[ i ] ) / ( float ) 2 );
-				}
-				else
-				{
-					samples[ i ] = ( byte ) ( samples[ i ] / ( float ) 2 );
+					samples[ i ] = ( byte ) ( samples[ i ] + previous_samples[ i ] );
 				}
 			}
 			return samples;
@@ -91,11 +86,7 @@ public class Pd_SoundEventServer extends EventServer
 			{
 				if ( i < samples.length )
 				{
-					previous_samples[ i ] = ( byte ) ( ( previous_samples[ i ] + samples[ i ] ) / ( float ) 2 );
-				}
-				else
-				{
-					previous_samples[ i ] = ( byte ) ( previous_samples[ i ] / ( float ) 2 );
+					previous_samples[ i ] = ( byte ) ( previous_samples[ i ] + samples[ i ] );
 				}
 			}
 			return previous_samples;
@@ -108,16 +99,20 @@ public class Pd_SoundEventServer extends EventServer
 	private void process_audio_buffer ( Pd_Audio_Buffer new_buffer, int instant )
 	{
 		Pd_Audio_Buffer event = new_buffer;
-
+		byte[ ] samples = event.get_audio_samples ( );
+		for ( int i = 0; i < samples.length; i++ )
+		{	
+			samples[ i ] = ( byte ) ( samples[ i ] / ( float ) agent_number ); 
+		}
 		if ( events.get( instant ) != null )
 		{
 			Pd_Audio_Buffer previous_event = events.get ( instant );
-			events.set( instant, new Pd_Audio_Buffer ( add_buffers ( event, previous_event ), instant, "EVENT_SERVER" ) );
+			events.set( instant, new Pd_Audio_Buffer ( add_buffers ( samples, previous_event ), instant, "EVENT_SERVER" ) );
 			samples_per_instant[ instant ] += 1;
 		}
 		else
 		{
-			add_new_buffer ( instant, event.get_audio_samples ( ) );
+			add_new_buffer ( instant, samples );
 			samples_per_instant[ instant ] += 1;
 		}
 	}

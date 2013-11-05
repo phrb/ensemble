@@ -11,13 +11,13 @@
     </ENVIRONMENT_AGENT_CLASS>
     <!-- ********** MUSICAL AGENT CLASSES ********** -->
     <MUSICAL_AGENT_CLASS NAME="AGENT_1" CLASS="ensemble.apps.pd_testing.Pd_Agent" >
-        <ARG NAME="PATCH" VALUE="../pd/ensemble_help.pd" />
+        <ARG NAME="PATCH" VALUE="../pd/ensemble_testpatch1.pd" />
     </MUSICAL_AGENT_CLASS>
     <MUSICAL_AGENT_CLASS NAME="AGENT_2" CLASS="ensemble.apps.pd_testing.Pd_Agent" >
-        <ARG NAME="PATCH" VALUE="../pd/ensemble_help2.pd" />
+        <ARG NAME="PATCH" VALUE="../pd/ensemble_testpatch2.pd" />
     </MUSICAL_AGENT_CLASS>
     <MUSICAL_AGENT_CLASS NAME="AGENT_3" CLASS="ensemble.apps.pd_testing.Pd_Agent" >
-        <ARG NAME="PATCH" VALUE="../pd/ensemble_help3.pd" />
+        <ARG NAME="PATCH" VALUE="../pd/ensemble_testpatch3.pd" />
     </MUSICAL_AGENT_CLASS>
     <!-- ********** MUSICAL AGENT INSTANCES ********** -->
     <MUSICAL_AGENT NAME="type1" CLASS="AGENT_1" QUANTITY="1" />

@@ -1,14 +1,20 @@
 package ensemble.apps.pd_testing;
 
 import java.util.ArrayList;
-
 import org.puredata.core.utils.PdDispatcher;
 
 public class Pd_Receiver extends PdDispatcher 
 {	
-	private ArrayList< Pd_Float > float_list = new ArrayList< Pd_Float > ( );
-	private ArrayList< String > bang_list = new ArrayList< String > ( );
+	private ArrayList< Pd_Float > floats;
+	private ArrayList< String > bangs;
+	private ArrayList< Pd_Message > messages;
 
+	public Pd_Receiver ( )
+	{
+		floats = new ArrayList< Pd_Float > ( );
+		bangs = new ArrayList< String > ( );
+		messages = new ArrayList< Pd_Message > ( );
+	}
 	@Override
 	public void print ( String pd_message ) 
 	{
@@ -17,24 +23,35 @@ public class Pd_Receiver extends PdDispatcher
 	@Override
 	public void receiveFloat ( String source, float number )
 	{
-		float_list.add ( new Pd_Float ( source, number ) );		
+		floats.add ( new Pd_Float ( source, number ) );		
 	}
 	@Override
 	public void receiveBang ( String source )
 	{
-		bang_list.add ( source );
+		bangs.add ( source );
 	}
-	public ArrayList< Pd_Float > get_float_list ( )
+	@Override
+	public void receiveMessage ( String source, String symbol, Object... args )
 	{
-		return float_list;
+		messages.add ( new Pd_Message ( source, symbol, args ) );
 	}
-	public ArrayList< String > get_bang_list ( )
+	
+	public ArrayList< Pd_Float > get_floats ( )
 	{
-		return bang_list;
+		return floats;
+	}
+	public ArrayList< String > get_bangs ( )
+	{
+		return bangs;
+	}
+	public ArrayList< Pd_Message > get_messages ( )
+	{
+		return messages;
 	}
 	public void start_new_cycle ( )
 	{
-		float_list = new ArrayList< Pd_Float > ( );
-		bang_list = new ArrayList< String > ( );
+		floats = new ArrayList< Pd_Float > ( );
+		bangs = new ArrayList< String > ( );
+		messages = new ArrayList< Pd_Message > ( );
 	}
 }
