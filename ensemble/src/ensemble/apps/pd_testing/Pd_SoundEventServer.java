@@ -21,7 +21,7 @@ public class Pd_SoundEventServer extends EventServer
 	private SourceDataLine line;   // to play the sound
 
 	@Override
-	public boolean configure ( ) 
+	public boolean configure ( )
 	{
 		setEventType ( "SOUND" );
 		return true;
@@ -35,7 +35,7 @@ public class Pd_SoundEventServer extends EventServer
 	{
 		world = ( Pd_World ) envAgent.getWorld ( );
 		
-		for ( int i = 0; i < Pd_Constants.PD_EVENT_BUFFER_SIZE; i ++ )
+		for ( int i = 0; i < Pd_Constants.PD_EVENT_BUFFER_SIZE; i++ )
 		{
 			samples_per_instant[ i ] = 0;
 		}
@@ -43,7 +43,7 @@ public class Pd_SoundEventServer extends EventServer
 		{
 			events.add ( i, null );
 		}
-		agent_number = Integer.parseInt ( envAgent.getParameter ( Pd_Constants.AGENT_NUMBER_ARGUMENT ) );
+		agent_number = ( int ) Float.parseFloat ( envAgent.getParameter ( Pd_Constants.AGENT_NUMBER_ARGUMENT ) );
 		AudioFormat format = new AudioFormat ( ( float ) Pd_Constants.SAMPLE_RATE, Pd_Constants.BITS_PER_SAMPLE, Pd_Constants.OUTPUT_CHANNELS, true, true );
 		DataLine.Info info = new DataLine.Info ( SourceDataLine.class, format );        
 		try 

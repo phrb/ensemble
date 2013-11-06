@@ -27,11 +27,18 @@ public class Pd_Environment extends EnvironmentAgent
 	@Override
 	public boolean init ( )
 	{
-		/*
-		 * Pd Setup
-		 */
-		PdBase.openAudio ( Pd_Constants.INPUT_CHANNELS, Pd_Constants.OUTPUT_CHANNELS, Pd_Constants.SAMPLE_RATE );
-		PdBase.computeAudio( true );
+		if ( parameters.containsKey( "PD_INIT" ) && parameters.get( "PD_INIT" ).equals( "TRUE" ) )
+		{
+			System.err.println ( "PURE DATA: ALREADY INITIALISED." );
+		}
+		else
+		{
+			/*
+			 * Pd Setup
+			 */
+			PdBase.openAudio ( Pd_Constants.INPUT_CHANNELS, Pd_Constants.OUTPUT_CHANNELS, Pd_Constants.SAMPLE_RATE );
+			PdBase.computeAudio( true );
+		}
 		return true;
 	}
 	@Override

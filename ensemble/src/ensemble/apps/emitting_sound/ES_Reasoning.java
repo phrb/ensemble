@@ -45,10 +45,10 @@ public class ES_Reasoning extends Reasoning
 	@Override
 	public boolean init ( ) 
 	{
-		MIN_MIDI = Integer.parseInt ( parameters.get ( ES_Constants.MIDI_MIN ) );
-		MIDI_INTERVAL = Integer.parseInt ( parameters.get ( ES_Constants.MIDI_INTERVAL ) );
-		MAX_INTERVAL = Integer.parseInt ( parameters.get ( ES_Constants.MAX_INTERVAL ) );
-		VELOCITY = Integer.parseInt( parameters.get ( ES_Constants.VELOCITY ) );
+		MIN_MIDI = ( int ) Float.parseFloat ( parameters.get ( ES_Constants.MIDI_MIN ) );
+		MIDI_INTERVAL = ( int ) Float.parseFloat ( parameters.get ( ES_Constants.MIDI_INTERVAL ) );
+		MAX_INTERVAL = ( int ) Float.parseFloat ( parameters.get ( ES_Constants.MAX_INTERVAL ) );
+		VELOCITY = ( int ) Float.parseFloat( parameters.get ( ES_Constants.VELOCITY ) );
 		note_generator = new Random ( );
 		interval_generator = new Random ( );
 		sing_time = 0;

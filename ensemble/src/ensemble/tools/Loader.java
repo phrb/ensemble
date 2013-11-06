@@ -21,23 +21,29 @@ along with Ensemble.  If not, see <http://www.gnu.org/licenses/>.
 
 package ensemble.tools;
 
+import java.io.IOException;
+import java.util.ArrayList;
+
 import jade.core.Profile;
 import jade.core.ProfileImpl;
 import jade.core.Runtime;
-import jade.tools.sniffer.ExitAction;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
 
+/* Unused Imports:
+ * 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
+*/
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.puredata.core.PdBase;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -46,6 +52,15 @@ import ensemble.Constants;
 import ensemble.EnvironmentAgent;
 import ensemble.MusicalAgent;
 import ensemble.Parameters;
+
+import ensemble.apps.pd_testing.Pd_Agent_Class_Information;
+import ensemble.apps.pd_testing.Pd_Agent_Instance;
+/*
+ * Provisory import of Pure Data utilities:
+ */
+import ensemble.apps.pd_testing.Pd_Constants;
+import ensemble.apps.pd_testing.Pd_Message;
+import ensemble.apps.pd_testing.Pd_Receiver;
 
 
 // TODO: Auto-generated Javadoc
@@ -123,6 +138,11 @@ public class Loader {
 	/** The Constant CONF_QUANTITY. */
 	private static final String CONF_QUANTITY = "QUANTITY";
 	
+	private static final String CONF_WORLD = "WORLD";
+	private static final String CONF_LAW = "LAW";
+
+
+	
 //	private Logger logger = Logger.getLogger("");
 
 	// JADE Variables
@@ -182,16 +202,66 @@ public class Loader {
 			e.printStackTrace();
 		}
 	}
+	private static void startJADE ( Pd_Receiver config_receiver, boolean nogui ) 
+	{
+
+		// Cria o Container JADE
+		jade_runtime = Runtime.instance ( );
+		jade_profile = new ProfileImpl ( );
+		jade_profile.setParameter ( Profile.MAIN_HOST, "localhost" );
+		String services = "ensemble.clock.VirtualClockService;" +
+							"ensemble.comm.direct.CommDirectService;";
+		jade_profile.setParameter ( Constants.CLOCK_MODE, Constants.CLOCK_CPU );
+		jade_profile.setParameter ( Constants.PROCESS_MODE,Constants.MODE_REAL_TIME );
+		jade_profile.setParameter ( Constants.SCHEDULER_THREADS, "5" );
+		for ( Pd_Message message : config_receiver.get_messages ( ) )
+		{
+			if ( message.get_source ( ).equals ( CONF_GLOBAL_PARAMETERS ) )
+			{
+				if ( message.get_symbol ( ).equals ( Constants.CLOCK_MODE ) )
+				{
+					jade_profile.setParameter ( Constants.CLOCK_MODE, ( String ) message.get_arguments ( )[ 0 ] );
+				}
+				else if ( message.get_symbol ( ).equals ( Constants.PROCESS_MODE ) )
+				{
+					jade_profile.setParameter ( Constants.PROCESS_MODE, ( String ) message.get_arguments ( )[ 0 ] );
+				}
+				else if ( message.get_symbol ( ).equals ( Constants.SCHEDULER_THREADS ) )
+				{
+					jade_profile.setParameter ( Constants.SCHEDULER_THREADS, ( String ) message.get_arguments ( )[ 0 ] );
+				}
+			}
+		}
+		jade_profile.setParameter ( Profile.SERVICES, services );
+		jade_container_controller = jade_runtime.createMainContainer ( jade_profile );
+
+		// Creates special agents (they live outside the Virtual Environment)
+		AgentController jade_agent_controller;
+		try 
+		{
+			// Command Router
+			jade_agent_controller = jade_container_controller.createNewAgent ( "Router", "ensemble.router.RouterAgent", null );
+			jade_agent_controller.start ( );
+			// Sniffer
+			if  ( ! ( nogui ) ) 
+			{
+				jade_agent_controller = jade_container_controller.createNewAgent ("Sniffer", "ensemble.sniffer.Sniffer", null );
+				jade_agent_controller.start ( );
+			}
+		}
+		catch ( StaleProxyException e ) 
+		{
+			e.printStackTrace();
+		}
+	}
 	
 	/**
 	 * Stop jade.
 	 */
-	private static void stopJADE() {
-		
-		jade_runtime.shutDown();
-		
+	private static void stopJADE ( )
+	{	
+		jade_runtime.shutDown();	
 	}
-
 	/**
 	 * Read attribute.
 	 *
@@ -211,11 +281,8 @@ public class Loader {
 //			System.out.println("\tParameter " + attributeName + " not found in configuration file...");
 			attribute_value = defaultValue;
 		}
-		
 		return attribute_value;
-
 	}
-	
 	/**
 	 * Read arguments.
 	 *
@@ -236,6 +303,35 @@ public class Loader {
 		
 		return parameters;
 	
+	}
+	private static Parameters readArguments ( Pd_Message message, int offset ) 
+	{
+		Parameters parameters = new Parameters ( );	
+		Object[ ] attributes = message.get_arguments ( );
+		for ( int i = offset; i < attributes.length; i++ ) 
+		{
+			/* 
+			 * Checking malformed arguments:
+			 */
+			if ( ! ( attributes[ i ].equals ( CONF_ARG ) ) || ! ( attributes[ i + 1 ].equals ( CONF_NAME ) ) || 
+				 ! ( attributes[ i + 3 ].equals ( CONF_VALUE ) ))
+			{
+				break;
+			}
+			else
+			{
+				if ( attributes[ i + 4 ] instanceof java.lang.Float )
+				{
+					parameters.put ( ( String ) attributes[ i + 2 ], String.valueOf( ( Float ) attributes[ i + 4 ] ) );
+				}
+				else if ( attributes[ i + 4 ] instanceof java.lang.String )
+				{
+					parameters.put ( ( String ) attributes[ i + 2 ], attributes[ i + 4 ] );
+				}
+				i += 4;
+			}
+		}
+		return parameters;
 	}
 	
 	/**
@@ -394,7 +490,8 @@ public class Loader {
 				System.exit(-1);
 			}
 
-		} else {
+		}
+		else {
 			System.err.println("\tERROR: No Environment Agent defined...");
 			stopJADE();
 			System.exit(-1);
@@ -435,9 +532,9 @@ public class Loader {
 							found_class = true;
 							// Criar nova instância do MA solicitado
 							String ma_class_class = readAttribute(elem_ma_class, CONF_CLASS, "ensemble.rt.MusicalAgent");
-							Class maClass = Class.forName(ma_class_class);
+							Class<?> maClass = Class.forName(ma_class_class);
 							MusicalAgent ma = (MusicalAgent)maClass.newInstance();
-							Parameters class_parameters = readArguments(elem_ma_class);
+							//Parameters class_parameters = readArguments(elem_ma_class);
 							parameters.merge(readArguments(elem_ma_class));
 							// Coloca os argumentos (os da instância tem precedência sobre os da classe
 							Object[] arguments;
@@ -563,11 +660,243 @@ public class Loader {
 		}
 		
 	}
-	
+	private static void loadSystem ( Pd_Receiver config_receiver ) 
+	{
+		int argument_position = 0;
+		
+		ArrayList< Pd_Agent_Instance > musical_agent_instances = new ArrayList< Pd_Agent_Instance >( );
+		ArrayList< Pd_Agent_Class_Information > agent_classes = new ArrayList< Pd_Agent_Class_Information >( );
+		
+		String environment_agent_name = Constants.ENVIRONMENT_AGENT;
+		String environment_agent_class_name = "ensemble.EnvironmentAgent";
+		String world_class_name = "ensemble.world.World";
+		String law_class_name = null;
+		Parameters law_parameters = null;
+
+		Parameters environment_agent_parameters = null;
+		Parameters world_param = null;
+		Parameters event_server_parameters = null;
+		boolean has_environment = false;
+		
+		for ( Pd_Message message : config_receiver.get_messages ( ) )
+		{
+			/* 
+			 * Loading Environment Agent:
+			 */
+			if ( message.get_source ( ).equals ( CONF_ENVIRONMENT_AGENT_CLASS ) )
+			{
+				/*
+				 * Checking for the class, and parameters:
+				 */
+				has_environment = true;
+				if ( message.get_symbol ( ).equals ( CONF_CLASS ) )
+				{
+					environment_agent_class_name = ( String ) message.get_arguments ( )[ 0 ];
+					if ( ! ( environment_agent_class_name.equals( "ensemble.EnvironmentAgent" ) ) )
+					{
+						argument_position += 1;
+						environment_agent_parameters = readArguments ( message, argument_position );
+						argument_position = 0;
+					}
+					else
+					{
+						System.err.println ( "ERROR: SHOULD DEFINE ENVIRONMENT CLASS!" );
+						System.exit ( -1 );
+					}
+				}
+				/*
+				 * Checking for a world class and world parameters:
+				 */
+				else if ( message.get_symbol ( ).equals ( CONF_WORLD ) )
+				{
+					world_class_name = ( String ) message.get_arguments ( )[ 0 ];
+					if ( ! ( world_class_name.equals( "ensemble.world.World" ) ) )
+					{
+						argument_position += 1;
+						world_param = readArguments ( message, argument_position );
+						argument_position = 0;
+					}				
+					else
+					{
+						System.err.println ( "ERROR: SHOULD DEFINE WORLD!" );
+						System.exit ( -1 );
+					}
+				}
+				/*
+				 * Checking for a law and its parameters:
+				 */
+				else if ( message.get_symbol ( ).equals ( CONF_LAW ) )
+				{
+					law_class_name = ( String ) message.get_arguments ( )[ 0 ];
+					if ( law_class_name != null )
+					{
+						argument_position += 1;
+						law_parameters = readArguments ( message, argument_position );
+						argument_position = 0;
+					}				
+					else
+					{
+						System.err.println ( "ERROR: SHOULD DEFINE LAW!" );
+						System.exit ( -1 );
+					}
+				}
+				/* 
+				 * Wrong message type:
+				 */
+				else
+				{
+					System.err.println ( "ERROR: MALFORMED ENVIRONMENT!" );
+					System.exit ( -1 );
+				}
+			}
+			else if ( message.get_source ( ).equals ( CONF_EVENT_SERVER ) )
+			{
+				/*
+				 * TODO: Handle Event Server Configuration.
+				 */
+			}
+			/*
+			 * Loading a Musical Agent class:
+			 */
+			else if ( message.get_source ( ).equals ( CONF_MUSICAL_AGENT_CLASS ) )
+			{
+				String argument;
+				
+				String new_class_name = null;
+				Parameters new_class_parameters = null;
+				String new_name = null;
+				
+				if ( message.get_symbol ( ).equals ( CONF_CLASS ) )
+				{
+					new_class_name = ( String ) message.get_arguments ( )[ 0 ];
+					argument = ( String ) message.get_arguments ( )[ 1 ];
+					argument_position += 2;
+					if ( argument.equals ( CONF_NAME ) )
+					{
+						new_name = ( String ) message.get_arguments ( )[ 2 ];
+						argument_position += 1;
+					}
+					new_class_parameters = readArguments ( message, argument_position );
+					/*
+					for ( String a : new_class_parameters.keySet ( ) )
+					{
+						System.err.println ( a + " " + new_class_parameters.get ( a ) );
+					}
+					*/
+					argument_position = 0;
+					agent_classes.add ( new Pd_Agent_Class_Information ( new_name, new_class_name, new_class_parameters ) );
+				}
+				else
+				{
+					System.err.println ( "ERROR: SHOULD DEFINE MUSICAL_AGENT CLASS!" );
+					System.exit ( -1 );
+				}
+			}
+			/*
+			 * Instance of Musical Agent:
+			 */
+			else if ( message.get_source ( ).equals ( CONF_MUSICAL_AGENT ) )
+			{
+				String argument;
+				
+				String new_class_name = null;
+				Parameters new_class_parameters = null;
+				String new_name = null;
+				
+				if ( message.get_symbol ( ).equals ( CONF_CLASS ) )
+				{
+					new_class_name = ( String ) message.get_arguments ( )[ 0 ];
+					argument = ( String ) message.get_arguments ( )[ 1 ];
+					argument_position += 1;
+					if ( argument.equals ( CONF_NAME ) )
+					{
+						new_name = ( String ) message.get_arguments ( )[ 2 ];
+						argument_position += 1;
+					}
+					new_class_parameters = readArguments ( message, argument_position );
+					argument_position = 0;
+					musical_agent_instances.add ( new Pd_Agent_Instance ( new_name, new_class_name, new_class_parameters ) );
+				}
+				else
+				{
+					System.err.println ( "ERROR: SHOULD DEFINE MUSICAL_AGENT CLASS!" );
+					System.exit ( -1 );
+				}
+			}
+		}
+		try 
+		{
+			Class< ? > environment_agent_class = Class.forName ( environment_agent_class_name );
+			EnvironmentAgent environment_agent = ( EnvironmentAgent ) environment_agent_class.newInstance ( );
+			environment_agent_parameters.put( "PD_INIT", "TRUE" );
+			Object[ ] arguments;
+			arguments = new Object[ 1 ];
+			arguments[ 0 ] = environment_agent_parameters;
+			environment_agent.setArguments ( arguments );
+
+			environment_agent.addWorld ( world_class_name, world_param );
+			//environment_agent.getWorld ( ).addLaw ( law_class_name, law_parameters );
+			/*
+			 * TODO: Initiate Event Servers.
+			 */
+			/*
+			 * Inserting environment into jade:
+			 */
+			AgentController agent_controller = jade_container_controller.acceptNewAgent ( environment_agent_name, environment_agent );
+			agent_controller.start ( );
+			/*
+			 * Instantiate Agents:
+			 */
+			for ( Pd_Agent_Class_Information agent_class : agent_classes )
+			{
+				for ( Pd_Agent_Instance instance : musical_agent_instances )
+				{
+					if ( agent_class.get_name ( ).equals( instance.get_class_name ( ) ) )
+					{
+						Class<?> new_agent_class = Class.forName ( agent_class.get_class_name ( ) );
+						MusicalAgent musical_agent = ( MusicalAgent ) new_agent_class.newInstance ( );
+						Parameters instance_parameters = instance.get_parameters ( ); 
+						Object[ ] instance_arguments;
+						instance_arguments = new Object[ 1 ];
+						instance_arguments[ 0 ] = agent_class.get_parameters ( );
+						( ( Parameters ) instance_arguments[ 0 ] ).merge ( instance_parameters );
+						musical_agent.setArguments ( instance_arguments );
+						jade_container_controller.acceptNewAgent ( instance.get_name ( ), musical_agent ).start ( );
+					}
+				}
+			}
+		} 
+		catch ( ClassNotFoundException e ) 
+		{
+			System.err.println ( "FATAL ERROR: Class " + environment_agent_class_name + " not found" );
+			System.exit ( -1 );
+		} 
+		catch ( InstantiationException e ) 
+		{
+			System.err.println ( "FATAL ERROR: Not possible to create an instance of " + environment_agent_class_name );
+			System.exit ( -1 );
+		} 
+		catch ( IllegalAccessException e ) 
+		{
+			System.err.println ( "FATAL ERROR: Not possible to create an instance of " + environment_agent_class_name );
+			System.exit ( -1 );
+		} 
+		catch ( StaleProxyException e ) 
+		{
+			System.err.println ( "FATAL ERROR: Not possible to insert agent " + environment_agent_class_name + " in JADE" );
+			System.exit ( -1 );
+		}
+		if ( ! ( has_environment ) )
+		{
+			System.err.println("\tERROR: No Environment Agent defined!");
+			stopJADE();
+			System.exit(-1);
+		}		
+	}
 	/**
 	 * Gracefully exit the Ensemble and Jade system.
 	 */
-	private void terminate() {
+	private void terminate ( ) {
 		stopJADE();
 		System.out.println("[Loader] Exiting Ensemble...");
 		System.exit(0);
@@ -590,19 +919,64 @@ public class Loader {
         // Loader.java to load from Pure Data patches that will 
         // be run from within C code (libpd), which will be
         // loaded into Ensemble through JNI.
-		boolean nogui = true;
+		boolean nogui = false;
 		String xml_filename = null;
-		for (int i = 0; i < args.length; i++) {
-			if (args[i].equals("-f")) {
-				try {
-					xml_filename = args[i+1];
-				} catch (Exception e) {
-					System.out.println("ERROR: no xml file was specified");
-					System.exit(-1);
+		String pd_patch_path = null;
+		int patch = -1;
+		Pd_Receiver config_receiver = null;
+		for ( int i = 0; i < args.length; i++ ) 
+		{
+			if ( args[ i ].equals ( "-f" ) ) 
+			{
+				try 
+				{
+					xml_filename = args[ i + 1 ];
+				} 
+				catch ( Exception e ) 
+				{
+					System.out.println ( "ERROR: no xml file was specified" );
+					System.exit ( -1 );
 				}
 				i++;
 			}
-			else if (args[i].equals("-nogui")) {
+			else if ( args[ i ].equals ( "-p" ) || args[ i ].equals( "--patch" ) )
+			{
+				pd_patch_path = args[ i + 1 ];
+				/*
+				 * Pd Setup
+				 */
+				PdBase.openAudio ( Pd_Constants.INPUT_CHANNELS, Pd_Constants.OUTPUT_CHANNELS, Pd_Constants.SAMPLE_RATE );
+				PdBase.computeAudio( true );
+				config_receiver = new Pd_Receiver ( );
+				/* 
+				 * Registering config symbols to pd receiver:
+				 */
+				config_receiver.register_default_symbol ( CONF_ENVIRONMENT_AGENT_CLASS );
+				config_receiver.register_default_symbol ( CONF_MUSICAL_AGENT_CLASS );
+				config_receiver.register_default_symbol ( CONF_MUSICAL_AGENT );
+				config_receiver.register_default_symbol ( CONF_GLOBAL_PARAMETERS );
+				/*
+				 * Subscribing to control symbols:
+				 */
+				for ( String symbol : config_receiver.get_default_symbols ( ) )
+				{
+					PdBase.subscribe ( symbol );
+				}
+				PdBase.setReceiver ( config_receiver );
+				try 
+				{
+					patch = PdBase.openPatch ( pd_patch_path );
+					PdBase.pollPdMessageQueue ( );
+				}
+				catch ( IOException e ) 
+				{
+					e.printStackTrace ( );
+					System.exit ( -1 );
+				}
+				i++;
+			}
+			else if ( args[ i ].equals ( "-nogui" ) ) 
+			{
 				nogui = true; 
 			}
 		}
@@ -610,13 +984,28 @@ public class Loader {
         //  Loader.startJADE and Loader.loadSystem must be able to extract the
         //  configuration parameters from Pure Data patches, and define patches
         //  as components of Agents, e.g. Reasonings.
-		if (xml_filename != null) {
+		if ( xml_filename != null ) 
+		{
 			System.out.println("------------ Loading Ensemble ------------");
 			Element elem_ensemble = Loader.loadXMLFile(xml_filename).getDocumentElement();
 			Loader.startJADE(elem_ensemble, nogui);
 			Loader.loadSystem(elem_ensemble);
-		} else {
-			System.out.println("Loader usage: java Loader [-f <ensemble.properties> [-nogui]]");
+		}
+		else if ( pd_patch_path != null )
+		{
+			/*
+			 * Process configuration Messages:
+			 */
+			Loader.startJADE ( config_receiver, nogui );
+			Loader.loadSystem ( config_receiver );
+			/*
+			 * Close the patch & Pd, so we can restart Pd later:
+			 */
+			PdBase.closePatch ( patch );
+		}
+		else 
+		{
+			System.out.println("Loader usage: java Loader [-f <ensemble.properties> | [ [ -p | --patch ] <patch.pd> ] ] [ -nogui ]");
 			System.exit(-1);
 		}
 		
