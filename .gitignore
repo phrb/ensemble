@@ -1,0 +1,39 @@
+# Swap and Stuff #
+*.~
+*.out
+*.swp
+# Ignoring Media files #
+*.wav
+*.png
+media/
+# Ignoring Java Compiles #
+*.class
+bin/
+# Package Files #
+#*.jar Needed for libs #
+#*.so                  #
+*.war
+*.ear
+# Ignoring Eclipse files #
+.metadata/
+.settings/
+.project
+.metadata
+tmp/
+*.tmp
+*.bak
+*~.nib
+local.properties
+.classpath
+.loadpath
+*.log
+APDescription.txt
+COPYING
+logging.properties
+MTPs-Main-Container.txt
+# External tool builders
+.externalToolBuilders/
+# Ignoring Compiles and Examples #
+musicalagents/
+# Ignoring Documentation (Available in External Links) #
+javadoc/

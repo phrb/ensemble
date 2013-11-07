@@ -43,7 +43,6 @@ import java.util.Properties;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.puredata.core.PdBase;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -53,14 +52,18 @@ import ensemble.EnvironmentAgent;
 import ensemble.MusicalAgent;
 import ensemble.Parameters;
 
-import ensemble.apps.pd_testing.Pd_Agent_Class_Information;
-import ensemble.apps.pd_testing.Pd_Agent_Instance;
 /*
- * Provisory import of Pure Data utilities:
+ * Importing Pure Data utilities:
+ * TODO: Move Pd-related classes
+ * to ensemble.tools or related.
+ * 
  */
 import ensemble.apps.pd_testing.Pd_Constants;
 import ensemble.apps.pd_testing.Pd_Message;
 import ensemble.apps.pd_testing.Pd_Receiver;
+import org.puredata.core.PdBase;
+import ensemble.apps.pd_testing.Pd_Agent_Class_Information;
+import ensemble.apps.pd_testing.Pd_Agent_Instance;
 
 
 // TODO: Auto-generated Javadoc
@@ -140,7 +143,16 @@ public class Loader {
 	
 	private static final String CONF_WORLD = "WORLD";
 	private static final String CONF_LAW = "LAW";
-
+	
+	private static final String pd_arg = "arg";
+	private static final String pd_value = "value";
+	private static final String pd_environment = "environment";
+	private static final String pd_class = "class";
+	private static final String pd_add_agent = "add_agent";
+	private static final String pd_new_agent_type = "new_agent_type";
+	private static final String pd_global = "global";
+	private static final String pd_name = "name";
+	private static final String pd_world = "world";
 
 	
 //	private Logger logger = Logger.getLogger("");
@@ -216,7 +228,7 @@ public class Loader {
 		jade_profile.setParameter ( Constants.SCHEDULER_THREADS, "5" );
 		for ( Pd_Message message : config_receiver.get_messages ( ) )
 		{
-			if ( message.get_source ( ).equals ( CONF_GLOBAL_PARAMETERS ) )
+			if ( message.get_source ( ).equals ( pd_global ) )
 			{
 				if ( message.get_symbol ( ).equals ( Constants.CLOCK_MODE ) )
 				{
@@ -311,24 +323,26 @@ public class Loader {
 		for ( int i = offset; i < attributes.length; i++ ) 
 		{
 			/* 
-			 * Checking malformed arguments:
+			 * Checking mal-formed arguments:
+			 * 
+			 * TODO: Change accepted message syntax.
 			 */
-			if ( ! ( attributes[ i ].equals ( CONF_ARG ) ) || ! ( attributes[ i + 1 ].equals ( CONF_NAME ) ) || 
-				 ! ( attributes[ i + 3 ].equals ( CONF_VALUE ) ))
+			if ( ! ( attributes[ i ].equals ( pd_arg ) ) || 
+				 ! ( attributes[ i + 2 ].equals ( pd_value ) ))
 			{
 				break;
 			}
 			else
 			{
-				if ( attributes[ i + 4 ] instanceof java.lang.Float )
+				if ( attributes[ i + 3 ] instanceof java.lang.Float )
 				{
-					parameters.put ( ( String ) attributes[ i + 2 ], String.valueOf( ( Float ) attributes[ i + 4 ] ) );
+					parameters.put ( ( String ) attributes[ i + 1 ], String.valueOf( ( Float ) attributes[ i + 3 ] ) );
 				}
-				else if ( attributes[ i + 4 ] instanceof java.lang.String )
+				else if ( attributes[ i + 3 ] instanceof java.lang.String )
 				{
-					parameters.put ( ( String ) attributes[ i + 2 ], attributes[ i + 4 ] );
+					parameters.put ( ( String ) attributes[ i + 1 ], attributes[ i + 3 ] );
 				}
-				i += 4;
+				i += 3;
 			}
 		}
 		return parameters;
@@ -683,13 +697,13 @@ public class Loader {
 			/* 
 			 * Loading Environment Agent:
 			 */
-			if ( message.get_source ( ).equals ( CONF_ENVIRONMENT_AGENT_CLASS ) )
+			if ( message.get_source ( ).equals ( pd_environment ) )
 			{
 				/*
 				 * Checking for the class, and parameters:
 				 */
 				has_environment = true;
-				if ( message.get_symbol ( ).equals ( CONF_CLASS ) )
+				if ( message.get_symbol ( ).equals ( pd_class ) )
 				{
 					environment_agent_class_name = ( String ) message.get_arguments ( )[ 0 ];
 					if ( ! ( environment_agent_class_name.equals( "ensemble.EnvironmentAgent" ) ) )
@@ -707,7 +721,7 @@ public class Loader {
 				/*
 				 * Checking for a world class and world parameters:
 				 */
-				else if ( message.get_symbol ( ).equals ( CONF_WORLD ) )
+				else if ( message.get_symbol ( ).equals ( pd_world ) )
 				{
 					world_class_name = ( String ) message.get_arguments ( )[ 0 ];
 					if ( ! ( world_class_name.equals( "ensemble.world.World" ) ) )
@@ -758,7 +772,7 @@ public class Loader {
 			/*
 			 * Loading a Musical Agent class:
 			 */
-			else if ( message.get_source ( ).equals ( CONF_MUSICAL_AGENT_CLASS ) )
+			else if ( message.get_source ( ).equals ( pd_new_agent_type ) )
 			{
 				String argument;
 				
@@ -766,12 +780,12 @@ public class Loader {
 				Parameters new_class_parameters = null;
 				String new_name = null;
 				
-				if ( message.get_symbol ( ).equals ( CONF_CLASS ) )
+				if ( message.get_symbol ( ).equals ( pd_class ) )
 				{
 					new_class_name = ( String ) message.get_arguments ( )[ 0 ];
 					argument = ( String ) message.get_arguments ( )[ 1 ];
 					argument_position += 2;
-					if ( argument.equals ( CONF_NAME ) )
+					if ( argument.equals ( pd_name ) )
 					{
 						new_name = ( String ) message.get_arguments ( )[ 2 ];
 						argument_position += 1;
@@ -795,7 +809,7 @@ public class Loader {
 			/*
 			 * Instance of Musical Agent:
 			 */
-			else if ( message.get_source ( ).equals ( CONF_MUSICAL_AGENT ) )
+			else if ( message.get_source ( ).equals ( pd_add_agent ) )
 			{
 				String argument;
 				
@@ -803,12 +817,12 @@ public class Loader {
 				Parameters new_class_parameters = null;
 				String new_name = null;
 				
-				if ( message.get_symbol ( ).equals ( CONF_CLASS ) )
+				if ( message.get_symbol ( ).equals ( pd_class ) )
 				{
 					new_class_name = ( String ) message.get_arguments ( )[ 0 ];
 					argument = ( String ) message.get_arguments ( )[ 1 ];
 					argument_position += 1;
-					if ( argument.equals ( CONF_NAME ) )
+					if ( argument.equals ( pd_name ) )
 					{
 						new_name = ( String ) message.get_arguments ( )[ 2 ];
 						argument_position += 1;
@@ -951,10 +965,10 @@ public class Loader {
 				/* 
 				 * Registering config symbols to pd receiver:
 				 */
-				config_receiver.register_default_symbol ( CONF_ENVIRONMENT_AGENT_CLASS );
-				config_receiver.register_default_symbol ( CONF_MUSICAL_AGENT_CLASS );
-				config_receiver.register_default_symbol ( CONF_MUSICAL_AGENT );
-				config_receiver.register_default_symbol ( CONF_GLOBAL_PARAMETERS );
+				config_receiver.register_default_symbol ( pd_environment );
+				config_receiver.register_default_symbol ( pd_new_agent_type );
+				config_receiver.register_default_symbol ( pd_add_agent );
+				config_receiver.register_default_symbol ( pd_global );
 				/*
 				 * Subscribing to control symbols:
 				 */
