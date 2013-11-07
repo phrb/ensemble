@@ -1,17 +1,17 @@
-#N canvas 0 48 1920 1032 10;
-#X obj 543 181 loadbang;
-#X msg 624 309 \; GLOBAL_PARAMETERS PROCESS_MODE BATCH;
-#X msg 611 343 \; GLOBAL_PARAMETERS CLOCK_MODE CLOCK_USER;
-#X msg 703 262 \; ENVIRONMENT_AGENT_CLASS WORLD ensemble.apps.pd_testing.Pd_World
+#N canvas 0 48 1280 752 10;
+#X obj 543 103 loadbang;
+#X msg 648 200 \; environment world ensemble.apps.pd_testing.Pd_World
 ;
-#X msg 722 191 \; ENVIRONMENT_AGENT_CLASS CLASS ensemble.apps.pd_testing.Pd_Environment
-ARG NAME AGENTS VALUE 1;
-#X msg 593 397 \; MUSICAL_AGENT_CLASS CLASS ensemble.apps.pd_testing.Pd_Agent
-NAME AGENT1 ARG NAME PATCH VALUE ../pd/ensemble_testpatch1.pd;
-#X msg 553 456 \; MUSICAL_AGENT CLASS AGENT1 NAME teste;
-#X connect 0 0 4 0;
-#X connect 0 0 3 0;
+#X msg 690 252 \; global PROCESS_MODE BATCH;
+#X msg 680 290 \; global CLOCK_MODE CLOCK_USER;
+#X msg 630 403 \; add_agent class agent1 name simple_agent;
+#X msg 669 327 \; new_agent_type class ensemble.apps.pd_testing.Pd_Agent
+name agent1 arg PATCH value ../pd/ensemble_testpatch1.pd;
+#X msg 668 150 \; environment class ensemble.apps.pd_testing.Pd_Environment
+arg AGENTS value 1;
+#X connect 0 0 6 0;
 #X connect 0 0 1 0;
 #X connect 0 0 2 0;
+#X connect 0 0 3 0;
 #X connect 0 0 5 0;
-#X connect 0 0 6 0;
+#X connect 0 0 4 0;
