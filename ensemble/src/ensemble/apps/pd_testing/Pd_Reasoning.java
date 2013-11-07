@@ -34,8 +34,6 @@ public class Pd_Reasoning extends Reasoning
 	 */
 	private Actuator speaker;
 	private Memory speaker_memory;
-	private Control_Symbols control_symbols;
-	private Control_Symbols user_control_symbols;
 	/*
 	 * Buffers and constants for
 	 * initialising Pd.
@@ -83,13 +81,13 @@ public class Pd_Reasoning extends Reasoning
     		if ( message.get_source ( ).equals ( Pd_Constants.SUBSCRIPTION ) )
     		{
 				System.err.println ( "PURE_DATA: REGISTERED_USER_SYMBOL: " + message.get_symbol ( ) );
-    			user_control_symbols.register_symbol( message.get_symbol ( ) );
+    			receiver.register_symbol( message.get_symbol ( ) );
 				PdBase.subscribe ( message.get_symbol ( ) );
     		}
     		else if ( message.get_source ( ).equals ( Pd_Constants.UNSUBSCRIPTION ) )
     		{
 				System.err.println ( "PURE_DATA: DEREGISTERED_USER_SYMBOL: " + message.get_symbol ( ) );
-    			user_control_symbols.deregister_symbol ( message.get_symbol ( ) );
+    			receiver.deregister_symbol ( message.get_symbol ( ) );
 				PdBase.unsubscribe ( message.get_symbol ( ) );
     		}
     	}
@@ -151,17 +149,21 @@ public class Pd_Reasoning extends Reasoning
     	ArrayList< String > bangs = receiver.get_bangs ( );
     	for ( Pd_Message message : messages )
     	{
-			for ( String symbol : user_control_symbols.get_list ( ) )
+			for ( String symbol : receiver.get_user_symbols ( ) )
 			{				
 				if ( message.get_source ( ).equals( symbol ) )
 				{
 					System.err.println ( "PURE_DATA: MESSAGE: SRC=" + message.get_source ( ) + " SYM=" + message.get_symbol ( ) );
+					for ( Object argument : message.get_arguments ( ) )
+					{
+						System.err.println ( "\tARGUMENT: " + argument );	
+					}
 				}
 			}
     	}
     	for ( Pd_Float sent_float : floats )
     	{
-			for ( String symbol : user_control_symbols.get_list ( ) )
+			for ( String symbol : receiver.get_user_symbols ( ) )
 			{
 				if ( sent_float.get_source ( ).equals( symbol ) )
 				{
@@ -171,7 +173,7 @@ public class Pd_Reasoning extends Reasoning
     	}
     	for ( String sent_bang : bangs )
     	{
-			for ( String symbol : user_control_symbols.get_list ( ) )
+			for ( String symbol : receiver.get_user_symbols ( ) )
 			{
 				if ( sent_bang.equals( symbol ) )
 				{
@@ -191,16 +193,6 @@ public class Pd_Reasoning extends Reasoning
 	public boolean init ( ) 
 	{
 		current_instant = Pd_Constants.START_INSTANT;
-		user_control_symbols = new Control_Symbols ( );
-		control_symbols = new Control_Symbols ( );
-		control_symbols.register_symbol ( Pd_Constants.AUDIO_TOGGLE );
-		control_symbols.register_symbol ( Pd_Constants.AUDIO_ON );
-		control_symbols.register_symbol ( Pd_Constants.AUDIO_OFF );
-		control_symbols.register_symbol ( Pd_Constants.TICK );
-		control_symbols.register_symbol ( Pd_Constants.SECONDS );
-		control_symbols.register_symbol ( Pd_Constants.MUTE );
-		control_symbols.register_symbol ( Pd_Constants.SUBSCRIPTION );
-		control_symbols.register_symbol ( Pd_Constants.UNSUBSCRIPTION );
 		/*
 		 * Pd Setup
 		 * 
@@ -212,10 +204,21 @@ public class Pd_Reasoning extends Reasoning
 		PdBase.setReceiver ( receiver );
 
 		dummy_pd_input = new short[ Pd_Constants.INPUT_CHANNELS ];
+		/* 
+		 * Registering control symbols:
+		 */
+		receiver.register_default_symbol( Pd_Constants.AUDIO_TOGGLE );
+		receiver.register_default_symbol ( Pd_Constants.AUDIO_ON );
+		receiver.register_default_symbol ( Pd_Constants.AUDIO_OFF );
+		receiver.register_default_symbol ( Pd_Constants.TICK );
+		receiver.register_default_symbol ( Pd_Constants.SECONDS );
+		receiver.register_default_symbol ( Pd_Constants.MUTE );
+		receiver.register_default_symbol ( Pd_Constants.SUBSCRIPTION );
+		receiver.register_default_symbol ( Pd_Constants.UNSUBSCRIPTION );
 		/*
 		 * Subscribing to known control symbols.
 		 */
-		for ( String symbol : control_symbols.get_list ( ) )
+		for ( String symbol : receiver.get_default_symbols ( ) )
 		{
 			PdBase.subscribe ( symbol );
 		}
@@ -224,12 +227,12 @@ public class Pd_Reasoning extends Reasoning
 		 */
 		for ( int i = 0; i < Pd_Constants.BANG_OUTLETS; i++ )
 		{
-			user_control_symbols.register_symbol ( Pd_Constants.BANG + i );
+			receiver.register_symbol ( Pd_Constants.BANG + i );
 			PdBase.subscribe(  Pd_Constants.BANG + i );
 		}
 		for ( int i = 0; i < Pd_Constants.FLOAT_OUTLETS; i++ )
 		{
-			user_control_symbols.register_symbol ( Pd_Constants.FLOAT + i );
+			receiver.register_symbol ( Pd_Constants.FLOAT + i );
 			PdBase.subscribe(  Pd_Constants.FLOAT + i );
 		}
 		/*
@@ -317,29 +320,5 @@ public class Pd_Reasoning extends Reasoning
 	{
 		speaker = ( Pd_Speaker ) event_handler;
 		speaker_memory = getAgent ( ).getKB ( ).getMemory ( speaker.getComponentName ( ) );
-	}
-	/*
-	 * Class to manage subscribed symbols.
-	 * 
-	 */
-	public final class Control_Symbols
-	{
-		ArrayList< String > symbols;
-		public Control_Symbols ( )
-		{
-			symbols = new ArrayList< String > ( );
-		}
-		public void register_symbol ( String new_symbol )
-		{
-			symbols.add ( new_symbol );
-		}
-		public void deregister_symbol ( String target )
-		{
-			symbols.remove ( target );
-		}
-		public ArrayList< String > get_list ( )
-		{
-			return symbols;
-		}
 	}
 }
