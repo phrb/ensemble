@@ -1,4 +1,4 @@
-<ENSEMBLE NAME="Hello_World">
+'<ENSEMBLE NAME="Hello_World">
     <GLOBAL_PARAMETERS CLOCK_MODE="CLOCK_USER" PROCESS_MODE="BATCH" OSC="FALSE" />
     <!-- ********** ENVIRONMENT AGENT ********** -->
     <ENVIRONMENT_AGENT_CLASS NAME="ENVIRONMENT" CLASS="ensemble.apps.emitting_sound.ES_Environment">

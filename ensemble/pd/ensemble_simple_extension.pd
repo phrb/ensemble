@@ -1,17 +1,18 @@
-#N canvas 0 48 1920 1032 10;
+#N canvas 0 47 1920 1033 10;
 #X obj 490 143 loadbang;
-#X msg 593 199 \; ENVIRONMENT_AGENT_CLASS CLASS ensemble.apps.simple_extension.Simple_Environment
+#X msg 641 188 \; environment class ensemble.apps.simple_extension.Simple_Environment
 ;
-#X msg 575 247 \; ENVIRONMENT_AGENT_CLASS WORLD ensemble.apps.simple_extension.Simple_World
+#X msg 630 244 \; environment world ensemble.apps.simple_extension.Simple_World
 ;
-#X msg 557 296 \; MUSICAL_AGENT_CLASS CLASS ensemble.apps.simple_extension.Simple_Agent
-NAME AGENT;
-#X msg 527 345 \; MUSICAL_AGENT CLASS AGENT NAME creature;
-#X msg 468 380 \; GLOBAL_PARAMETERS PROCESS_MODE BATCH;
-#X msg 435 415 \; GLOBAL_PARAMETERS CLOCK_MODE CLOCK_USER;
+#X msg 499 416 \; global PROCESS_MODE BATCH;
+#X msg 468 459 \; global CLOCK_MODE CLOCK_USER;
+#X msg 595 301 \; new_agent_type class ensemble.apps.simple_extension.Simple_Agent
+name simple_agent;
+#X msg 570 375 \; add_agent class simple_agent name simple_simpleton_0
+;
 #X connect 0 0 1 0;
 #X connect 0 0 2 0;
-#X connect 0 0 3 0;
-#X connect 0 0 4 0;
 #X connect 0 0 5 0;
 #X connect 0 0 6 0;
+#X connect 0 0 3 0;
+#X connect 0 0 4 0;

@@ -10,5 +10,4 @@ public class Pd_Speaker extends Actuator
 		setEventType ( "SOUND" );
 		return true;		
 	}
-
 }
