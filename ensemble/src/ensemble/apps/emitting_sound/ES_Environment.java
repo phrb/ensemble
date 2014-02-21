@@ -20,7 +20,7 @@ public class ES_Environment extends EnvironmentAgent
 	@Override
 	public boolean configure ( )
 	{
-		this.addEventServer ( "ensemble.apps.emitting_sound.ES_SoundEventServer", new Parameters ( ) );
+		this.addEventServer ( "ensemble.apps.emitting_sound.ES_AudioEventServer", new Parameters ( ) );
 		System.err.println ( "Environment Says: Configured!" );
 		return true;
 	}
