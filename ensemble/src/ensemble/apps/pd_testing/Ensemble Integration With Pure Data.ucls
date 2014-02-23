@@ -6,13 +6,13 @@
     <position height="-1" width="-1" x="890" y="365"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
-      <attributes public="false" package="true" protected="false" private="false" static="true"/>      
+      <attributes public="false" package="false" protected="false" private="false" static="true"/>      
       <operations public="true" package="true" protected="true" private="false" static="true"/>    
     </display>  
   </class>  
   <class id="2" language="java" name="ensemble.apps.pd_testing.Pd_Agent_Class_Information" project="ensemble" 
     file="/ensemble/src/ensemble/apps/pd_testing/Pd_Agent_Class_Information.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="766" y="127"/>    
+    <position height="-1" width="-1" x="749" y="128"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -30,10 +30,10 @@
   </class>  
   <class id="4" language="java" name="ensemble.Parameters" project="ensemble" 
     file="/ensemble/src/ensemble/Parameters.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="619" y="400"/>    
+    <position height="-1" width="-1" x="558" y="388"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
-      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <attributes public="false" package="false" protected="false" private="false" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
@@ -84,7 +84,7 @@
   </class>  
   <class id="10" language="java" name="ensemble.apps.pd_testing.Pd_AudioEventServer" project="ensemble" 
     file="/ensemble/src/ensemble/apps/pd_testing/Pd_AudioEventServer.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1234" y="109"/>    
+    <position height="-1" width="-1" x="1242" y="109"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
       <attributes public="false" package="false" protected="false" private="false" static="true"/>      
@@ -105,7 +105,7 @@
     <position height="-1" width="-1" x="1354" y="352"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
-      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <attributes public="false" package="false" protected="false" private="false" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
@@ -120,43 +120,55 @@
   </class>  
   <interface id="14" language="java" name="org.puredata.core.PdReceiver" project="ensemble" 
     file="/home/pbruel/ensemble_git/ensemble/lib/libpd.jar" binary="true" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1169" y="833"/>    
+    <position height="-1" width="-1" x="1164" y="649"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
-      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <attributes public="false" package="false" protected="false" private="false" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </interface>  
-  <realization id="15">    
-    <end type="SOURCE" refId="9"/>    
-    <end type="TARGET" refId="14"/>  
-  </realization>  
-  <association id="16">    
-    <end type="SOURCE" refId="1" navigable="false">      
-      <attribute id="17" name="receiver">        
-        <position height="16" width="48" x="1214" y="-260"/>      
+  <class id="15" language="java" name="ensemble.EventServer" project="ensemble" 
+    file="/ensemble/src/ensemble/EventServer.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="1388" y="44"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="false" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="true"/>      
+      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="16" language="java" name="ensemble.MusicalAgentComponent" project="ensemble" 
+    file="/ensemble/src/ensemble/MusicalAgentComponent.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="1033" y="-19"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="true"/>      
+      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <association id="17">    
+    <end type="SOURCE" refId="10" navigable="false">      
+      <attribute id="18" name="world">        
+        <position height="16" width="36" x="1129" y="104"/>      
       </attribute>      
-      <multiplicity id="18" minimum="0" maximum="1"/>    
+      <multiplicity id="19" minimum="0" maximum="1">        
+        <position height="14" width="23" x="1137" y="123"/>      
+      </multiplicity>    
     </end>    
-    <end type="TARGET" refId="5" navigable="true"/>    
+    <end type="TARGET" refId="12" navigable="true"/>    
     <display labels="false" multiplicity="false"/>  
   </association>  
-  <generalization id="19">    
+  <generalization id="20">    
+    <end type="SOURCE" refId="6"/>    
+    <end type="TARGET" refId="16"/>  
+  </generalization>  
+  <generalization id="21">    
     <end type="SOURCE" refId="1"/>    
     <end type="TARGET" refId="6"/>  
   </generalization>  
-  <association id="20">    
-    <end type="SOURCE" refId="3" navigable="false">      
-      <attribute id="21" name="arguments">        
-        <position height="16" width="60" x="437" y="-230"/>      
-      </attribute>      
-      <multiplicity id="22" minimum="0" maximum="1">        
-        <position height="14" width="23" x="459" y="-205"/>      
-      </multiplicity>    
-    </end>    
-    <end type="TARGET" refId="4" navigable="true"/>    
-    <display labels="false" multiplicity="false"/>  
-  </association>  
+  <generalization id="22">    
+    <end type="SOURCE" refId="10"/>    
+    <end type="TARGET" refId="15"/>  
+  </generalization>  
   <association id="23">    
     <end type="SOURCE" refId="5" navigable="false">      
       <attribute id="24" name="floats">        
@@ -169,54 +181,68 @@
     <end type="TARGET" refId="7" navigable="true"/>    
     <display labels="false" multiplicity="false"/>  
   </association>  
-  <association id="26">    
+  <realization id="26">    
+    <end type="SOURCE" refId="9"/>    
+    <end type="TARGET" refId="14"/>  
+  </realization>  
+  <association id="27">    
+    <end type="SOURCE" refId="2" navigable="false">      
+      <attribute id="28" name="arguments">        
+        <position height="16" width="60" x="646" y="-255"/>      
+      </attribute>      
+      <multiplicity id="29" minimum="0" maximum="1">        
+        <position height="14" width="23" x="657" y="-236"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="4" navigable="true"/>    
+    <display labels="false" multiplicity="false"/>  
+  </association>  
+  <generalization id="30">    
+    <end type="SOURCE" refId="5"/>    
+    <end type="TARGET" refId="9"/>  
+  </generalization>  
+  <association id="31">    
     <end type="SOURCE" refId="5" navigable="false">      
-      <attribute id="27" name="messages"/>      
-      <multiplicity id="28" minimum="0" maximum="2147483647">        
+      <attribute id="32" name="messages"/>      
+      <multiplicity id="33" minimum="0" maximum="2147483647">        
         <position height="14" width="21" x="1342" y="-39"/>      
       </multiplicity>    
     </end>    
     <end type="TARGET" refId="8" navigable="true"/>    
     <display labels="false" multiplicity="false"/>  
   </association>  
-  <generalization id="29">    
-    <end type="SOURCE" refId="5"/>    
-    <end type="TARGET" refId="9"/>  
-  </generalization>  
-  <association id="30">    
+  <association id="34">    
+    <end type="SOURCE" refId="1" navigable="false">      
+      <attribute id="35" name="receiver">        
+        <position height="16" width="48" x="1214" y="-260"/>      
+      </attribute>      
+      <multiplicity id="36" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="5" navigable="true"/>    
+    <display labels="false" multiplicity="false"/>  
+  </association>  
+  <association id="37">    
+    <end type="SOURCE" refId="3" navigable="false">      
+      <attribute id="38" name="arguments">        
+        <position height="16" width="60" x="376" y="-242"/>      
+      </attribute>      
+      <multiplicity id="39" minimum="0" maximum="1">        
+        <position height="14" width="23" x="398" y="-217"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="4" navigable="true"/>    
+    <display labels="false" multiplicity="false"/>  
+  </association>  
+  <association id="40">    
     <end type="SOURCE" refId="10" navigable="false">      
-      <attribute id="31" name="events">        
+      <attribute id="41" name="events">        
         <position height="16" width="43" x="1057" y="2"/>      
       </attribute>      
-      <multiplicity id="32" minimum="0" maximum="2147483647">        
+      <multiplicity id="42" minimum="0" maximum="2147483647">        
         <position height="14" width="21" x="1049" y="30"/>      
       </multiplicity>    
     </end>    
     <end type="TARGET" refId="11" navigable="true"/>    
-    <display labels="false" multiplicity="false"/>  
-  </association>  
-  <association id="33">    
-    <end type="SOURCE" refId="10" navigable="false">      
-      <attribute id="34" name="world">        
-        <position height="16" width="36" x="1129" y="104"/>      
-      </attribute>      
-      <multiplicity id="35" minimum="0" maximum="1">        
-        <position height="14" width="23" x="1137" y="123"/>      
-      </multiplicity>    
-    </end>    
-    <end type="TARGET" refId="12" navigable="true"/>    
-    <display labels="false" multiplicity="false"/>  
-  </association>  
-  <association id="36">    
-    <end type="SOURCE" refId="2" navigable="false">      
-      <attribute id="37" name="arguments">        
-        <position height="16" width="60" x="707" y="-243"/>      
-      </attribute>      
-      <multiplicity id="38" minimum="0" maximum="1">        
-        <position height="14" width="23" x="718" y="-224"/>      
-      </multiplicity>    
-    </end>    
-    <end type="TARGET" refId="4" navigable="true"/>    
     <display labels="false" multiplicity="false"/>  
   </association>  
   <classifier-display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
