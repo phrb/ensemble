@@ -1,17 +1,28 @@
 #N canvas 0 47 1920 1033 10;
-#X obj 543 103 loadbang;
-#X msg 648 200 \; environment world ensemble.apps.pd_testing.Pd_World
+#X obj 528 66 loadbang;
+#X msg 733 161 \; environment world ensemble.apps.pd_testing.Pd_World
 ;
-#X msg 690 252 \; global PROCESS_MODE BATCH;
-#X msg 680 290 \; global CLOCK_MODE CLOCK_USER;
-#X msg 630 403 \; add_agent class agent1 name simple_agent;
-#X msg 669 327 \; new_agent_type class ensemble.apps.pd_testing.Pd_Agent
-name agent1 arg PATCH value ../pd/ensemble_testpatch1.pd;
-#X msg 668 150 \; environment class ensemble.apps.pd_testing.Pd_Environment
-arg AGENTS value 1;
-#X connect 0 0 6 0;
+#X msg 732 206 \; global PROCESS_MODE BATCH;
+#X msg 696 253 \; global CLOCK_MODE CLOCK_USER;
+#X msg 686 295 \; new_agent_type class ensemble.apps.pd_testing.Pd_Agent
+name agent1 arg PATCH value ../pd/ensemble_testpatch1.pd arg ACTUATOR_0
+value ensemble.apps.pd_testing.Pd_Actuator;
+#X msg 668 358 \; new_agent_type class ensemble.apps.pd_testing.Pd_Agent
+name agent2 arg PATCH value ../pd/ensemble_testpatch2.pd arg ACTUATOR_0
+value ensemble.apps.pd_testing.Pd_Actuator;
+#X msg 618 425 \; new_agent_type class ensemble.apps.pd_testing.Pd_Agent
+name agent3 arg PATCH value ../pd/ensemble_testpatch3.pd arg ACTUATOR_0
+value ensemble.apps.pd_testing.Pd_Actuator;
+#X msg 585 496 \; add_agent class agent2 name simple_agent2;
+#X msg 564 544 \; add_agent class agent3 name simple_agent3;
+#X msg 767 102 \; environment class ensemble.apps.pd_testing.Pd_Environment
+arg AGENTS value 2;
+#X connect 0 0 9 0;
 #X connect 0 0 1 0;
 #X connect 0 0 2 0;
 #X connect 0 0 3 0;
-#X connect 0 0 5 0;
 #X connect 0 0 4 0;
+#X connect 0 0 7 0;
+#X connect 0 0 5 0;
+#X connect 0 0 6 0;
+#X connect 0 0 8 0;

@@ -21,7 +21,9 @@ public class Pd_Agent extends MusicalAgent
 	@Override
 	public boolean configure ( )
 	{
-		reasoning_patch = parameters.get( Pd_Constants.PATCH_ARGUMENT );
+		/* TODO: Dinamically load multiple patches
+		 */
+		reasoning_patch = parameters.get ( Pd_Constants.PATCH_ARGUMENT );
 		if ( reasoning_patch == null )
 		{
 			System.err.print ( "PURE_DATA: NO_PATCH_ERROR\n" );
@@ -29,13 +31,30 @@ public class Pd_Agent extends MusicalAgent
 		}
 		else
 		{
+			int actuator_index = 0;
+			int sensor_index = 0;
+			
+			String sensor_class = parameters.get( "SENSOR" + "_" + sensor_index );
+			String actuator_class = parameters.get ( "ACTUATOR" + "_" + actuator_index );
+			
 			Parameters reasoning_parameters = new Parameters ( );
 			reasoning_parameters.put( Pd_Constants.PATCH_ARGUMENT, reasoning_patch );
 			/*
 			 * Desired Components are added here.
 			 */
 			this.addComponent ( "Reasoning", "ensemble.apps.pd_testing.Pd_Reasoning", reasoning_parameters );
-			this.addComponent ( "Speaker", "ensemble.apps.pd_testing.Pd_Speaker", new Parameters ( ) );
+			while ( actuator_class != null )
+			{
+				this.addComponent ( "Actuator" + "_" + actuator_index, actuator_class, new Parameters ( ) );
+				actuator_index += 1;
+				actuator_class = parameters.get ( "ACTUATOR" + "_" + actuator_index );
+			}
+			while ( sensor_class != null )
+			{
+				this.addComponent ( "Sensor" + "_" + sensor_index, sensor_class, new Parameters ( ) );
+				sensor_index += 1;
+				sensor_class = parameters.get ( "SENSOR" + "_" + sensor_index );
+			}
 			return true;	
 		}
 	}

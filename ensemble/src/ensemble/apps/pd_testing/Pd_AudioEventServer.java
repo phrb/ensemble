@@ -23,7 +23,7 @@ public class Pd_AudioEventServer extends EventServer
 	@Override
 	public boolean configure ( )
 	{
-		setEventType ( "SOUND" );
+		setEventType ( Pd_Constants.EVENT_TYPE );
 		return true;
 	}
 	
@@ -107,7 +107,7 @@ public class Pd_AudioEventServer extends EventServer
 		if ( events.get( instant ) != null )
 		{
 			Pd_Audio_Buffer previous_event = events.get ( instant );
-			events.set( instant, new Pd_Audio_Buffer ( add_buffers ( samples, previous_event ), instant, "EVENT_SERVER" ) );
+			events.set ( instant, new Pd_Audio_Buffer ( add_buffers ( samples, previous_event ), instant, "EVENT_SERVER" ) );
 			samples_per_instant[ instant ] += 1;
 		}
 		else
@@ -132,14 +132,22 @@ public class Pd_AudioEventServer extends EventServer
 	@Override
 	public void processSense ( Event new_event ) 
 	{
-		Pd_Audio_Buffer event = ( Pd_Audio_Buffer ) new_event.objContent;
-		int instant = event.get_pd_time_tag ( ) % Pd_Constants.PD_EVENT_BUFFER_SIZE;
-		process_audio_buffer ( event, instant );
+		if ( new_event.oriAgentCompName.toUpperCase ( ).startsWith ( Pd_Constants.ACTUATOR_PREFIX ) )
+		{
+			Pd_Audio_Buffer event = ( Pd_Audio_Buffer ) new_event.objContent;
+			int instant = event.get_pd_time_tag ( ) % Pd_Constants.PD_EVENT_BUFFER_SIZE;
+			process_audio_buffer ( event, instant );
+		}
 	}
 	@Override
-	protected Parameters actuatorRegistered(String agentName, String actuatorName, Parameters userParam) throws Exception 
+	protected Parameters actuatorRegistered ( String agentName, String actuatorName, Parameters userParam ) throws Exception 
 	{
 		System.err.println ( "Pd_AudioEventServer Says: " + agentName + " registered: " + actuatorName );
+		return userParam;
+	}
+	protected Parameters sensorRegistered ( String agentName, String sensorName, Parameters userParam ) throws Exception 
+	{
+		System.err.println ( "Pd_AudioEventServer Says: " + agentName + " registered: " + sensorName );
 		return userParam;
 	}
 }
