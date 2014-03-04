@@ -20,6 +20,9 @@ public final class Pd_Constants
 	/*
 	 * Text:
 	 */
+	public static final String EVENT_TYPE = "AUDIO";
+	public static final String ACTUATOR_PREFIX = "ACTUATOR";
+	public static final String SENSOR_PREFIX = "SENSOR";
 	/* Arguments:
 	 * 
 	 */

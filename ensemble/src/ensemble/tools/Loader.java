@@ -328,7 +328,7 @@ public class Loader {
 			 * TODO: Change accepted message syntax.
 			 */
 			if ( ! ( attributes[ i ].equals ( pd_arg ) ) || 
-				 ! ( attributes[ i + 2 ].equals ( pd_value ) ))
+				 ! ( attributes[ i + 2 ].equals ( pd_value ) ) )
 			{
 				break;
 			}
@@ -771,6 +771,7 @@ public class Loader {
 			}
 			/*
 			 * Loading a Musical Agent class:
+			 * TODO: Configure agents by passing patches.
 			 */
 			else if ( message.get_source ( ).equals ( pd_new_agent_type ) )
 			{

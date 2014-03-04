@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import ensemble.*;
 import ensemble.apps.pd_testing.Pd_Constants;
@@ -29,11 +30,14 @@ import org.puredata.core.*;
 public class Pd_Reasoning extends Reasoning
 {
 	/* 
-	 * This reasoning will have its own
-	 * audio Actuator.
+	 * This reasoning will have references to Actuators
+	 * and Sensors from its Agent.
 	 */
-	private Actuator speaker;
-	private Memory speaker_memory;
+	private HashMap<String, Pd_Actuator> actuators = new HashMap<String, Pd_Actuator>( );
+	private HashMap<String, Memory> actuator_memories = new HashMap<String, Memory>( );
+	
+	private HashMap<String, Pd_Sensor> sensors = new HashMap<String, Pd_Sensor>( );
+	private HashMap<String, Memory> sensor_memories = new HashMap<String, Memory>( );
 	/*
 	 * Buffers and constants for
 	 * initialising Pd.
@@ -134,6 +138,9 @@ public class Pd_Reasoning extends Reasoning
 	private void process_pd_ticks ( int target_patch )
 	{
 		open_dsp ( target_patch );
+		/*
+		 * Only sends/receives to/from adc/dac.
+		 */
         PdBase.process ( ticks, dummy_pd_input, samples );
         shortBuf.rewind ( );
         shortBuf.put ( samples );
@@ -222,9 +229,6 @@ public class Pd_Reasoning extends Reasoning
 		{
 			PdBase.subscribe ( symbol );
 		}
-		/* TODO: Subscribe to float outlets dinamically?
-		 *       Subscribe to bang outlets dinamically? 
-		 */
 		for ( int i = 0; i < Pd_Constants.BANG_OUTLETS; i++ )
 		{
 			receiver.register_symbol ( Pd_Constants.BANG + i );
@@ -292,6 +296,11 @@ public class Pd_Reasoning extends Reasoning
 		
 		if ( pd_audio_output && ! ( mute_patch ) )
 		{
+			/*
+			 * TODO:
+			 * Add checking for other audio sources.
+			 * "~memory", "~actuator_x".
+			 */
 			output = raw_samples;
 		}
 		else
@@ -300,14 +309,14 @@ public class Pd_Reasoning extends Reasoning
 		}
 		try 
 		{
-			speaker_memory.writeMemory ( new Pd_Audio_Buffer ( output, current_instant, getAgent ( ).getAgentName ( ) ) );
+			actuator_memories.get ( "Actuator_0" ).writeMemory ( new Pd_Audio_Buffer ( output, current_instant, getAgent ( ).getAgentName ( ) ) );
 		} 
 		catch ( MemoryException e ) 
 		{
 			e.printStackTrace ( );
 		}
 		current_instant += 1;
-		speaker.act ( );
+		actuators.get( "Actuator_0" ).act ( );
 	}
 	/*
 	 * Called when an event handler is registered in the agent.
@@ -318,7 +327,15 @@ public class Pd_Reasoning extends Reasoning
 	@Override
 	protected void eventHandlerRegistered ( EventHandler event_handler ) 
 	{
-		speaker = ( Pd_Speaker ) event_handler;
-		speaker_memory = getAgent ( ).getKB ( ).getMemory ( speaker.getComponentName ( ) );
+		if ( event_handler instanceof Actuator )
+		{
+			actuators.put ( event_handler.getComponentName ( ), ( Pd_Actuator ) event_handler );
+			actuator_memories.put ( event_handler.getComponentName ( ), getAgent ( ).getKB ( ).getMemory ( event_handler.getComponentName ( ) ) );
+		}
+		else if ( event_handler instanceof Sensor )
+		{
+			sensors.put ( event_handler.getComponentName ( ), ( Pd_Sensor ) event_handler );
+			sensor_memories.put ( event_handler.getComponentName ( ), getAgent ( ).getKB ( ).getMemory ( event_handler.getComponentName ( ) ) );
+		}
 	}
 }
