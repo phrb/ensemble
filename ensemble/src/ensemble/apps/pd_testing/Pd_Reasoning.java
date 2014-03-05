@@ -334,8 +334,12 @@ public class Pd_Reasoning extends Reasoning
 		}
 		else if ( event_handler instanceof Sensor )
 		{
+			event_handler.registerListener( this );
 			sensors.put ( event_handler.getComponentName ( ), ( Pd_Sensor ) event_handler );
 			sensor_memories.put ( event_handler.getComponentName ( ), getAgent ( ).getKB ( ).getMemory ( event_handler.getComponentName ( ) ) );
 		}
+	}
+	public void newSense ( Sensor sourceSensor, double instant, double duration ) throws Exception 
+	{
 	}
 }

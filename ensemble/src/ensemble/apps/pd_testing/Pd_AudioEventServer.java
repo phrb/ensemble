@@ -132,12 +132,18 @@ public class Pd_AudioEventServer extends EventServer
 	@Override
 	public void processSense ( Event new_event ) 
 	{
-		if ( new_event.oriAgentCompName.toUpperCase ( ).startsWith ( Pd_Constants.ACTUATOR_PREFIX ) )
+		for ( String sensor : sensors.keySet ( ) )
 		{
-			Pd_Audio_Buffer event = ( Pd_Audio_Buffer ) new_event.objContent;
-			int instant = event.get_pd_time_tag ( ) % Pd_Constants.PD_EVENT_BUFFER_SIZE;
-			process_audio_buffer ( event, instant );
+			String[ ] target = sensor.split( ":" );
+			if ( ! ( target[ 0 ].equals ( new_event.oriAgentName ) ) )
+			{
+				addOutputEvent ( target[ 0 ], target[ 1 ], new_event );				
+			}
 		}
+		act ( );
+		Pd_Audio_Buffer event = ( Pd_Audio_Buffer ) new_event.objContent;
+		int instant = event.get_pd_time_tag ( ) % Pd_Constants.PD_EVENT_BUFFER_SIZE;
+		process_audio_buffer ( event, instant );
 	}
 	@Override
 	protected Parameters actuatorRegistered ( String agentName, String actuatorName, Parameters userParam ) throws Exception 
