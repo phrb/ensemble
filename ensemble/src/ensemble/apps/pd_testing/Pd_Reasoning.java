@@ -43,7 +43,7 @@ public class Pd_Reasoning extends Reasoning
 	 * initialising Pd.
 	 */
     private float seconds = Pd_Constants.DEFAULT_SECONDS;
-    /* Number of Pd ticks to get one second worth of samples. */
+    /* Number of Pd ticks to get one second worth of samples.*/
     private int ticks = ( int ) ( seconds * ( Pd_Constants.SAMPLE_RATE / ( float ) PdBase.blockSize ( ) ) );
     
 	private int patch;
@@ -141,7 +141,7 @@ public class Pd_Reasoning extends Reasoning
 		/*
 		 * Only sends/receives to/from adc/dac.
 		 */
-        PdBase.process ( ticks, dummy_pd_input, samples );
+		PdBase.process ( ticks, dummy_pd_input, samples );
         shortBuf.rewind ( );
         shortBuf.put ( samples );
         close_dsp ( target_patch );
@@ -154,10 +154,12 @@ public class Pd_Reasoning extends Reasoning
     	ArrayList< Pd_Message > messages = receiver.get_messages ( );
     	ArrayList< Pd_Float > floats = receiver.get_floats ( );
     	ArrayList< String > bangs = receiver.get_bangs ( );
-    	for ( Pd_Message message : messages )
-    	{
-			for ( String symbol : receiver.get_user_symbols ( ) )
-			{				
+    	ArrayList< String > user_symbols = receiver.get_user_symbols ( );
+    	int array_size;
+		for ( String symbol : user_symbols )
+		{		
+	    	for ( Pd_Message message : messages )
+	    	{
 				if ( message.get_source ( ).equals( symbol ) )
 				{
 					System.err.println ( "PURE_DATA: MESSAGE: SRC=" + message.get_source ( ) + " SYM=" + message.get_symbol ( ) );
@@ -166,28 +168,29 @@ public class Pd_Reasoning extends Reasoning
 						System.err.println ( "\tARGUMENT: " + argument );	
 					}
 				}
-			}
-    	}
-    	for ( Pd_Float sent_float : floats )
-    	{
-			for ( String symbol : receiver.get_user_symbols ( ) )
-			{
+	    	}
+	    	for ( Pd_Float sent_float : floats )
+	    	{
 				if ( sent_float.get_source ( ).equals( symbol ) )
 				{
 					System.err.println ( "PURE_DATA: FLOAT: SRC=" + sent_float.get_source ( ) + " NUM=" + sent_float.get_value ( ) );
 				}
-			}
-    	}
-    	for ( String sent_bang : bangs )
-    	{
-			for ( String symbol : receiver.get_user_symbols ( ) )
-			{
+	    	}
+	    	for ( String sent_bang : bangs )
+	    	{
 				if ( sent_bang.equals( symbol ) )
 				{
 					System.err.println ( "PURE_DATA: BANG: SRC=" + sent_bang );
 				}
-			}
-    	}
+	    	}
+	    	array_size = PdBase.arraySize ( symbol );
+    		if ( array_size > 0 )
+    		{
+    			System.err.println ( "Array Name: " + symbol + " Size: " + array_size );
+    			float[ ] samples = new float[ array_size ];
+    			PdBase.readArray ( samples, 0, symbol, 0, array_size );
+    		}
+		}
     }
 	/*
 	 * The init method will be called once every time this
@@ -309,6 +312,9 @@ public class Pd_Reasoning extends Reasoning
 		}
 		try 
 		{
+			/*
+			 * TODO: Check audio buffers from sensors.
+			 */
 			actuator_memories.get ( "Actuator_0" ).writeMemory ( new Pd_Audio_Buffer ( output, current_instant, getAgent ( ).getAgentName ( ) ) );
 		} 
 		catch ( MemoryException e ) 

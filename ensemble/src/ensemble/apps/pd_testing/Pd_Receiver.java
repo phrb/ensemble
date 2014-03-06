@@ -44,6 +44,15 @@ public class Pd_Receiver extends PdDispatcher
 	{
 		print ( "SRC=" + source + " SYM=" + symbol );
 	}
+	@Override
+	public void receiveList ( String source, Object... list )
+	{
+		print ( source );
+		for ( Object string : list )
+		{
+			print ( ( String ) string );
+		}
+	}
 	public ArrayList< Pd_Float > get_floats ( )
 	{
 		return floats;
