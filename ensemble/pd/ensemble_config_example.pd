@@ -17,14 +17,13 @@ value ensemble.apps.pd_testing.Pd_Actuator arg SENSOR_0 value ensemble.apps.pd_t
 name agent1 arg PATCH value ../pd/ensemble_testpatch1.pd arg ACTUATOR_0
 value ensemble.apps.pd_testing.Pd_Actuator arg SENSOR_0 value ensemble.apps.pd_testing.Pd_Sensor
 ;
-#X msg 609 554 \; add_agent class agent2 name simple_agent2;
 #X msg 577 601 \; add_agent class agent3 name simple_agent3;
+#X msg 610 554 \; add_agent class agent1 name simple_agent;
 #X connect 0 0 5 0;
 #X connect 0 0 1 0;
 #X connect 0 0 2 0;
 #X connect 0 0 3 0;
 #X connect 0 0 7 0;
-#X connect 0 0 8 0;
 #X connect 0 0 6 0;
 #X connect 0 0 4 0;
 #X connect 0 0 9 0;
