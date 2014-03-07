@@ -148,11 +148,14 @@ public class Loader {
 	private static final String pd_value = "value";
 	private static final String pd_environment = "environment";
 	private static final String pd_class = "class";
+	private static final String pd_type = "type";
 	private static final String pd_add_agent = "add_agent";
 	private static final String pd_new_agent_type = "new_agent_type";
 	private static final String pd_global = "global";
 	private static final String pd_name = "name";
 	private static final String pd_world = "world";
+	private static final String pd_patch = "patch";
+
 
 	
 //	private Logger logger = Logger.getLogger("");
@@ -327,22 +330,27 @@ public class Loader {
 			 * 
 			 * TODO: Change accepted message syntax.
 			 */
-			if ( ! ( attributes[ i ].equals ( pd_arg ) ) || 
-				 ! ( attributes[ i + 2 ].equals ( pd_value ) ) )
+			if ( attributes[ i ].equals ( pd_arg ) && 
+					attributes[ i + 2 ].equals ( pd_value ) )
 			{
-				break;
-			}
-			else
-			{
-				if ( attributes[ i + 3 ] instanceof java.lang.Float )
+				if ( attributes[ i + 3 ] instanceof Float )
 				{
 					parameters.put ( ( String ) attributes[ i + 1 ], String.valueOf( ( Float ) attributes[ i + 3 ] ) );
 				}
-				else if ( attributes[ i + 3 ] instanceof java.lang.String )
+				else if ( attributes[ i + 3 ] instanceof String )
 				{
 					parameters.put ( ( String ) attributes[ i + 1 ], attributes[ i + 3 ] );
 				}
 				i += 3;
+			}
+			else if ( attributes[ i ].equals ( pd_patch ) )
+			{
+				parameters.put( ( String ) attributes[ i ], ( String ) attributes[ i + 1 ] );
+				i += 1;
+			}
+			else
+			{
+				break;
 			}
 		}
 		return parameters;
@@ -774,36 +782,24 @@ public class Loader {
 			 * TODO: Configure agents by passing patches.
 			 */
 			else if ( message.get_source ( ).equals ( pd_new_agent_type ) )
-			{
-				String argument;
-				
+			{				
 				String new_class_name = null;
 				Parameters new_class_parameters = null;
 				String new_name = null;
-				
-				if ( message.get_symbol ( ).equals ( pd_class ) )
+
+				if ( message.get_symbol ( ).equals ( pd_name ) )
 				{
-					new_class_name = ( String ) message.get_arguments ( )[ 0 ];
-					argument = ( String ) message.get_arguments ( )[ 1 ];
-					argument_position += 2;
-					if ( argument.equals ( pd_name ) )
-					{
-						new_name = ( String ) message.get_arguments ( )[ 2 ];
-						argument_position += 1;
-					}
+					new_name = ( String ) message.get_arguments ( )[ 0 ];
+					argument_position += 1;
+					
+					new_class_name = Pd_Constants.PD_AGENT_CLASS;
 					new_class_parameters = readArguments ( message, argument_position );
-					/*
-					for ( String a : new_class_parameters.keySet ( ) )
-					{
-						System.err.println ( a + " " + new_class_parameters.get ( a ) );
-					}
-					*/
 					argument_position = 0;
-					agent_classes.add ( new Pd_Agent_Class_Information ( new_name, new_class_name, new_class_parameters ) );
+					agent_classes.add ( new Pd_Agent_Class_Information ( new_name, new_class_name, new_class_parameters ) );					
 				}
 				else
 				{
-					System.err.println ( "ERROR: SHOULD DEFINE MUSICAL_AGENT CLASS!" );
+					System.err.println ( "DEFINE_AGENT_TYPE: SHOULD DEFINE MUSICAL_AGENT CLASS!" );
 					System.exit ( -1 );
 				}
 			}
@@ -818,7 +814,7 @@ public class Loader {
 				Parameters new_class_parameters = null;
 				String new_name = null;
 				
-				if ( message.get_symbol ( ).equals ( pd_class ) )
+				if ( message.get_symbol ( ).equals ( pd_type ) )
 				{
 					new_class_name = ( String ) message.get_arguments ( )[ 0 ];
 					argument = ( String ) message.get_arguments ( )[ 1 ];
@@ -834,7 +830,7 @@ public class Loader {
 				}
 				else
 				{
-					System.err.println ( "ERROR: SHOULD DEFINE MUSICAL_AGENT CLASS!" );
+					System.err.println ( "ADDING_AGENT: SHOULD DEFINE MUSICAL_AGENT CLASS!" );
 					System.exit ( -1 );
 				}
 			}
