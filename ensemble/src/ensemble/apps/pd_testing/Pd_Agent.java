@@ -34,7 +34,6 @@ public class Pd_Agent extends MusicalAgent
 			else if ( attributes[ i ].equals ( Pd_Constants.PATCH_ARGUMENT ) )
 			{
 				new_parameters.put( ( String ) attributes[ i ], ( String ) attributes[ i + 1 ] );
-				parameters.put ( ( String ) attributes[ i ], attributes[ i + 1 ] );
 				i += 1;
 			}
 
@@ -63,21 +62,21 @@ public class Pd_Agent extends MusicalAgent
     		if ( source.equals ( Pd_Constants.ADD_ACTUATOR ) )
     		{
        			String actuator_name = message.get_symbol ( );			
-				addComponent ( actuator_name, Pd_Constants.PD_ACTUATOR_CLASS, read_arguments ( message, 0 ) );
+				this.addComponent ( actuator_name, Pd_Constants.PD_ACTUATOR_CLASS, read_arguments ( message, 0 ) );
 				System.err.println ( "REGISTERED_ACTUATOR: " + message.get_symbol ( )
 						+ " AGENT_NAME: " + getAgentName ( ) );
     		}
     		else if ( source.equals ( Pd_Constants.ADD_SENSOR ) )
     		{
     			String sensor_name = message.get_symbol ( );
-				addComponent ( sensor_name, Pd_Constants.PD_SENSOR_CLASS, read_arguments ( message, 0 ) );
+				this.addComponent ( sensor_name, Pd_Constants.PD_SENSOR_CLASS, read_arguments ( message, 0 ) );
 				System.err.println ( "REGISTERED_SENSOR: " + message.get_symbol ( )
 						+ " AGENT_NAME: " + getAgentName ( ) );
     		}
     		else if ( source.equals ( Pd_Constants.ADD_REASONING ) )
     		{
     			String reasoning_name = message.get_symbol ( );
-				addComponent ( reasoning_name, Pd_Constants.PD_REASONING_CLASS, read_arguments ( message, 0 ) );
+				this.addComponent ( reasoning_name, Pd_Constants.PD_REASONING_CLASS, read_arguments ( message, 0 ) );
 				System.err.println ( "REGISTERED_REASONING: " + message.get_symbol ( )
 						+ " AGENT_NAME: " + getAgentName ( ) );
     		}
@@ -92,7 +91,15 @@ public class Pd_Agent extends MusicalAgent
 	 */
 	@Override
 	public boolean configure ( )
+	{	
+		return true;
+	}
+	@Override
+	public boolean init ( )
 	{
+		PdBase.release ( );
+		PdBase.openAudio ( Pd_Constants.INPUT_CHANNELS, Pd_Constants.OUTPUT_CHANNELS, Pd_Constants.SAMPLE_RATE );
+		PdBase.computeAudio( true );
 		patch_path = parameters.get( Pd_Constants.PATCH_ARGUMENT );
 		if ( patch_path == null )
 		{
@@ -131,12 +138,8 @@ public class Pd_Agent extends MusicalAgent
 			process_control_messages ( );
 	    	( ( Pd_Receiver ) receiver ).start_new_cycle ( );
 	    	PdBase.closePatch ( patch );
-			return true;
+    	
+	    	return true;
 		}
-	}
-	@Override
-	public boolean init ( )
-	{
-    	return true;
 	}
 }

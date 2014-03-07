@@ -327,8 +327,6 @@ public class Loader {
 		{
 			/* 
 			 * Checking mal-formed arguments:
-			 * 
-			 * TODO: Change accepted message syntax.
 			 */
 			if ( attributes[ i ].equals ( pd_arg ) && 
 					attributes[ i + 2 ].equals ( pd_value ) )
@@ -779,7 +777,6 @@ public class Loader {
 			}
 			/*
 			 * Loading a Musical Agent class:
-			 * TODO: Configure agents by passing patches.
 			 */
 			else if ( message.get_source ( ).equals ( pd_new_agent_type ) )
 			{				
@@ -795,7 +792,7 @@ public class Loader {
 					new_class_name = Pd_Constants.PD_AGENT_CLASS;
 					new_class_parameters = readArguments ( message, argument_position );
 					argument_position = 0;
-					agent_classes.add ( new Pd_Agent_Class_Information ( new_name, new_class_name, new_class_parameters ) );					
+					agent_classes.add ( new Pd_Agent_Class_Information ( new_name, new_class_name, new_class_parameters ) );		
 				}
 				else
 				{
