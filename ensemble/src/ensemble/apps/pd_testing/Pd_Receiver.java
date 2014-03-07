@@ -37,6 +37,20 @@ public class Pd_Receiver extends PdDispatcher
 	@Override
 	public void receiveMessage ( String source, String symbol, Object... args )
 	{
+		print ( "MSG_SOURCE= " + source + " SYMBOL= " + symbol );
+		for ( Object object : args )
+		{
+			if ( object instanceof String )
+			{
+				print ( "ARG= " + ( String ) object );
+
+			}
+			else if ( object instanceof Float )
+			{
+				print ( "ARG= " + ( Float ) object );
+
+			}
+		}
 		messages.add ( new Pd_Message ( source, symbol, args ) );
 	}
 	@Override

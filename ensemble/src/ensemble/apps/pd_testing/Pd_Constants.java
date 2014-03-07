@@ -23,11 +23,16 @@ public final class Pd_Constants
 	public static final String EVENT_TYPE = "AUDIO";
 	public static final String ACTUATOR_PREFIX = "ACTUATOR";
 	public static final String SENSOR_PREFIX = "SENSOR";
-	/* Arguments:
-	 * 
+	public static final String PD_AGENT_CLASS = "ensemble.apps.pd_testing.Pd_Agent";
+	public static final String PD_ACTUATOR_CLASS = "ensemble.apps.pd_testing.Pd_Actuator";
+	public static final String PD_SENSOR_CLASS = "ensemble.apps.pd_testing.Pd_Sensor";
+	public static final String PD_REASONING_CLASS = "ensemble.apps.pd_testing.Pd_Reasoning";
+	/* 
+	 * Arguments:
 	 */
 	public static final String CURRENT_INSTANT = "CURRENT_INSTANT";
-	public static final String PATCH_ARGUMENT = "PATCH";
+	public static final String PATCH_ARGUMENT = "patch";
+	public static final String TARGET = "target";
 	public static final String AGENT_NUMBER_ARGUMENT = "AGENTS";
 	/*
 	 * Ensemble will send bangs to these symbols:
@@ -48,4 +53,7 @@ public final class Pd_Constants
 	public static final String TICK = "set_ticks";
 	public static final String SECONDS = "set_seconds";
 	public static final String MUTE = "MUTE";
+	public static final String ADD_ACTUATOR = "add_actuator";
+	public static final String ADD_SENSOR = "add_sensor";
+	public static final String ADD_REASONING = "add_reasoning";
 }

@@ -299,7 +299,7 @@ public class MusicalAgent extends EnsembleAgent {
 				if (state == MA_STATE.REGISTERED) {
 					boolean result = comp.start();
 					if (!result) {
-						System.out.println("[" + this.getAgentName() + "] Component '" + compName + "' not initialized");
+						System.err.println("[" + this.getAgentName() + "] Component '" + compName + "' not initialized");
 						removeComponent(compName);
 						return;
 					}

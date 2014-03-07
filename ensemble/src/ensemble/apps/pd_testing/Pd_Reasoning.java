@@ -82,13 +82,14 @@ public class Pd_Reasoning extends Reasoning
     	ArrayList< String > bangs = receiver.get_bangs ( );
     	for ( Pd_Message message : messages )
     	{
-    		if ( message.get_source ( ).equals ( Pd_Constants.SUBSCRIPTION ) )
+    		String source = message.get_source ( );
+    		if ( source.equals ( Pd_Constants.SUBSCRIPTION ) )
     		{
 				System.err.println ( "PURE_DATA: REGISTERED_USER_SYMBOL: " + message.get_symbol ( ) );
     			receiver.register_symbol( message.get_symbol ( ) );
 				PdBase.subscribe ( message.get_symbol ( ) );
     		}
-    		else if ( message.get_source ( ).equals ( Pd_Constants.UNSUBSCRIPTION ) )
+    		else if ( source.equals ( Pd_Constants.UNSUBSCRIPTION ) )
     		{
 				System.err.println ( "PURE_DATA: DEREGISTERED_USER_SYMBOL: " + message.get_symbol ( ) );
     			receiver.deregister_symbol ( message.get_symbol ( ) );
@@ -97,13 +98,14 @@ public class Pd_Reasoning extends Reasoning
     	}
     	for ( Pd_Float sent_float : floats )
     	{
-			if ( sent_float.get_source ( ).equals ( Pd_Constants.TICK ) )
+    		String source = sent_float.get_source ( );
+			if ( source.equals ( Pd_Constants.TICK ) )
 			{
 				ticks = ( int ) sent_float.get_value ( );
 				seconds = ( float ) ticks / ( Pd_Constants.SAMPLE_RATE / ( float ) PdBase.blockSize ( ) );
 				System.err.print ( "PURE_DATA_SETTING_TICK_SIZE: " + ticks + "\n" );
 			}
-			else if ( sent_float.get_source ( ).equals ( Pd_Constants.SECONDS ) )
+			else if ( source.equals ( Pd_Constants.SECONDS ) )
 			{
 				seconds = sent_float.get_value ( );
 				ticks = ( int ) ( seconds * ( Pd_Constants.SAMPLE_RATE / ( float ) PdBase.blockSize ( ) ) );
@@ -217,7 +219,7 @@ public class Pd_Reasoning extends Reasoning
 		/* 
 		 * Registering control symbols:
 		 */
-		receiver.register_default_symbol( Pd_Constants.AUDIO_TOGGLE );
+		receiver.register_default_symbol ( Pd_Constants.AUDIO_TOGGLE );
 		receiver.register_default_symbol ( Pd_Constants.AUDIO_ON );
 		receiver.register_default_symbol ( Pd_Constants.AUDIO_OFF );
 		receiver.register_default_symbol ( Pd_Constants.TICK );
@@ -315,14 +317,15 @@ public class Pd_Reasoning extends Reasoning
 			/*
 			 * TODO: Check audio buffers from sensors.
 			 */
-			actuator_memories.get ( "Actuator_0" ).writeMemory ( new Pd_Audio_Buffer ( output, current_instant, getAgent ( ).getAgentName ( ) ) );
+			 
+			actuator_memories.get ( "Act1" ).writeMemory ( new Pd_Audio_Buffer ( output, current_instant, getAgent ( ).getAgentName ( ) ) );
 		} 
 		catch ( MemoryException e ) 
 		{
 			e.printStackTrace ( );
 		}
 		current_instant += 1;
-		actuators.get( "Actuator_0" ).act ( );
+		actuators.get( "Act1" ).act ( );
 	}
 	/*
 	 * Called when an event handler is registered in the agent.
