@@ -1,10 +1,10 @@
 #N canvas 0 47 1920 1033 10;
 #X obj 590 107 loadbang;
-#X msg 582 228 \; add_sensor Sense1 patch ../pd/tests/sensor.pd;
-#X msg 635 136 \; add_reasoning Reason1 patch ../pd/tests/reasoning.pd
+#X msg 670 196 \; add_reasoning Reason1 patch ../pd/tests/reasoning.pd
 ;
-#X msg 617 179 \; add_actuator Act1 patch ../pd/tests/actuator.pd target
+#X msg 634 233 \; add_actuator Act1 patch ../pd/tests/actuator.pd target
 global;
-#X connect 0 0 3 0;
+#X msg 603 275 \; add_sensor Sense1 patch ../pd/tests/sensor.pd;
 #X connect 0 0 1 0;
 #X connect 0 0 2 0;
+#X connect 0 0 3 0;

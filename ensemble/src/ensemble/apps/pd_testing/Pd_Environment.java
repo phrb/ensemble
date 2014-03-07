@@ -29,17 +29,15 @@ public class Pd_Environment extends EnvironmentAgent
 	{
 		if ( parameters.containsKey( "PD_INIT" ) && parameters.get( "PD_INIT" ).equals( "TRUE" ) )
 		{
-			System.err.println ( "PURE DATA: INITIALISED AT LOADER LEVEL." );
+			System.err.println ( "PURE DATA: INITIALISED AT LOADER LEVEL, REINITILIZING." );
 		}
-		else
-		{
-			/*
-			 * Pd Setup
-			 */
-			PdBase.openAudio ( Pd_Constants.INPUT_CHANNELS, Pd_Constants.OUTPUT_CHANNELS, Pd_Constants.SAMPLE_RATE );
-			PdBase.computeAudio( true );
-			System.err.println ( "PURE DATA: INITIALISED." );
-		}
+		/*
+		 * Pd Setup
+		 */
+		PdBase.release ( );
+		PdBase.openAudio ( Pd_Constants.INPUT_CHANNELS, Pd_Constants.OUTPUT_CHANNELS, Pd_Constants.SAMPLE_RATE );
+		PdBase.computeAudio( true );
+		System.err.println ( "PURE DATA: INITIALISED." );
 		return true;
 	}
 	@Override
