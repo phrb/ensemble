@@ -63,17 +63,17 @@ public class Pd_Agent extends MusicalAgent
     	for ( Pd_Message message : messages )
     	{
     		String source = message.get_source ( );
-    		if ( source.equals ( Pd_Constants.ADD_ACTUATOR ) )
+    		if ( source.equals ( getAgentName ( ) + "_" + Pd_Constants.ADD_ACTUATOR ) )
     		{
        			String actuator_name = message.get_symbol ( );			
 				this.addComponent ( actuator_name, Pd_Constants.PD_ACTUATOR_CLASS, read_arguments ( message, 0 ) );
     		}
-    		else if ( source.equals ( Pd_Constants.ADD_SENSOR ) )
+    		else if ( source.equals ( getAgentName ( ) + "_" + Pd_Constants.ADD_SENSOR ) )
     		{
     			String sensor_name = message.get_symbol ( );
 				this.addComponent ( sensor_name, Pd_Constants.PD_SENSOR_CLASS, read_arguments ( message, 0 ) );
     		}
-    		else if ( source.equals ( Pd_Constants.ADD_REASONING ) )
+    		else if ( source.equals ( getAgentName ( ) + "_" + Pd_Constants.ADD_REASONING ) )
     		{
     			String reasoning_name = message.get_symbol ( );
 				this.addComponent ( reasoning_name, Pd_Constants.PD_REASONING_CLASS, read_arguments ( message, 0 ) );
@@ -107,9 +107,9 @@ public class Pd_Agent extends MusicalAgent
 			/* 
 			 * Registering control symbols:
 			 */
-			receiver.register_default_symbol ( Pd_Constants.ADD_ACTUATOR );
-			receiver.register_default_symbol ( Pd_Constants.ADD_SENSOR );
-			receiver.register_default_symbol ( Pd_Constants.ADD_REASONING );
+			receiver.register_default_symbol ( getAgentName ( ) + "_" + Pd_Constants.ADD_ACTUATOR );
+			receiver.register_default_symbol ( getAgentName ( ) + "_" + Pd_Constants.ADD_SENSOR );
+			receiver.register_default_symbol ( getAgentName ( ) + "_" + Pd_Constants.ADD_REASONING );
 			/*
 			 * Subscribing to known control symbols.
 			 */

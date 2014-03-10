@@ -103,8 +103,8 @@ public class Pd_Receiver extends PdDispatcher
 	}
 	public void start_new_cycle ( )
 	{
-		floats = new CopyOnWriteArrayList< Pd_Float > ( );
-		bangs = new CopyOnWriteArrayList< String > ( );
-		messages = new CopyOnWriteArrayList< Pd_Message > ( );
+		floats.clear ( );
+		bangs.clear ( );
+		messages.clear ( );
 	}
 }
