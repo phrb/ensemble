@@ -17,9 +17,10 @@ public class Pd_AudioEventServer extends EventServer
 	Pd_World world;
 	protected String agent_name;
 	protected String agent_component_name;
-	private int[ ] samples_per_instant = new int[ Pd_Constants.PD_EVENT_BUFFER_SIZE ];
+	private CopyOnWriteArrayList< Integer > samples_per_instant = new CopyOnWriteArrayList< Integer >( );
+	/*Pd_Constants.PD_EVENT_BUFFER_SIZE*/
 	private int agent_number;
-	CopyOnWriteArrayList< Pd_Audio_Buffer > events = new CopyOnWriteArrayList< Pd_Audio_Buffer > ( );
+	private CopyOnWriteArrayList< Pd_Audio_Buffer > events = new CopyOnWriteArrayList< Pd_Audio_Buffer > ( );
 	private int current_sample = 0;
 
 	/*
@@ -43,7 +44,7 @@ public class Pd_AudioEventServer extends EventServer
 		
 		for ( int i = 0; i < Pd_Constants.PD_EVENT_BUFFER_SIZE; i++ )
 		{
-			samples_per_instant[ i ] = 0;
+			samples_per_instant.add( 0 );
 		}
 		for ( int i = 0; i < Pd_Constants.PD_EVENT_BUFFER_SIZE; i++ )
 		{
@@ -115,23 +116,25 @@ public class Pd_AudioEventServer extends EventServer
 		{
 			Pd_Audio_Buffer previous_event = events.get ( instant );
 			events.set ( instant, new Pd_Audio_Buffer ( add_buffers ( samples, previous_event ), instant, "EVENT_SERVER" ) );
-			samples_per_instant[ instant ] += 1;
+			int old_samples = samples_per_instant.get ( instant );
+			samples_per_instant.set ( instant, old_samples + 1 );
 		}
 		else
 		{
 			add_new_buffer ( instant, samples );
-			samples_per_instant[ instant ] += 1;
+			int old_samples = samples_per_instant.get ( instant );
+			samples_per_instant.set ( instant, old_samples + 1 );
 		}
 	}
 	protected void process ( )
 	{
 		byte[ ] samples;
 		current_sample %= Pd_Constants.PD_EVENT_BUFFER_SIZE;
-		if ( samples_per_instant [ current_sample ] >=  agent_number )
+		if ( samples_per_instant.get( current_sample ) >=  agent_number )
 		{
 			samples = events.get ( current_sample ).get_audio_samples ( );
 			line.write( samples, 0, samples.length );
-			samples_per_instant [ current_sample ] = 0;
+			samples_per_instant.set ( current_sample, 0 );
 			events.set ( current_sample, null );
 			current_sample += 1;
 		}
