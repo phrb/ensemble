@@ -12,8 +12,9 @@
 #X obj 624 150 print;
 #X obj 620 124 r bang_simple_agent1;
 #X msg 146 156 \; subscribe simple_agent1;
-#X obj 360 275 dac~;
+#X obj 358 312 dac~;
 #X obj 368 244 osc~ 250;
+#X obj 362 277 clip~ -1 1;
 #X connect 0 0 1 0;
 #X connect 2 0 1 0;
 #X connect 3 0 0 0;
@@ -22,5 +23,6 @@
 #X connect 7 0 8 0;
 #X connect 8 0 9 0;
 #X connect 11 0 10 0;
-#X connect 14 0 13 0;
-#X connect 14 0 13 1;
+#X connect 14 0 15 0;
+#X connect 15 0 13 0;
+#X connect 15 0 13 1;
