@@ -1,7 +1,7 @@
 package ensemble.apps.pd_testing;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.puredata.core.PdBase;
 
@@ -36,7 +36,11 @@ public class Pd_Agent extends MusicalAgent
 				new_parameters.put( ( String ) attributes[ i ], ( String ) attributes[ i + 1 ] );
 				i += 1;
 			}
-
+			else if ( attributes[ i ].equals ( Pd_Constants.EVENT_TYPE ) )
+			{
+				new_parameters.put( ( String ) attributes[ i ], ( String ) attributes[ i + 1 ] );
+				i += 1;
+			}
 			/*
 			 * TODO: Dinamically receive arguments. (arg, value)
 			 */
@@ -55,7 +59,7 @@ public class Pd_Agent extends MusicalAgent
     	 * 
     	 */
     	PdBase.pollPdMessageQueue ( );
-    	ArrayList< Pd_Message > messages = receiver.get_messages ( );
+    	CopyOnWriteArrayList< Pd_Message > messages = receiver.get_messages ( );
     	for ( Pd_Message message : messages )
     	{
     		String source = message.get_source ( );
@@ -63,22 +67,16 @@ public class Pd_Agent extends MusicalAgent
     		{
        			String actuator_name = message.get_symbol ( );			
 				this.addComponent ( actuator_name, Pd_Constants.PD_ACTUATOR_CLASS, read_arguments ( message, 0 ) );
-				System.err.println ( "REGISTERED_ACTUATOR: " + message.get_symbol ( )
-						+ " AGENT_NAME: " + getAgentName ( ) );
     		}
     		else if ( source.equals ( Pd_Constants.ADD_SENSOR ) )
     		{
     			String sensor_name = message.get_symbol ( );
 				this.addComponent ( sensor_name, Pd_Constants.PD_SENSOR_CLASS, read_arguments ( message, 0 ) );
-				System.err.println ( "REGISTERED_SENSOR: " + message.get_symbol ( )
-						+ " AGENT_NAME: " + getAgentName ( ) );
     		}
     		else if ( source.equals ( Pd_Constants.ADD_REASONING ) )
     		{
     			String reasoning_name = message.get_symbol ( );
 				this.addComponent ( reasoning_name, Pd_Constants.PD_REASONING_CLASS, read_arguments ( message, 0 ) );
-				System.err.println ( "REGISTERED_REASONING: " + message.get_symbol ( )
-						+ " AGENT_NAME: " + getAgentName ( ) );
     		}
     	}
     }
@@ -97,9 +95,6 @@ public class Pd_Agent extends MusicalAgent
 	@Override
 	public boolean init ( )
 	{
-		PdBase.release ( );
-		PdBase.openAudio ( Pd_Constants.INPUT_CHANNELS, Pd_Constants.OUTPUT_CHANNELS, Pd_Constants.SAMPLE_RATE );
-		PdBase.computeAudio( true );
 		patch_path = parameters.get( Pd_Constants.PATCH_ARGUMENT );
 		if ( patch_path == null )
 		{
@@ -108,8 +103,7 @@ public class Pd_Agent extends MusicalAgent
 		}
 		else
 		{
-			receiver = new Pd_Receiver ( );
-			PdBase.setReceiver ( receiver );
+			receiver = Pd_Receiver.get_instance ( );
 			/* 
 			 * Registering control symbols:
 			 */

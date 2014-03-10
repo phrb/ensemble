@@ -1,22 +1,22 @@
 #N canvas 0 47 1920 1033 10;
 #X obj 831 167 loadbang;
-#X msg 848 324 \; environment world ensemble.apps.pd_testing.Pd_World
+#X msg 840 323 \; environment world ensemble.apps.pd_testing.Pd_World
 ;
 #X msg 902 195 \; global PROCESS_MODE BATCH;
 #X msg 885 233 \; global CLOCK_MODE CLOCK_USER;
+#X msg 782 419 \; new_agent_type name agent1 patch ../pd/tests/agent1.pd
+;
+#X msg 751 461 \; add_agent type agent0 name simple_agent0;
+#X msg 714 502 \; add_agent type agent1 name simple_agent1;
+#X msg 820 376 \; new_agent_type name agent0 patch ../pd/tests/agent0.pd
+;
 #X msg 864 273 \; environment class ensemble.apps.pd_testing.Pd_Environment
-arg AGENTS value 2;
-#X msg 831 360 \; new_agent_type name agent0 patch ../pd/tests/agent.pd
-;
-#X msg 814 391 \; new_agent_type name agent1 patch ../pd/tests/agent1.pd
-;
-#X msg 781 433 \; add_agent type agent0 name simple_agent0;
-#X msg 729 474 \; add_agent type agent1 name simple_agent1;
-#X connect 0 0 4 0;
+arg AGENTS value 1;
+#X connect 0 0 8 0;
 #X connect 0 0 1 0;
 #X connect 0 0 2 0;
 #X connect 0 0 3 0;
+#X connect 0 0 7 0;
+#X connect 0 0 4 0;
 #X connect 0 0 5 0;
 #X connect 0 0 6 0;
-#X connect 0 0 7 0;
-#X connect 0 0 8 0;

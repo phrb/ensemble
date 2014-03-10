@@ -1,10 +1,10 @@
 #N canvas 0 47 1920 1033 10;
-#X obj 600 117 loadbang;
-#X msg 644 243 \; add_actuator Act1 patch ../pd/tests/actuator.pd target
-global;
-#X msg 613 285 \; add_sensor Sense1 patch ../pd/tests/sensor.pd;
-#X msg 680 206 \; add_reasoning Reason2 patch ../pd/tests/reasoning2.pd
+#X obj 574 175 loadbang;
+#X msg 680 206 \; add_reasoning Reason1 patch ../pd/tests/reasoning1.pd
 ;
-#X connect 0 0 3 0;
+#X msg 656 244 \; add_actuator Act1 patch ../pd/tests/actuator1.pd
+target global type audio;
+#X msg 602 290 \; add_sensor Sense1 patch ../pd/tests/sensor1.pd type
+audio;
 #X connect 0 0 1 0;
 #X connect 0 0 2 0;

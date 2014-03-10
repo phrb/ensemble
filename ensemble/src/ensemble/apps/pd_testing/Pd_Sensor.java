@@ -8,8 +8,16 @@ public class Pd_Sensor extends Sensor
 	@Override
 	public boolean configure ( )
 	{
-		setEventType ( Pd_Constants.EVENT_TYPE );
-		return true;		
+		String new_event_type = parameters.get( Pd_Constants.EVENT_TYPE );
+		if ( new_event_type == null )
+		{
+			setEventType ( Pd_Constants.DEFAULT_EVENT_TYPE );
+		}
+		else
+		{
+			setEventType ( new_event_type );
+		}
+		return true;	
 	}
 	@Override
 	protected void process ( Event evt ) 

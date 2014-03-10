@@ -1,7 +1,6 @@
 package ensemble.apps.pd_testing;
 
 import org.puredata.core.PdBase;
-import org.puredata.core.PdReceiver;
 
 import ensemble.EnvironmentAgent;
 import ensemble.Parameters;
@@ -13,7 +12,7 @@ import ensemble.Parameters;
 public class Pd_Environment extends EnvironmentAgent
 {
 	private static final long serialVersionUID = 1L;
-	public PdReceiver receiver;
+	public Pd_Receiver receiver;
 	/*
 	 * init and configure are called once when the
 	 * EnvironmentAgent is instantiated.
@@ -24,19 +23,20 @@ public class Pd_Environment extends EnvironmentAgent
 		this.addEventServer ( "ensemble.apps.pd_testing.Pd_AudioEventServer", new Parameters ( ) );
 		return true;
 	}
+	public Pd_Receiver get_receiver ( )
+	{
+		return receiver;
+	}
 	@Override
 	public boolean init ( )
 	{
 		if ( parameters.containsKey( "PD_INIT" ) && parameters.get( "PD_INIT" ).equals( "TRUE" ) )
 		{
-			System.err.println ( "PURE DATA: INITIALISED AT LOADER LEVEL, REINITILIZING." );
+			System.err.println ( "PURE DATA: INITIALISED AT LOADER LEVEL, REINITIALIZING." );
 		}
 		/*
 		 * Pd Setup
 		 */
-		PdBase.release ( );
-		PdBase.openAudio ( Pd_Constants.INPUT_CHANNELS, Pd_Constants.OUTPUT_CHANNELS, Pd_Constants.SAMPLE_RATE );
-		PdBase.computeAudio( true );
 		System.err.println ( "PURE DATA: INITIALISED." );
 		return true;
 	}
