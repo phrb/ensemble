@@ -1,0 +1,18 @@
+#N canvas 0 47 1920 1033 10;
+#X msg 99 80 1;
+#X obj 145 108 switch~;
+#X msg 204 80 0;
+#X obj 84 59 r \$0processing_on;
+#X obj 198 58 r \$0processing_off;
+#X obj 149 165 loadbang;
+#X msg 116 207 \; MUTE bang;
+#X obj 318 306 dac~;
+#X obj 303 193 osc~ 500;
+#X obj 326 277 clip~ -1 1;
+#X connect 0 0 1 0;
+#X connect 2 0 1 0;
+#X connect 3 0 0 0;
+#X connect 4 0 2 0;
+#X connect 8 0 9 0;
+#X connect 9 0 7 0;
+#X connect 9 0 7 1;
