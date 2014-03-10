@@ -684,7 +684,6 @@ public class Loader {
 	{
 		int argument_position = 0;
 		
-		ArrayList< Pd_Agent_Instance > musical_agent_instances = new ArrayList< Pd_Agent_Instance >( );
 		ArrayList< Pd_Agent_Class_Information > agent_classes = new ArrayList< Pd_Agent_Class_Information >( );
 		
 		String environment_agent_name = Constants.ENVIRONMENT_AGENT;
@@ -776,14 +775,14 @@ public class Loader {
 				 */
 			}
 			/*
-			 * Loading a Musical Agent class:
+			 * Instance of Musical Agent:
 			 */
-			else if ( message.get_source ( ).equals ( pd_new_agent_type ) )
-			{				
+			else if ( message.get_source ( ).equals ( pd_add_agent ) )
+			{			
 				String new_class_name = null;
 				Parameters new_class_parameters = null;
 				String new_name = null;
-
+				
 				if ( message.get_symbol ( ).equals ( pd_name ) )
 				{
 					new_name = ( String ) message.get_arguments ( )[ 0 ];
@@ -793,37 +792,6 @@ public class Loader {
 					new_class_parameters = readArguments ( message, argument_position );
 					argument_position = 0;
 					agent_classes.add ( new Pd_Agent_Class_Information ( new_name, new_class_name, new_class_parameters ) );		
-				}
-				else
-				{
-					System.err.println ( "DEFINE_AGENT_TYPE: SHOULD DEFINE MUSICAL_AGENT CLASS!" );
-					System.exit ( -1 );
-				}
-			}
-			/*
-			 * Instance of Musical Agent:
-			 */
-			else if ( message.get_source ( ).equals ( pd_add_agent ) )
-			{
-				String argument;
-				
-				String new_class_name = null;
-				Parameters new_class_parameters = null;
-				String new_name = null;
-				
-				if ( message.get_symbol ( ).equals ( pd_type ) )
-				{
-					new_class_name = ( String ) message.get_arguments ( )[ 0 ];
-					argument = ( String ) message.get_arguments ( )[ 1 ];
-					argument_position += 1;
-					if ( argument.equals ( pd_name ) )
-					{
-						new_name = ( String ) message.get_arguments ( )[ 2 ];
-						argument_position += 1;
-					}
-					new_class_parameters = readArguments ( message, argument_position );
-					argument_position = 0;
-					musical_agent_instances.add ( new Pd_Agent_Instance ( new_name, new_class_name, new_class_parameters ) );
 				}
 				else
 				{
@@ -857,21 +825,13 @@ public class Loader {
 			 */
 			for ( Pd_Agent_Class_Information agent_class : agent_classes )
 			{
-				for ( Pd_Agent_Instance instance : musical_agent_instances )
-				{
-					if ( agent_class.get_name ( ).equals( instance.get_class_name ( ) ) )
-					{
-						Class<?> new_agent_class = Class.forName ( agent_class.get_class_name ( ) );
-						MusicalAgent musical_agent = ( MusicalAgent ) new_agent_class.newInstance ( );
-						Parameters instance_parameters = instance.get_parameters ( ); 
-						Object[ ] instance_arguments;
-						instance_arguments = new Object[ 1 ];
-						instance_arguments[ 0 ] = agent_class.get_parameters ( );
-						( ( Parameters ) instance_arguments[ 0 ] ).merge ( instance_parameters );
-						musical_agent.setArguments ( instance_arguments );
-						jade_container_controller.acceptNewAgent ( instance.get_name ( ), musical_agent ).start ( );
-					}
-				}
+				Class<?> new_agent_class = Class.forName ( agent_class.get_class_name ( ) );
+				MusicalAgent musical_agent = ( MusicalAgent ) new_agent_class.newInstance ( );
+				Object[ ] instance_arguments;
+				instance_arguments = new Object[ 1 ];
+				instance_arguments[ 0 ] = agent_class.get_parameters ( );
+				musical_agent.setArguments ( instance_arguments );
+				jade_container_controller.acceptNewAgent ( agent_class.get_name ( ), musical_agent ).start ( );
 			}
 		} 
 		catch ( ClassNotFoundException e ) 

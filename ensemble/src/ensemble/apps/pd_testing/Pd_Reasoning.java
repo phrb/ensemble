@@ -43,25 +43,38 @@ public class Pd_Reasoning extends Reasoning
 	 * Buffers and constants for
 	 * initialising Pd.
 	 */
-	private int output_frame = Pd_Constants.OUTPUT_FRAME * PdBase.blockSize ( );
-	private int input_frame = Pd_Constants.INPUT_FRAME * PdBase.blockSize ( );
-
+    private int ticks = Pd_Constants.DEFAULT_TICKS;
     private float seconds = Pd_Constants.DEFAULT_SECONDS;
-    /* Number of Pd ticks to get one second worth of samples.
-    private int ticks = ( int ) ( output_frame / PdBase.blockSize ( ) );*/
-    private int ticks = Pd_Constants.OUTPUT_FRAME;
+
     
 	private int patch;
 	private Pd_Receiver receiver;
 	private boolean pd_audio_output = true;
 	private boolean mute_patch = false;
 	
+	int frames = PdBase.blockSize() * ticks;
+	
 	private int current_instant;
-    private float[ ] dummy_samples;
-    private float[ ] input_samples;
-    private float[ ] output_samples;
-    private float[ ] dummy_pd_input;
+    private byte[ ] output_samples;
+    private short[ ] dummy_pd_input;
+    private short[ ] input_samples;
+    private short[ ] short_samples;
+    private byte[ ] dummy_samples;
+    
+	ByteBuffer byte_buffer;
+	ShortBuffer short_buffer;
         
+	private void process_pd_ticks ( int target_patch )
+	{
+		open_dsp ( target_patch );
+		/*
+		 * Only sends/receives to/from adc/dac.
+		 */
+		PdBase.process ( ticks, dummy_pd_input, short_samples );
+		short_buffer.rewind ( );
+		short_buffer.put( short_samples );
+        close_dsp ( target_patch );
+	}
     private void open_dsp ( int target_patch )
     {
     	PdBase.sendBang ( target_patch + Pd_Constants.PROCESSING_ON );
@@ -138,15 +151,6 @@ public class Pd_Reasoning extends Reasoning
     		}
     	}
     }
-	private void process_pd_ticks ( int target_patch )
-	{
-		open_dsp ( target_patch );
-		/*
-		 * Only sends/receives to/from adc/dac.
-		 */
-		PdBase.process ( ticks, dummy_pd_input, output_samples );
-        close_dsp ( target_patch );
-	}
 	/*
 	 * User can implement message checking here.
 	 */
@@ -204,6 +208,14 @@ public class Pd_Reasoning extends Reasoning
 	public boolean init ( ) 
 	{
 		current_instant = Pd_Constants.START_INSTANT;
+	    output_samples = new byte[ frames * Pd_Constants.OUTPUT_CHANNELS * Pd_Constants.BYTES_PER_SAMPLE ];
+	    dummy_pd_input = new short [ frames * Pd_Constants.INPUT_CHANNELS ];
+	    input_samples = new short [ frames * Pd_Constants.INPUT_CHANNELS ];
+	    short_samples = new short [ frames * Pd_Constants.OUTPUT_CHANNELS ];
+	    dummy_samples = new byte [ frames * Pd_Constants.OUTPUT_CHANNELS  * Pd_Constants.BYTES_PER_SAMPLE];
+	    
+		byte_buffer = ByteBuffer.wrap ( output_samples );
+		short_buffer = byte_buffer.asShortBuffer ( );
 		/*
 		 * Pd Setup
 		 * 
@@ -256,14 +268,6 @@ public class Pd_Reasoning extends Reasoning
 			e.printStackTrace ( );
 		}
 		/*
-		 * Initialising Pd audio buffers.
-		 */
-		input_samples = new float [ input_frame ];
-		output_samples = new float [ output_frame ];
-		
-		dummy_samples = new float [ output_frame  ];
-		dummy_pd_input = new float [ output_frame ];
-		/*
 		 * The dummy samples buffer is used when a patch is not
 		 * suposed to produced samples, but we do not want to
 		 * lose real-time due to lack of samples to play, so we
@@ -287,15 +291,13 @@ public class Pd_Reasoning extends Reasoning
 	@Override
 	public void process ( ) 
 	{
-		float[ ] output;
+		byte[ ] output;
 		ArrayList< Pd_Actuator > to_act = new ArrayList< Pd_Actuator > ( );
 
 		process_pd_ticks ( patch );
 		process_ensemble_control_messages ( );
 		process_pd_messages ( );
-		( ( Pd_Receiver ) receiver ).start_new_cycle ( );
-		output = output_samples;
-		
+		( ( Pd_Receiver ) receiver ).start_new_cycle ( );		
 		if ( pd_audio_output && ! ( mute_patch ) )
 		{
 			/*

@@ -7,8 +7,9 @@ public final class Pd_Constants
 	 * Numbers:
 	 */
 	public static final int SAMPLE_RATE = 44100;
+	public static final int PD_BLOCK_SIZE = 64;
 	public static final int PD_EVENT_BUFFER_SIZE = 200;
-	public static final int BYTES_PER_SAMPLE = 4;
+	public static final int BYTES_PER_SAMPLE = 2;
 	public static final int BITS_PER_SAMPLE = 8 * BYTES_PER_SAMPLE;
 	public static final int INPUT_CHANNELS = 0;
 	public static final int OUTPUT_CHANNELS = 2;
@@ -16,10 +17,8 @@ public final class Pd_Constants
 	public static final int FLOAT_OUTLETS = 5; 	
 	public static final int START_INSTANT = 0;
 	
-	public static final float DEFAULT_TICKS = 8;
-	public static final float DEFAULT_SECONDS = 1;
-	public static final int OUTPUT_FRAME = ( int ) ( BYTES_PER_SAMPLE * OUTPUT_CHANNELS );
-	public static final int INPUT_FRAME = ( int ) ( BYTES_PER_SAMPLE * INPUT_CHANNELS );
+	public static final float DEFAULT_SECONDS = 1;	
+	public static final int DEFAULT_TICKS = 1024;
 	/*
 	 * Text:
 	 */
