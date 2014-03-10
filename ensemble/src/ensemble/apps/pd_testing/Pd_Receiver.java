@@ -1,24 +1,36 @@
 package ensemble.apps.pd_testing;
 
-import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.puredata.core.PdBase;
 import org.puredata.core.utils.PdDispatcher;
 
 public class Pd_Receiver extends PdDispatcher 
 {	
-	private ArrayList< Pd_Float > floats;
-	private ArrayList< String > bangs;
-	private ArrayList< Pd_Message > messages;
-	ArrayList< String > default_control_symbols;
-	ArrayList< String > user_control_symbols;
+	private CopyOnWriteArrayList< Pd_Float > floats;
+	private CopyOnWriteArrayList< String > bangs;
+	private CopyOnWriteArrayList< Pd_Message > messages;
+	private CopyOnWriteArrayList< String > default_control_symbols;
+	private CopyOnWriteArrayList< String > user_control_symbols;
+	
+	private static final Pd_Receiver INSTANCE = new Pd_Receiver ( );
 
-	public Pd_Receiver ( )
+	private Pd_Receiver ( )
 	{
-		floats = new ArrayList< Pd_Float > ( );
-		bangs = new ArrayList< String > ( );
-		messages = new ArrayList< Pd_Message > ( );
-		default_control_symbols = new ArrayList< String > ( );
-		user_control_symbols = new ArrayList< String > ( );
+		floats = new CopyOnWriteArrayList< Pd_Float > ( );
+		bangs = new CopyOnWriteArrayList< String > ( );
+		messages = new CopyOnWriteArrayList< Pd_Message > ( );
+		default_control_symbols = new CopyOnWriteArrayList< String > ( );
+		user_control_symbols = new CopyOnWriteArrayList< String > ( );
+		PdBase.release ( );
+		PdBase.openAudio ( Pd_Constants.INPUT_CHANNELS, Pd_Constants.OUTPUT_CHANNELS, Pd_Constants.SAMPLE_RATE );
+		PdBase.computeAudio( true );
+		PdBase.setReceiver ( this );
 	}
+	public static Pd_Receiver get_instance ( ) 
+	{
+        return INSTANCE;
+    }
 	@Override
 	public void print ( String pd_message ) 
 	{
@@ -37,20 +49,6 @@ public class Pd_Receiver extends PdDispatcher
 	@Override
 	public void receiveMessage ( String source, String symbol, Object... args )
 	{
-		print ( "MSG_SOURCE= " + source + " SYMBOL= " + symbol );
-		for ( Object object : args )
-		{
-			if ( object instanceof String )
-			{
-				print ( "ARG= " + ( String ) object );
-
-			}
-			else if ( object instanceof Float )
-			{
-				print ( "ARG= " + ( Float ) object );
-
-			}
-		}
 		messages.add ( new Pd_Message ( source, symbol, args ) );
 	}
 	@Override
@@ -67,15 +65,15 @@ public class Pd_Receiver extends PdDispatcher
 			print ( ( String ) string );
 		}
 	}
-	public ArrayList< Pd_Float > get_floats ( )
+	public CopyOnWriteArrayList< Pd_Float > get_floats ( )
 	{
 		return floats;
 	}
-	public ArrayList< String > get_bangs ( )
+	public CopyOnWriteArrayList< String > get_bangs ( )
 	{
 		return bangs;
 	}
-	public ArrayList< Pd_Message > get_messages ( )
+	public CopyOnWriteArrayList< Pd_Message > get_messages ( )
 	{
 		return messages;
 	}
@@ -95,18 +93,18 @@ public class Pd_Receiver extends PdDispatcher
 	{
 		default_control_symbols.remove ( target );
 	}
-	public ArrayList< String > get_user_symbols ( )
+	public CopyOnWriteArrayList< String > get_user_symbols ( )
 	{
 		return user_control_symbols;
 	}
-	public ArrayList< String > get_default_symbols ( )
+	public CopyOnWriteArrayList< String > get_default_symbols ( )
 	{
 		return default_control_symbols;
 	}
 	public void start_new_cycle ( )
 	{
-		floats = new ArrayList< Pd_Float > ( );
-		bangs = new ArrayList< String > ( );
-		messages = new ArrayList< Pd_Message > ( );
+		floats = new CopyOnWriteArrayList< Pd_Float > ( );
+		bangs = new CopyOnWriteArrayList< String > ( );
+		messages = new CopyOnWriteArrayList< Pd_Message > ( );
 	}
 }

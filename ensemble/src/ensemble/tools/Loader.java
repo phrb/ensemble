@@ -953,9 +953,7 @@ public class Loader {
 				/*
 				 * Pd Setup
 				 */
-				PdBase.openAudio ( Pd_Constants.INPUT_CHANNELS, Pd_Constants.OUTPUT_CHANNELS, Pd_Constants.SAMPLE_RATE );
-				PdBase.computeAudio( true );
-				config_receiver = new Pd_Receiver ( );
+				config_receiver = Pd_Receiver.get_instance ( );
 				/* 
 				 * Registering config symbols to pd receiver:
 				 */

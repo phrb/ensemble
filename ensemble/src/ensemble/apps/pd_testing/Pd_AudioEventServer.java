@@ -1,6 +1,10 @@
 package ensemble.apps.pd_testing;
 
-import java.util.ArrayList;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import ensemble.*;
 import ensemble.apps.pd_testing.Pd_World;
 import javax.sound.sampled.*;
@@ -12,18 +16,21 @@ public class Pd_AudioEventServer extends EventServer
 	protected String agent_component_name;
 	private int[ ] samples_per_instant = new int[ Pd_Constants.PD_EVENT_BUFFER_SIZE ];
 	private int agent_number;
-	ArrayList< Pd_Audio_Buffer > events = new ArrayList< Pd_Audio_Buffer > ( );
+	CopyOnWriteArrayList< Pd_Audio_Buffer > events = new CopyOnWriteArrayList< Pd_Audio_Buffer > ( );
 	private int current_sample = 0;
 
 	/*
 	 * Audio
 	 */
 	private SourceDataLine line;   // to play the sound
+	
+	ByteArrayOutputStream byte_stream = new ByteArrayOutputStream ( );
+	DataOutputStream data_stream = new DataOutputStream ( byte_stream );
 
 	@Override
 	public boolean configure ( )
 	{
-		setEventType ( Pd_Constants.EVENT_TYPE );
+		setEventType ( Pd_Constants.DEFAULT_EVENT_TYPE );
 		return true;
 	}
 	
@@ -49,7 +56,7 @@ public class Pd_AudioEventServer extends EventServer
 		try 
 		{
 			line = ( SourceDataLine ) AudioSystem.getLine ( info );
-		    line.open ( format );
+			line.open ( format );
 		} 
 		catch ( LineUnavailableException e ) 
 		{
@@ -65,9 +72,9 @@ public class Pd_AudioEventServer extends EventServer
         line.stop ( );
 		return true;
 	}
-	private byte[ ] add_buffers ( byte[ ] samples, Pd_Audio_Buffer old_buffer )
+	private float[ ] add_buffers ( float[ ] samples, Pd_Audio_Buffer old_buffer )
 	{
-		byte[ ] previous_samples = old_buffer.get_audio_samples ( );
+		float[ ] previous_samples = old_buffer.get_audio_samples ( );
 		
 		if ( samples.length >= previous_samples.length )
 		{
@@ -75,7 +82,7 @@ public class Pd_AudioEventServer extends EventServer
 			{
 				if ( i < previous_samples.length )
 				{
-					samples[ i ] = ( byte ) ( samples[ i ] + previous_samples[ i ] );
+					samples[ i ] = samples[ i ] + previous_samples[ i ];
 				}
 			}
 			return samples;
@@ -86,23 +93,23 @@ public class Pd_AudioEventServer extends EventServer
 			{
 				if ( i < samples.length )
 				{
-					previous_samples[ i ] = ( byte ) ( previous_samples[ i ] + samples[ i ] );
+					previous_samples[ i ] = previous_samples[ i ] + samples[ i ];
 				}
 			}
 			return previous_samples;
 		}
 	}
-	private void add_new_buffer ( int instant, byte[ ] new_buffer )
+	private void add_new_buffer ( int instant, float[ ] new_buffer )
 	{
 		events.set ( instant, new Pd_Audio_Buffer ( new_buffer, instant, "EVENT_SERVER" ) );
 	}
 	private void process_audio_buffer ( Pd_Audio_Buffer new_buffer, int instant )
 	{
 		Pd_Audio_Buffer event = new_buffer;
-		byte[ ] samples = event.get_audio_samples ( );
+		float[ ] samples = event.get_audio_samples ( );
 		for ( int i = 0; i < samples.length; i++ )
 		{	
-			samples[ i ] = ( byte ) ( samples[ i ] / ( float ) agent_number ); 
+			samples[ i ] = ( samples[ i ] / agent_number ); 
 		}
 		if ( events.get( instant ) != null )
 		{
@@ -118,12 +125,40 @@ public class Pd_AudioEventServer extends EventServer
 	}
 	protected void process ( )
 	{
-		byte[ ] samples;
+		float[ ] samples;
+		byte[ ] byte_samples;
 		current_sample %= Pd_Constants.PD_EVENT_BUFFER_SIZE;
 		if ( samples_per_instant [ current_sample ] >=  agent_number )
 		{
 			samples = events.get ( current_sample ).get_audio_samples ( );
-			line.write( samples, 0, samples.length );
+			for ( Float sample : samples )
+			{
+				try 
+				{
+					data_stream.writeFloat( sample );
+				} 
+				catch ( IOException e ) 
+				{
+					e.printStackTrace ( );
+				}
+			}
+			byte_samples = byte_stream.toByteArray ( );
+			System.err.println ( "Bytes produced: " + byte_samples.length );
+			System.err.println ( "Line Buffer Available: " + line.available ( ) );
+			System.err.println ( "Line Buffer Size: " + line.getBufferSize ( ) );
+			System.err.println ( "Float Samples: " + samples.length );
+			line.write( byte_samples, 0, byte_samples.length );
+			try 
+			{
+				data_stream.flush ( );
+				byte_stream.flush ( );
+				byte_stream.reset ( );
+			}
+			catch (IOException e) 
+			{
+				e.printStackTrace ( );
+			}
+			
 			samples_per_instant [ current_sample ] = 0;
 			events.set ( current_sample, null );
 			current_sample += 1;
