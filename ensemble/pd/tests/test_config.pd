@@ -12,8 +12,6 @@
 ;
 #X msg 911 271 \; environment class ensemble.apps.pd_testing.Pd_Environment
 arg AGENTS value 3;
-#X msg 753 467 \; add_agent name simple_agent3 patch ../pd/tests/agent3.pd
-;
 #X connect 0 0 7 0;
 #X connect 0 0 1 0;
 #X connect 0 0 2 0;

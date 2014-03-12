@@ -22,7 +22,6 @@ public class Pd_Receiver extends PdDispatcher
 		messages = new CopyOnWriteArrayList< Pd_Message > ( );
 		default_control_symbols = new CopyOnWriteArrayList< String > ( );
 		user_control_symbols = new CopyOnWriteArrayList< String > ( );
-		PdBase.release ( );
 		PdBase.openAudio ( Pd_Constants.INPUT_CHANNELS, Pd_Constants.OUTPUT_CHANNELS, Pd_Constants.SAMPLE_RATE );
 		PdBase.computeAudio( true );
 		PdBase.setReceiver ( this );

@@ -32,7 +32,7 @@ public class Pd_Environment extends EnvironmentAgent
 	{
 		if ( parameters.containsKey( "PD_INIT" ) && parameters.get( "PD_INIT" ).equals( "TRUE" ) )
 		{
-			System.err.println ( "PURE DATA: INITIALISED AT LOADER LEVEL, REINITIALIZING." );
+			System.err.println ( "PURE DATA: INITIALISED AT LOADER LEVEL." );
 		}
 		/*
 		 * Pd Setup
