@@ -48,6 +48,8 @@ public class Pd_Reasoning extends Reasoning
 
     
 	private int patch;
+	private String subpatch;
+	private String agent_name;
 	private Pd_Receiver receiver;
 	private boolean pd_audio_output = true;
 	private boolean mute_patch = false;
@@ -64,24 +66,38 @@ public class Pd_Reasoning extends Reasoning
 	ByteBuffer byte_buffer;
 	ShortBuffer short_buffer;
         
-	private void process_pd_ticks ( int target_patch )
+	private void process_pd_ticks ( )
 	{
-		open_dsp ( target_patch );
+		open_dsp ( );
 		/*
 		 * Only sends/receives to/from adc/dac.
 		 */
 		PdBase.process ( ticks, dummy_pd_input, short_samples );
 		short_buffer.rewind ( );
 		short_buffer.put( short_samples );
-        close_dsp ( target_patch );
+        close_dsp ( );
 	}
-    private void open_dsp ( int target_patch )
+    private void open_dsp ( )
     {
-    	PdBase.sendBang ( target_patch + Pd_Constants.PROCESSING_ON );
+    	if ( subpatch == null )
+    	{
+        	PdBase.sendBang ( patch + Pd_Constants.PROCESSING_ON );
+    	}
+    	else
+    	{
+        	PdBase.sendBang ( subpatch + "-" + Pd_Constants.PROCESSING_ON );
+    	}
     }
-    private void close_dsp ( int target_patch )
+    private void close_dsp ( )
     {
-    	PdBase.sendBang ( target_patch + Pd_Constants.PROCESSING_OFF );
+    	if ( subpatch == null )
+    	{
+        	PdBase.sendBang ( patch + Pd_Constants.PROCESSING_OFF );
+    	}
+    	else
+    	{
+        	PdBase.sendBang ( subpatch + "-" + Pd_Constants.PROCESSING_OFF );
+    	}
     }
     private void process_ensemble_control_messages ( )
     {
@@ -100,26 +116,26 @@ public class Pd_Reasoning extends Reasoning
     		if ( source.equals ( Pd_Constants.SUBSCRIPTION ) )
     		{
 				System.err.println ( "PURE_DATA: REGISTERED_USER_SYMBOL: " + message.get_symbol ( ) );
-    			receiver.register_symbol( message.get_symbol ( ) );
+    			receiver.register_symbol ( agent_name + message.get_symbol ( ) );
 				PdBase.subscribe ( message.get_symbol ( ) );
     		}
     		else if ( source.equals ( Pd_Constants.UNSUBSCRIPTION ) )
     		{
 				System.err.println ( "PURE_DATA: DEREGISTERED_USER_SYMBOL: " + message.get_symbol ( ) );
-    			receiver.deregister_symbol ( message.get_symbol ( ) );
+    			receiver.deregister_symbol ( agent_name + message.get_symbol ( ) );
 				PdBase.unsubscribe ( message.get_symbol ( ) );
     		}
     	}
     	for ( Pd_Float sent_float : floats )
     	{
     		String source = sent_float.get_source ( );
-			if ( source.equals ( Pd_Constants.TICK ) )
+			if ( source.equals ( agent_name + Pd_Constants.TICK ) )
 			{
 				ticks = ( int ) sent_float.get_value ( );
 				seconds = ( float ) ticks / ( Pd_Constants.SAMPLE_RATE / ( float ) PdBase.blockSize ( ) );
 				System.err.print ( "PURE_DATA_SETTING_TICK_SIZE: " + ticks + "\n" );
 			}
-			else if ( source.equals ( Pd_Constants.SECONDS ) )
+			else if ( source.equals ( agent_name + Pd_Constants.SECONDS ) )
 			{
 				seconds = sent_float.get_value ( );
 				ticks = ( int ) ( seconds * ( Pd_Constants.SAMPLE_RATE / ( float ) PdBase.blockSize ( ) ) );
@@ -128,22 +144,22 @@ public class Pd_Reasoning extends Reasoning
     	}
     	for ( String sent_bang : bangs )
     	{
-    		if ( sent_bang.equals ( Pd_Constants.AUDIO_OFF ) )
+    		if ( sent_bang.equals ( agent_name + Pd_Constants.AUDIO_OFF ) )
     		{
     			pd_audio_output = false;
     			System.err.println ( "PURE_DATA: AUDIO_OFF" );
     		}
-    		else if ( sent_bang.equals ( Pd_Constants.AUDIO_ON ) )
+    		else if ( sent_bang.equals ( agent_name + Pd_Constants.AUDIO_ON ) )
     		{
     			pd_audio_output = true;
     			System.err.println ( "PURE_DATA: AUDIO_ON" );
     		}
-    		else if ( sent_bang.equals ( Pd_Constants.AUDIO_TOGGLE ) )
+    		else if ( sent_bang.equals ( agent_name + Pd_Constants.AUDIO_TOGGLE ) )
     		{			
     			pd_audio_output = ! ( pd_audio_output );
     			System.err.println ( "PURE_DATA: AUDIO_TOGGLED" );
     		}
-    		else if ( sent_bang.equals ( Pd_Constants.MUTE ) )
+    		else if ( sent_bang.equals ( agent_name + Pd_Constants.MUTE ) )
     		{
     			mute_patch = true;
     			pd_audio_output = ! ( mute_patch );
@@ -207,6 +223,7 @@ public class Pd_Reasoning extends Reasoning
 	@Override
 	public boolean init ( ) 
 	{
+		agent_name = getAgent ( ).getAgentName ( );
 		current_instant = Pd_Constants.START_INSTANT;
 	    output_samples = new byte[ frames * Pd_Constants.OUTPUT_CHANNELS * Pd_Constants.BYTES_PER_SAMPLE ];
 	    dummy_pd_input = new short [ frames * Pd_Constants.INPUT_CHANNELS ];
@@ -255,17 +272,33 @@ public class Pd_Reasoning extends Reasoning
 		/*
          * Patch opening.
          */
-		try 
+		if ( parameters.get ( Pd_Constants.PATCH_ARGUMENT ) != null )
 		{
-			patch = PdBase.openPatch ( parameters.get( Pd_Constants.PATCH_ARGUMENT ) );
-			System.err.println ( "PURE_DATA: PATCH_ID=" + patch + " PATH=" + "\"" + parameters.get( Pd_Constants.PATCH_ARGUMENT ) + "\"" );
+			try 
+			{
+				patch = PdBase.openPatch ( parameters.get ( Pd_Constants.PATCH_ARGUMENT ) );
+				System.err.println ( "PURE_DATA: PATCH_ID=" + patch + " PATH=" + "\"" + parameters.get( Pd_Constants.PATCH_ARGUMENT ) + "\"" );
+				process_ensemble_control_messages ( );
+				process_pd_messages ( );
+		    	( ( Pd_Receiver ) receiver ).start_new_cycle ( );
+				close_dsp ( );
+			} 
+			catch ( IOException e ) 
+			{
+				e.printStackTrace ( );
+			}
+		}
+		else if ( parameters.containsKey( "subpatch_name" ) )
+		{
+			subpatch = parameters.get ( "subpatch_name" );
 			process_ensemble_control_messages ( );
 			process_pd_messages ( );
 	    	( ( Pd_Receiver ) receiver ).start_new_cycle ( );
-		} 
-		catch ( IOException e ) 
+			close_dsp ( );
+		}
+		else
 		{
-			e.printStackTrace ( );
+			System.err.println ( "REASONING ERROR: NO PATCH/SUBPATCH DEFINED!" );
 		}
 		/*
 		 * The dummy samples buffer is used when a patch is not
@@ -278,7 +311,6 @@ public class Pd_Reasoning extends Reasoning
 		{
 			dummy_samples[ i ] = 0;
 		}
-		close_dsp ( patch );
 		return true;
 	}
 	/*
@@ -294,7 +326,7 @@ public class Pd_Reasoning extends Reasoning
 		byte[ ] output;
 		ArrayList< Pd_Actuator > to_act = new ArrayList< Pd_Actuator > ( );
 
-		process_pd_ticks ( patch );
+		process_pd_ticks ( );
 		process_ensemble_control_messages ( );
 		process_pd_messages ( );
 		( ( Pd_Receiver ) receiver ).start_new_cycle ( );		

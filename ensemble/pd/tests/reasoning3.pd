@@ -6,9 +6,9 @@
 #X obj 198 58 r \$0processing_off;
 #X obj 149 165 loadbang;
 #X msg 116 207 \; MUTE bang;
-#X obj 318 306 dac~;
+#X obj 306 277 dac~;
 #X obj 303 193 osc~ 500;
-#X obj 326 277 clip~ -1 1;
+#X obj 318 229 clip~ -1 1;
 #X connect 0 0 1 0;
 #X connect 2 0 1 0;
 #X connect 3 0 0 0;

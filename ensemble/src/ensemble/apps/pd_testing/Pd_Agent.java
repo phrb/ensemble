@@ -19,6 +19,7 @@ public class Pd_Agent extends MusicalAgent
 	private String patch_path;
 	private int patch;
 	private Pd_Receiver receiver;
+	String agent_name;
 	
 	private Parameters read_arguments ( Pd_Message message, int offset ) 
 	{
@@ -51,7 +52,38 @@ public class Pd_Agent extends MusicalAgent
 		}
 		return new_parameters;
 	}
-    private void process_control_messages ( )
+    private void process_subpatch_control_messages ( )
+    {
+    	/*
+    	 * Process all messages sent
+    	 * to default control symbols.
+    	 * 
+    	 */
+    	PdBase.pollPdMessageQueue ( );
+    	CopyOnWriteArrayList< Pd_Message > messages = receiver.get_messages ( );
+    	int actuator = 0;
+    	int sensor = 0;
+    	for ( Pd_Message message : messages )
+    	{
+    		String source = message.get_source ( );
+    		String component_name = message.get_symbol ( );
+    		if ( source.equals ( agent_name ) &&
+    				component_name.equals ( Pd_Constants.ADD_ACTUATOR ) )
+    		{
+       			String actuator_name = "Actuator " + actuator; 			
+				this.addComponent ( actuator_name, Pd_Constants.PD_ACTUATOR_CLASS, read_arguments ( message, 0 ) );
+				actuator += 1;
+    		}
+    		else if ( source.equals ( agent_name ) &&
+    				component_name.equals ( Pd_Constants.ADD_SENSOR ) )
+    		{
+    			String sensor_name = "Sensor " + sensor;
+				this.addComponent ( sensor_name, Pd_Constants.PD_SENSOR_CLASS, read_arguments ( message, 0 ) );
+				sensor += 1;
+    		}
+    	}
+    }
+    private void process_patch_control_messages ( )
     {
     	/*
     	 * Process all messages sent
@@ -63,17 +95,17 @@ public class Pd_Agent extends MusicalAgent
     	for ( Pd_Message message : messages )
     	{
     		String source = message.get_source ( );
-    		if ( source.equals ( getAgentName ( ) + "_" + Pd_Constants.ADD_ACTUATOR ) )
+    		if ( source.equals ( agent_name + "_" + Pd_Constants.ADD_ACTUATOR ) )
     		{
        			String actuator_name = message.get_symbol ( );			
 				this.addComponent ( actuator_name, Pd_Constants.PD_ACTUATOR_CLASS, read_arguments ( message, 0 ) );
     		}
-    		else if ( source.equals ( getAgentName ( ) + "_" + Pd_Constants.ADD_SENSOR ) )
+    		else if ( source.equals ( agent_name + "_" + Pd_Constants.ADD_SENSOR ) )
     		{
     			String sensor_name = message.get_symbol ( );
 				this.addComponent ( sensor_name, Pd_Constants.PD_SENSOR_CLASS, read_arguments ( message, 0 ) );
     		}
-    		else if ( source.equals ( getAgentName ( ) + "_" + Pd_Constants.ADD_REASONING ) )
+    		else if ( source.equals ( agent_name + "_" + Pd_Constants.ADD_REASONING ) )
     		{
     			String reasoning_name = message.get_symbol ( );
 				this.addComponent ( reasoning_name, Pd_Constants.PD_REASONING_CLASS, read_arguments ( message, 0 ) );
@@ -95,28 +127,36 @@ public class Pd_Agent extends MusicalAgent
 	@Override
 	public boolean init ( )
 	{
+		agent_name = getAgentName ( );
 		patch_path = parameters.get( Pd_Constants.PATCH_ARGUMENT );
+		receiver = Pd_Receiver.get_instance ( );
+		/* 
+		 * Registering control symbols:
+		 */
+		receiver.register_default_symbol ( agent_name + "_" + Pd_Constants.ADD_ACTUATOR );
+		receiver.register_default_symbol ( agent_name + "_" + Pd_Constants.ADD_SENSOR );
+		receiver.register_default_symbol ( agent_name + "_" + Pd_Constants.ADD_REASONING );
+		receiver.register_default_symbol ( agent_name );
+
+		/*
+		 * Subscribing to known control symbols.
+		 */
+		for ( String symbol : receiver.get_default_symbols ( ) )
+		{
+			PdBase.subscribe ( symbol );
+		}
+		PdBase.sendBang( agent_name + "-start" );
 		if ( patch_path == null )
 		{
-			System.err.print ( "PURE_DATA: NO_PATCH_ERROR\n" );
-			return false;
+			Parameters reasoning_parameters = new Parameters ( );
+			reasoning_parameters.put ( "subpatch_name", agent_name );
+			this.addComponent ( "Reasoning", Pd_Constants.PD_REASONING_CLASS, reasoning_parameters );
+			process_subpatch_control_messages ( );
+	    	( ( Pd_Receiver ) receiver ).start_new_cycle ( );
+			return true;
 		}
 		else
 		{
-			receiver = Pd_Receiver.get_instance ( );
-			/* 
-			 * Registering control symbols:
-			 */
-			receiver.register_default_symbol ( getAgentName ( ) + "_" + Pd_Constants.ADD_ACTUATOR );
-			receiver.register_default_symbol ( getAgentName ( ) + "_" + Pd_Constants.ADD_SENSOR );
-			receiver.register_default_symbol ( getAgentName ( ) + "_" + Pd_Constants.ADD_REASONING );
-			/*
-			 * Subscribing to known control symbols.
-			 */
-			for ( String symbol : receiver.get_default_symbols ( ) )
-			{
-				PdBase.subscribe ( symbol );
-			}
 			/*
 	         * Patch opening.
 	         */
@@ -129,10 +169,9 @@ public class Pd_Agent extends MusicalAgent
 			{
 				e.printStackTrace ( );
 			}
-			process_control_messages ( );
-	    	( ( Pd_Receiver ) receiver ).start_new_cycle ( );
+			process_patch_control_messages ( );
+	    	//( ( Pd_Receiver ) receiver ).start_new_cycle ( );
 	    	PdBase.closePatch ( patch );
-    	
 	    	return true;
 		}
 	}
