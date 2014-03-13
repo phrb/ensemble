@@ -100,6 +100,10 @@ public class Pd_Receiver extends PdDispatcher
 	{
 		return default_control_symbols;
 	}
+	public void fetch_pd_messages ( )
+	{
+		PdBase.pollPdMessageQueue ( );
+	}
 	public void start_new_cycle ( )
 	{
 		floats.clear ( );

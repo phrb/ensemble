@@ -18,7 +18,7 @@ public final class Pd_Constants
 	public static final int START_INSTANT = 0;
 	
 	public static final float DEFAULT_SECONDS = 1;	
-	public static final int DEFAULT_TICKS = 16384;
+	public static final int DEFAULT_TICKS = 1024;
 	/*
 	 * Text:
 	 */

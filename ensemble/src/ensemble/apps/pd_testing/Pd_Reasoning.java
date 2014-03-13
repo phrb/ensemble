@@ -1,9 +1,6 @@
 package ensemble.apps.pd_testing;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ShortBuffer;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -45,7 +42,8 @@ public class Pd_Reasoning extends Reasoning
 	 */
     private int ticks = Pd_Constants.DEFAULT_TICKS;
     private float seconds = Pd_Constants.DEFAULT_SECONDS;
-
+    
+    private Pd_Audio_Server sampler;
     
 	private int patch;
 	private String subpatch;
@@ -54,51 +52,6 @@ public class Pd_Reasoning extends Reasoning
 	private boolean pd_audio_output = true;
 	private boolean mute_patch = false;
 	
-	int frames = PdBase.blockSize() * ticks;
-	
-	private int current_instant;
-    private byte[ ] output_samples;
-    private short[ ] dummy_pd_input;
-    private short[ ] input_samples;
-    private short[ ] short_samples;
-    private byte[ ] dummy_samples;
-    
-	ByteBuffer byte_buffer;
-	ShortBuffer short_buffer;
-        
-	private void process_pd_ticks ( )
-	{
-		open_dsp ( );
-		/*
-		 * Only sends/receives to/from adc/dac.
-		 */
-		PdBase.process ( ticks, dummy_pd_input, short_samples );
-		short_buffer.rewind ( );
-		short_buffer.put( short_samples );
-        close_dsp ( );
-	}
-    private void open_dsp ( )
-    {
-    	if ( subpatch == null )
-    	{
-        	PdBase.sendBang ( patch + Pd_Constants.PROCESSING_ON );
-    	}
-    	else
-    	{
-        	PdBase.sendBang ( subpatch + "-" + Pd_Constants.PROCESSING_ON );
-    	}
-    }
-    private void close_dsp ( )
-    {
-    	if ( subpatch == null )
-    	{
-        	PdBase.sendBang ( patch + Pd_Constants.PROCESSING_OFF );
-    	}
-    	else
-    	{
-        	PdBase.sendBang ( subpatch + "-" + Pd_Constants.PROCESSING_OFF );
-    	}
-    }
     private void process_ensemble_control_messages ( )
     {
     	/*
@@ -106,7 +59,6 @@ public class Pd_Reasoning extends Reasoning
     	 * to default control symbols.
     	 * 
     	 */
-    	PdBase.pollPdMessageQueue ( );
     	CopyOnWriteArrayList< Pd_Message > messages = receiver.get_messages ( );
     	CopyOnWriteArrayList< Pd_Float > floats = receiver.get_floats ( );
     	CopyOnWriteArrayList< String > bangs = receiver.get_bangs ( );
@@ -224,15 +176,6 @@ public class Pd_Reasoning extends Reasoning
 	public boolean init ( ) 
 	{
 		agent_name = getAgent ( ).getAgentName ( );
-		current_instant = Pd_Constants.START_INSTANT;
-	    output_samples = new byte[ frames * Pd_Constants.OUTPUT_CHANNELS * Pd_Constants.BYTES_PER_SAMPLE ];
-	    dummy_pd_input = new short [ frames * Pd_Constants.INPUT_CHANNELS ];
-	    input_samples = new short [ frames * Pd_Constants.INPUT_CHANNELS ];
-	    short_samples = new short [ frames * Pd_Constants.OUTPUT_CHANNELS ];
-	    dummy_samples = new byte [ frames * Pd_Constants.OUTPUT_CHANNELS  * Pd_Constants.BYTES_PER_SAMPLE];
-	    
-		byte_buffer = ByteBuffer.wrap ( output_samples );
-		short_buffer = byte_buffer.asShortBuffer ( );
 		/*
 		 * Pd Setup
 		 * 
@@ -240,6 +183,7 @@ public class Pd_Reasoning extends Reasoning
 		 * receiver.
 		 * 
 		 */
+		sampler = Pd_Audio_Server.get_instance ( );
 		receiver = Pd_Receiver.get_instance ( );
 		/* 
 		 * Registering control symbols:
@@ -276,12 +220,10 @@ public class Pd_Reasoning extends Reasoning
 		{
 			try 
 			{
-				patch = PdBase.openPatch ( parameters.get ( Pd_Constants.PATCH_ARGUMENT ) );
+				patch = sampler.open_patch( parameters.get ( Pd_Constants.PATCH_ARGUMENT ) );
 				System.err.println ( "PURE_DATA: PATCH_ID=" + patch + " PATH=" + "\"" + parameters.get( Pd_Constants.PATCH_ARGUMENT ) + "\"" );
 				process_ensemble_control_messages ( );
 				process_pd_messages ( );
-		    	( ( Pd_Receiver ) receiver ).start_new_cycle ( );
-				close_dsp ( );
 			} 
 			catch ( IOException e ) 
 			{
@@ -290,11 +232,9 @@ public class Pd_Reasoning extends Reasoning
 		}
 		else if ( parameters.containsKey( "subpatch_name" ) )
 		{
-			subpatch = parameters.get ( "subpatch_name" );
+			subpatch = parameters.get ( "subpatch_name" ) + "-";
 			process_ensemble_control_messages ( );
 			process_pd_messages ( );
-	    	( ( Pd_Receiver ) receiver ).start_new_cycle ( );
-			close_dsp ( );
 		}
 		else
 		{
@@ -307,10 +247,6 @@ public class Pd_Reasoning extends Reasoning
 		 * just play zeroes.
 		 * 
 		 */
-		for ( int i = 0; i < dummy_samples.length; i++ )
-		{
-			dummy_samples[ i ] = 0;
-		}
 		return true;
 	}
 	/*
@@ -323,49 +259,6 @@ public class Pd_Reasoning extends Reasoning
 	@Override
 	public void process ( ) 
 	{
-		byte[ ] output;
-		ArrayList< Pd_Actuator > to_act = new ArrayList< Pd_Actuator > ( );
-
-		process_pd_ticks ( );
-		process_ensemble_control_messages ( );
-		process_pd_messages ( );
-		( ( Pd_Receiver ) receiver ).start_new_cycle ( );		
-		if ( pd_audio_output && ! ( mute_patch ) )
-		{
-			/*
-			 * TODO:
-			 * Add checking for other audio sources.
-			 * "~memory", "~actuator_x".
-			 */
-			output = output_samples;
-		}
-		else
-		{
-			output = dummy_samples;
-		}
-		try 
-		{
-			/*
-			 * TODO: Check audio buffers from sensors.
-			 */
-			for ( Pd_Actuator actuator : actuators.values ( ) )
-			{
-				if ( actuator.getEventType ( ).equals( Pd_Constants.DEFAULT_EVENT_TYPE ) )
-				{
-					actuator_memories.get ( actuator.getComponentName ( ) ).writeMemory ( new Pd_Audio_Buffer ( output, current_instant, getAgent ( ).getAgentName ( ) ) );
-					to_act.add ( actuator );
-				}
-			}
-		} 
-		catch ( MemoryException e ) 
-		{
-			e.printStackTrace ( );
-		}
-		current_instant += 1;
-		for ( Pd_Actuator actuator : to_act )
-		{
-			actuator.act ( );
-		}
 	}
 	/*
 	 * Called when an event handler is registered in the agent.

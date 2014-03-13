@@ -59,7 +59,6 @@ public class Pd_Agent extends MusicalAgent
     	 * to default control symbols.
     	 * 
     	 */
-    	PdBase.pollPdMessageQueue ( );
     	CopyOnWriteArrayList< Pd_Message > messages = receiver.get_messages ( );
     	int actuator = 0;
     	int sensor = 0;
@@ -90,7 +89,6 @@ public class Pd_Agent extends MusicalAgent
     	 * to default control symbols.
     	 * 
     	 */
-    	PdBase.pollPdMessageQueue ( );
     	CopyOnWriteArrayList< Pd_Message > messages = receiver.get_messages ( );
     	for ( Pd_Message message : messages )
     	{
@@ -146,13 +144,13 @@ public class Pd_Agent extends MusicalAgent
 			PdBase.subscribe ( symbol );
 		}
 		PdBase.sendBang( agent_name + "-start" );
+		receiver.fetch_pd_messages ( );
 		if ( patch_path == null )
 		{
 			Parameters reasoning_parameters = new Parameters ( );
 			reasoning_parameters.put ( "subpatch_name", agent_name );
 			this.addComponent ( "Reasoning", Pd_Constants.PD_REASONING_CLASS, reasoning_parameters );
 			process_subpatch_control_messages ( );
-	    	( ( Pd_Receiver ) receiver ).start_new_cycle ( );
 			return true;
 		}
 		else
@@ -170,8 +168,6 @@ public class Pd_Agent extends MusicalAgent
 				e.printStackTrace ( );
 			}
 			process_patch_control_messages ( );
-	    	//( ( Pd_Receiver ) receiver ).start_new_cycle ( );
-	    	PdBase.closePatch ( patch );
 	    	return true;
 		}
 	}
