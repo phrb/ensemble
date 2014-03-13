@@ -10,8 +10,7 @@ public class Pd_Receiver extends PdDispatcher
 	private CopyOnWriteArrayList< Pd_Float > floats;
 	private CopyOnWriteArrayList< String > bangs;
 	private CopyOnWriteArrayList< Pd_Message > messages;
-	private CopyOnWriteArrayList< String > default_control_symbols;
-	private CopyOnWriteArrayList< String > user_control_symbols;
+	private CopyOnWriteArrayList< String > control_symbols;
 	
 	private static final Pd_Receiver INSTANCE = new Pd_Receiver ( );
 
@@ -20,8 +19,17 @@ public class Pd_Receiver extends PdDispatcher
 		floats = new CopyOnWriteArrayList< Pd_Float > ( );
 		bangs = new CopyOnWriteArrayList< String > ( );
 		messages = new CopyOnWriteArrayList< Pd_Message > ( );
-		default_control_symbols = new CopyOnWriteArrayList< String > ( );
-		user_control_symbols = new CopyOnWriteArrayList< String > ( );
+		control_symbols = new CopyOnWriteArrayList< String > ( );
+		
+		/*
+		 * Registering config symbols to pd receiver:
+		 */
+		register_symbol ( Pd_Constants.ENVIRONMENT_KEY );
+		register_symbol ( Pd_Constants.ADD_AGENT_KEY );
+		register_symbol ( Pd_Constants.GLOBAL_KEY );
+		register_symbol ( Pd_Constants.SUBSCRIPTION );
+		register_symbol ( Pd_Constants.UNSUBSCRIPTION );
+		
 		PdBase.openAudio ( Pd_Constants.INPUT_CHANNELS, Pd_Constants.OUTPUT_CHANNELS, Pd_Constants.SAMPLE_RATE );
 		PdBase.computeAudio( true );
 		PdBase.setReceiver ( this );
@@ -30,6 +38,10 @@ public class Pd_Receiver extends PdDispatcher
 	{
         return INSTANCE;
     }
+	public void send_bang ( String target )
+	{
+		PdBase.sendBang ( target );
+	}
 	@Override
 	public void print ( String pd_message ) 
 	{
@@ -78,27 +90,17 @@ public class Pd_Receiver extends PdDispatcher
 	}
 	public void register_symbol ( String new_symbol )
 	{
-		user_control_symbols.add ( new_symbol );
+		control_symbols.add ( new_symbol );
+		PdBase.subscribe ( new_symbol );
 	}
 	public void deregister_symbol ( String target )
 	{
-		user_control_symbols.remove ( target );
+		control_symbols.remove ( target );
+		PdBase.unsubscribe ( target );
 	}
-	public void register_default_symbol ( String new_symbol )
+	public CopyOnWriteArrayList< String > get_symbols ( )
 	{
-		default_control_symbols.add ( new_symbol );
-	}
-	public void deregister_default_symbol ( String target )
-	{
-		default_control_symbols.remove ( target );
-	}
-	public CopyOnWriteArrayList< String > get_user_symbols ( )
-	{
-		return user_control_symbols;
-	}
-	public CopyOnWriteArrayList< String > get_default_symbols ( )
-	{
-		return default_control_symbols;
+		return control_symbols;
 	}
 	public void fetch_pd_messages ( )
 	{
