@@ -82,8 +82,8 @@
       <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </class>  
-  <class id="10" language="java" name="ensemble.apps.pd_testing.Pd_AudioEventServer" project="ensemble" 
-    file="/ensemble/src/ensemble/apps/pd_testing/Pd_AudioEventServer.java" binary="false" corner="BOTTOM_RIGHT">    
+  <class id="10" language="java" name="ensemble.apps.pd_testing.Pd_Event_Server" project="ensemble" 
+    file="/ensemble/src/ensemble/apps/pd_testing/Pd_Event_Server.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="1242" y="109"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      

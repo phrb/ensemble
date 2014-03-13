@@ -1,11 +1,13 @@
 package ensemble.apps.pd_testing;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import ensemble.*;
 import ensemble.apps.pd_testing.Pd_Constants;
+import ensemble.clock.TimeUnit;
 import ensemble.memory.*;
 import org.puredata.core.*;
 
@@ -16,52 +18,27 @@ import org.puredata.core.*;
  * 
  * It is able to receive bangs, floats and
  * messages from patches.
- * 
- * The method "process_pd_messages" is
- * called once every pd processing cycle,
- * and its extension can provide processing
- * of information from the patch.
- * 
- *  Audio samples are directly sent to the event server
- *  at this point.
  */
 public class Pd_Reasoning extends Reasoning
 {
-	/* 
-	 * This reasoning will have references to Actuators
-	 * and Sensors from its Agent.
-	 */
-	private HashMap<String, Pd_Actuator> actuators = new HashMap<String, Pd_Actuator>( );
-	private HashMap<String, Memory> actuator_memories = new HashMap<String, Memory>( );
+	private HashMap< String, Pd_Actuator > actuators = new HashMap<String, Pd_Actuator> ( );
+	private HashMap< String, Memory > actuator_memories = new HashMap<String, Memory> ( );
 	
-	private HashMap<String, Pd_Sensor> sensors = new HashMap<String, Pd_Sensor>( );
-	private HashMap<String, Memory> sensor_memories = new HashMap<String, Memory>( );
-	/*
-	 * Buffers and constants for
-	 * initialising Pd.
-	 */
-    private int ticks = Pd_Constants.DEFAULT_TICKS;
-    private float seconds = Pd_Constants.DEFAULT_SECONDS;
-    
+	private HashMap< String, Pd_Sensor > sensors = new HashMap<String, Pd_Sensor> ( );
+	private HashMap< String, Memory > sensor_memories = new HashMap<String, Memory> ( );
+	
+	private HashMap< String, Pd_Event > senses = new HashMap< String, Pd_Event > ( );
+
     private Pd_Audio_Server sampler;
     
 	private int patch;
 	private String subpatch;
 	private String agent_name;
 	private Pd_Receiver receiver;
-	private boolean pd_audio_output = true;
-	private boolean mute_patch = false;
 	
     private void process_ensemble_control_messages ( )
     {
-    	/*
-    	 * Process all messages sent
-    	 * to default control symbols.
-    	 * 
-    	 */
     	CopyOnWriteArrayList< Pd_Message > messages = receiver.get_messages ( );
-    	CopyOnWriteArrayList< Pd_Float > floats = receiver.get_floats ( );
-    	CopyOnWriteArrayList< String > bangs = receiver.get_bangs ( );
     	for ( Pd_Message message : messages )
     	{
     		String source = message.get_source ( );
@@ -69,53 +46,11 @@ public class Pd_Reasoning extends Reasoning
     		{
 				System.err.println ( "PURE_DATA: REGISTERED_USER_SYMBOL: " + message.get_symbol ( ) );
     			receiver.register_symbol ( agent_name + message.get_symbol ( ) );
-				PdBase.subscribe ( message.get_symbol ( ) );
     		}
     		else if ( source.equals ( Pd_Constants.UNSUBSCRIPTION ) )
     		{
 				System.err.println ( "PURE_DATA: DEREGISTERED_USER_SYMBOL: " + message.get_symbol ( ) );
     			receiver.deregister_symbol ( agent_name + message.get_symbol ( ) );
-				PdBase.unsubscribe ( message.get_symbol ( ) );
-    		}
-    	}
-    	for ( Pd_Float sent_float : floats )
-    	{
-    		String source = sent_float.get_source ( );
-			if ( source.equals ( agent_name + Pd_Constants.TICK ) )
-			{
-				ticks = ( int ) sent_float.get_value ( );
-				seconds = ( float ) ticks / ( Pd_Constants.SAMPLE_RATE / ( float ) PdBase.blockSize ( ) );
-				System.err.print ( "PURE_DATA_SETTING_TICK_SIZE: " + ticks + "\n" );
-			}
-			else if ( source.equals ( agent_name + Pd_Constants.SECONDS ) )
-			{
-				seconds = sent_float.get_value ( );
-				ticks = ( int ) ( seconds * ( Pd_Constants.SAMPLE_RATE / ( float ) PdBase.blockSize ( ) ) );
-				System.err.print ( "PURE_DATA_SETTING_SECONDS: " + seconds + "\n" );
-			}
-    	}
-    	for ( String sent_bang : bangs )
-    	{
-    		if ( sent_bang.equals ( agent_name + Pd_Constants.AUDIO_OFF ) )
-    		{
-    			pd_audio_output = false;
-    			System.err.println ( "PURE_DATA: AUDIO_OFF" );
-    		}
-    		else if ( sent_bang.equals ( agent_name + Pd_Constants.AUDIO_ON ) )
-    		{
-    			pd_audio_output = true;
-    			System.err.println ( "PURE_DATA: AUDIO_ON" );
-    		}
-    		else if ( sent_bang.equals ( agent_name + Pd_Constants.AUDIO_TOGGLE ) )
-    		{			
-    			pd_audio_output = ! ( pd_audio_output );
-    			System.err.println ( "PURE_DATA: AUDIO_TOGGLED" );
-    		}
-    		else if ( sent_bang.equals ( agent_name + Pd_Constants.MUTE ) )
-    		{
-    			mute_patch = true;
-    			pd_audio_output = ! ( mute_patch );
-    			System.err.println ( "PURE_DATA: PATCH WITH NO AUDIO OUTPUT." );
     		}
     	}
     }
@@ -127,7 +62,7 @@ public class Pd_Reasoning extends Reasoning
     	CopyOnWriteArrayList< Pd_Message > messages = receiver.get_messages ( );
     	CopyOnWriteArrayList< Pd_Float > floats = receiver.get_floats ( );
     	CopyOnWriteArrayList< String > bangs = receiver.get_bangs ( );
-    	CopyOnWriteArrayList< String > user_symbols = receiver.get_user_symbols ( );
+    	CopyOnWriteArrayList< String > user_symbols = receiver.get_symbols ( );
     	int array_size;
 		for ( String symbol : user_symbols )
 		{		
@@ -165,57 +100,14 @@ public class Pd_Reasoning extends Reasoning
     		}
 		}
     }
-	/*
-	 * The init method will be called once every time this
-	 * Reasoning is included in an Agent's Components.
-	 * 
-	 * (non-Javadoc)
-	 * @see ensemble.MusicalAgentComponent#init()
-	 */
 	@Override
 	public boolean init ( ) 
 	{
 		agent_name = getAgent ( ).getAgentName ( );
-		/*
-		 * Pd Setup
-		 * 
-		 * Each reasoning has its own
-		 * receiver.
-		 * 
-		 */
+
 		sampler = Pd_Audio_Server.get_instance ( );
 		receiver = Pd_Receiver.get_instance ( );
-		/* 
-		 * Registering control symbols:
-		 */
-		receiver.register_default_symbol ( Pd_Constants.AUDIO_TOGGLE );
-		receiver.register_default_symbol ( Pd_Constants.AUDIO_ON );
-		receiver.register_default_symbol ( Pd_Constants.AUDIO_OFF );
-		receiver.register_default_symbol ( Pd_Constants.TICK );
-		receiver.register_default_symbol ( Pd_Constants.SECONDS );
-		receiver.register_default_symbol ( Pd_Constants.MUTE );
-		receiver.register_default_symbol ( Pd_Constants.SUBSCRIPTION );
-		receiver.register_default_symbol ( Pd_Constants.UNSUBSCRIPTION );
-		/*
-		 * Subscribing to known control symbols.
-		 */
-		for ( String symbol : receiver.get_default_symbols ( ) )
-		{
-			PdBase.subscribe ( symbol );
-		}
-		for ( int i = 0; i < Pd_Constants.BANG_OUTLETS; i++ )
-		{
-			receiver.register_symbol ( Pd_Constants.BANG + i );
-			PdBase.subscribe(  Pd_Constants.BANG + i );
-		}
-		for ( int i = 0; i < Pd_Constants.FLOAT_OUTLETS; i++ )
-		{
-			receiver.register_symbol ( Pd_Constants.FLOAT + i );
-			PdBase.subscribe(  Pd_Constants.FLOAT + i );
-		}
-		/*
-         * Patch opening.
-         */
+
 		if ( parameters.get ( Pd_Constants.PATCH_ARGUMENT ) != null )
 		{
 			try 
@@ -223,49 +115,50 @@ public class Pd_Reasoning extends Reasoning
 				patch = sampler.open_patch( parameters.get ( Pd_Constants.PATCH_ARGUMENT ) );
 				System.err.println ( "PURE_DATA: PATCH_ID=" + patch + " PATH=" + "\"" + parameters.get( Pd_Constants.PATCH_ARGUMENT ) + "\"" );
 				process_ensemble_control_messages ( );
-				process_pd_messages ( );
+				//process_pd_messages ( );
 			} 
 			catch ( IOException e ) 
 			{
 				e.printStackTrace ( );
 			}
 		}
-		else if ( parameters.containsKey( "subpatch_name" ) )
+		else if ( parameters.containsKey( Pd_Constants.SUBPATCH ) )
 		{
-			subpatch = parameters.get ( "subpatch_name" ) + "-";
+			subpatch = parameters.get ( Pd_Constants.SUBPATCH ) + Pd_Constants.SEPARATOR;
 			process_ensemble_control_messages ( );
-			process_pd_messages ( );
+			//process_pd_messages ( );
 		}
 		else
 		{
 			System.err.println ( "REASONING ERROR: NO PATCH/SUBPATCH DEFINED!" );
 		}
-		/*
-		 * The dummy samples buffer is used when a patch is not
-		 * suposed to produced samples, but we do not want to
-		 * lose real-time due to lack of samples to play, so we
-		 * just play zeroes.
-		 * 
-		 */
 		return true;
 	}
-	/*
-	 * The process method is called once every cycle
-	 * of the framework.
-	 * 
-	 * (non-Javadoc)
-	 * @see ensemble.Reasoning#process()
-	 */
 	@Override
 	public void process ( ) 
 	{
+		for ( String sensor : senses.keySet ( ) )
+		{
+			Pd_Event event = senses.get ( sensor );
+			String type = event.get_type ( );
+			Object content = event.get_content ( );
+			
+			System.err.println ( getAgent ( ).getAgentName ( ) + ":" + sensor );
+			System.err.print ( "Received Event from: " );
+			if ( type.equals( Pd_Constants.BANG ) )
+			{
+				System.err.println ( "Type: Bang\n" + "Source: " + content );
+			}
+			else if ( type.equals( Pd_Constants.MESSAGE ) )
+			{
+				String message_source = ( ( Pd_Message ) content ).get_source ( );
+				String symbol = ( ( Pd_Message ) content ).get_symbol ( );
+				Object[ ] arguments = ( ( Pd_Message ) content ).get_arguments ( );
+				System.err.println ( "Type: Message\n" + "Source: " + message_source + " Symbol: " + symbol );
+			}
+		}
+		senses.clear ( );
 	}
-	/*
-	 * Called when an event handler is registered in the agent.
-	 * 
-	 * (non-Javadoc)
-	 * @see ensemble.Reasoning#eventHandlerRegistered(ensemble.EventHandler)
-	 */
 	@Override
 	protected void eventHandlerRegistered ( EventHandler event_handler ) 
 	{
@@ -281,7 +174,12 @@ public class Pd_Reasoning extends Reasoning
 			sensor_memories.put ( event_handler.getComponentName ( ), getAgent ( ).getKB ( ).getMemory ( event_handler.getComponentName ( ) ) );
 		}
 	}
-	public void newSense ( Sensor sourceSensor, double instant, double duration ) throws Exception 
+	public void newSense ( Sensor source, double instant, double duration ) throws Exception 
 	{
+		Memory source_memory = sensor_memories.get( source.getComponentName ( ) );
+		Pd_Event event = ( Pd_Event ) source_memory.readMemory ( instant, duration, TimeUnit.SECONDS );
+		
+		senses.put ( source.getComponentName ( ), event );
+
 	}
 }

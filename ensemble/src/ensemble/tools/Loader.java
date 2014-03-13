@@ -63,7 +63,6 @@ import ensemble.apps.pd_testing.Pd_Message;
 import ensemble.apps.pd_testing.Pd_Receiver;
 import org.puredata.core.PdBase;
 import ensemble.apps.pd_testing.Pd_Agent_Class_Information;
-import ensemble.apps.pd_testing.Pd_Agent_Instance;
 
 // TODO: Auto-generated Javadoc
 /***
@@ -148,12 +147,9 @@ public class Loader {
 
 	private static final String pd_arg = "arg";
 	private static final String pd_value = "value";
-	private static final String pd_environment = "environment";
+	
 	private static final String pd_class = "class";
 	private static final String pd_type = "type";
-	private static final String pd_add_agent = "add_agent";
-	private static final String pd_new_agent_type = "new_agent_type";
-	private static final String pd_global = "global";
 	private static final String pd_name = "name";
 	private static final String pd_world = "world";
 	private static final String pd_patch = "patch";
@@ -245,7 +241,7 @@ public class Loader {
 				Constants.MODE_REAL_TIME);
 		jade_profile.setParameter(Constants.SCHEDULER_THREADS, "5");
 		for (Pd_Message message : config_receiver.get_messages()) {
-			if (message.get_source().equals(pd_global)) {
+			if (message.get_source().equals(Pd_Constants.GLOBAL_KEY)) {
 				if (message.get_symbol().equals(Constants.CLOCK_MODE)) {
 					jade_profile.setParameter(Constants.CLOCK_MODE,
 							(String) message.get_arguments()[0]);
@@ -876,7 +872,7 @@ public class Loader {
 			/*
 			 * Loading Environment Agent:
 			 */
-			if (message.get_source().equals(pd_environment)) {
+			if (message.get_source().equals(Pd_Constants.ENVIRONMENT_KEY)) {
 				/*
 				 * Checking for the class, and parameters:
 				 */
@@ -940,23 +936,22 @@ public class Loader {
 			/*
 			 * Instance of Musical Agent:
 			 */
-			else if (message.get_source().equals(pd_add_agent)) {
+			else if (message.get_source().equals(Pd_Constants.ADD_AGENT_KEY)) {
 				String new_class_name = null;
 				Parameters new_class_parameters = null;
+				Parameters new_knowledge_base = new Parameters ( );
 				String new_name = null;
 
 				if (message.get_symbol().equals(pd_name)) {
 					new_name = (String) message.get_arguments()[0];
-					config_receiver.register_default_symbol( new_name );
-					PdBase.subscribe ( new_name );
+					config_receiver.register_symbol( new_name );
 					argument_position += 1;
 
 					new_class_name = Pd_Constants.PD_AGENT_CLASS;
-					new_class_parameters = readArguments(message,
-							argument_position);
+					new_class_parameters = readArguments(message, argument_position);
 					argument_position = 0;
 					agent_classes.add(new Pd_Agent_Class_Information(new_name,
-							new_class_name, new_class_parameters));
+							new_class_name, new_class_parameters, new_knowledge_base));
 				} else {
 					System.err
 							.println("ADDING_AGENT: SHOULD DEFINE MUSICAL_AGENT CLASS!");
@@ -999,6 +994,7 @@ public class Loader {
 				instance_arguments = new Object[1];
 				instance_arguments[0] = agent_class.get_parameters();
 				musical_agent.setArguments(instance_arguments);
+				musical_agent.addKB("ensemble.KnowledgeBase", agent_class.get_knowledge_base());
 				jade_container_controller.acceptNewAgent(
 						agent_class.get_name(), musical_agent).start();
 			}
@@ -1075,23 +1071,9 @@ public class Loader {
 				 * Pd Setup
 				 */
 				config_receiver = Pd_Receiver.get_instance();
-				/*
-				 * Registering config symbols to pd receiver:
-				 */
-				config_receiver.register_default_symbol(pd_environment);
-				config_receiver.register_default_symbol(pd_new_agent_type);
-				config_receiver.register_default_symbol(pd_add_agent);
-				config_receiver.register_default_symbol(pd_global);
-				/*
-				 * Subscribing to control symbols:
-				 */
-				for (String symbol : config_receiver.get_default_symbols()) {
-					PdBase.subscribe(symbol);
-				}
-				PdBase.setReceiver(config_receiver);
 				try {
 					patch = PdBase.openPatch(pd_patch_path);
-					PdBase.pollPdMessageQueue();
+					config_receiver.fetch_pd_messages ( );
 				} catch (IOException e) {
 					e.printStackTrace();
 					System.exit(-1);
@@ -1120,8 +1102,7 @@ public class Loader {
 			/*
 			 * Close the patch & Pd, so we can restart Pd later:
 			 */
-			//PdBase.closePatch(patch);
-			PdBase.sendBang ( Pd_Constants.PROCESSING_ON );
+			config_receiver.send_bang ( Pd_Constants.PROCESSING_ON );
 		} else {
 			System.out
 					.println("Loader usage: java Loader [-f <ensemble.properties> | [ [ -p | --patch ] <patch.pd> ] ] [ -nogui ]");

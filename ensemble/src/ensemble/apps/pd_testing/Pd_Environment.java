@@ -20,7 +20,7 @@ public class Pd_Environment extends EnvironmentAgent
 	@Override
 	public boolean configure ( )
 	{
-		this.addEventServer ( "ensemble.apps.pd_testing.Pd_AudioEventServer", new Parameters ( ) );
+		this.addEventServer ( "ensemble.apps.pd_testing.Pd_Event_Server", new Parameters ( ) );
 		return true;
 	}
 	public Pd_Receiver get_receiver ( )

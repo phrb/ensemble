@@ -3,7 +3,7 @@ package ensemble.apps.pd_testing;
 public class Pd_Message 
 {
 	private String source;
-	private String symbol;
+	private Object symbol;
 	private Object[ ] arguments;
 	
 	public Pd_Message ( String new_source, String new_symbol, Object... new_arguments )
@@ -18,7 +18,14 @@ public class Pd_Message
 	}
 	public String get_symbol ( )
 	{
-		return symbol;
+		if ( symbol instanceof Float )
+		{
+			return symbol.toString ( );
+		}
+		else
+		{
+			return ( String ) symbol;	
+		}
 	}
 	public Object[ ] get_arguments ( )
 	{

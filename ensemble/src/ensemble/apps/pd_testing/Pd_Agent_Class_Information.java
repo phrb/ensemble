@@ -8,12 +8,14 @@ public class Pd_Agent_Class_Information
 	private String class_name;
 		
 	private Parameters arguments;
+	private Parameters knowledge_base;
 	
-	public Pd_Agent_Class_Information ( String new_name, String new_class_name, Parameters new_arguments )
+	public Pd_Agent_Class_Information ( String new_name, String new_class_name, Parameters new_arguments, Parameters new_knowledge_base )
 	{
 		name = new_name;
 		class_name = new_class_name;
 		arguments = new_arguments;
+		knowledge_base = new_knowledge_base;
 	}
 	public String get_name ( )
 	{
@@ -26,5 +28,9 @@ public class Pd_Agent_Class_Information
 	public Parameters get_parameters ( )
 	{
 		return arguments;
+	}
+	public Parameters get_knowledge_base ( )
+	{
+		return knowledge_base;
 	}
 }
