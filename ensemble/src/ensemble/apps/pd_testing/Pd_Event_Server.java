@@ -126,17 +126,6 @@ public class Pd_Event_Server extends EventServer
 				receiver.send_message ( sensor_message );
 			}
 		}
-		else if ( sensors.containsKey( source ) )
-		{
-			String[ ] sensor_target = source.split ( Pd_Constants.SEPARATOR );
-			
-			Pd_Message new_message = new Pd_Message ( source, symbol, arguments );
-			Pd_Event pd_event = new Pd_Event ( Pd_Constants.MESSAGE, new_message );
-			Event new_event = new Event ( );
-			new_event.objContent = pd_event;
-			
-			addOutputEvent ( sensor_target[ 0 ], sensor_target[ 1 ], new_event );
-		}
 	}
 	protected void process_bang ( String bang )
 	{
@@ -173,16 +162,6 @@ public class Pd_Event_Server extends EventServer
 				addOutputEvent ( event_target[ 0 ], event_target[ 1 ], new_event );
 				receiver.send_bang ( actuator_target );
 			}
-		}
-		else if ( sensors.containsKey ( bang ) )
-		{
-			String[ ] sensor_target = bang.split ( Pd_Constants.SEPARATOR );
-			
-			Pd_Event pd_event = new Pd_Event ( Pd_Constants.BANG, bang );
-			Event new_event = new Event ( );
-			new_event.objContent = pd_event;
-			
-			addOutputEvent ( sensor_target[ 0 ], sensor_target[ 1 ], new_event );
 		}
 	}
 	protected void process ( )

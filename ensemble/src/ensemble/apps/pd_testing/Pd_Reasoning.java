@@ -116,7 +116,6 @@ public class Pd_Reasoning extends Reasoning
 				patch = sampler.open_patch( parameters.get ( Pd_Constants.PATCH_ARGUMENT ) );
 				System.err.println ( "PURE_DATA: PATCH_ID=" + patch + " PATH=" + "\"" + parameters.get( Pd_Constants.PATCH_ARGUMENT ) + "\"" );
 				process_ensemble_control_messages ( );
-				//process_pd_messages ( );
 			} 
 			catch ( IOException e ) 
 			{
@@ -127,11 +126,10 @@ public class Pd_Reasoning extends Reasoning
 		{
 			subpatch = parameters.get ( Pd_Constants.SUBPATCH ) + Pd_Constants.SEPARATOR;
 			process_ensemble_control_messages ( );
-			//process_pd_messages ( );
 		}
 		else
 		{
-			System.err.println ( "REASONING ERROR: NO PATCH/SUBPATCH DEFINED!" );
+			System.err.println ( "REASONING ERROR: NO SUBPATCH DEFINED!" );
 		}
 		return true;
 	}
