@@ -42,6 +42,17 @@ public class Pd_Receiver extends PdDispatcher
 	{
 		PdBase.sendBang ( target );
 	}
+	public void send_message ( Pd_Message message )
+	{
+		if ( message.get_arguments ( ) == null )
+		{
+			PdBase.sendMessage ( message.get_source ( ), message.get_symbol ( ) );
+		}
+		else
+		{
+			PdBase.sendMessage( message.get_source ( ), message.get_symbol ( ), message.get_arguments ( ) );
+		}
+	}
 	@Override
 	public void print ( String pd_message ) 
 	{

@@ -9,6 +9,7 @@ import ensemble.*;
 import ensemble.apps.pd_testing.Pd_Constants;
 import ensemble.clock.TimeUnit;
 import ensemble.memory.*;
+
 import org.puredata.core.*;
 
 /*
@@ -155,6 +156,33 @@ public class Pd_Reasoning extends Reasoning
 				String symbol = ( ( Pd_Message ) content ).get_symbol ( );
 				Object[ ] arguments = ( ( Pd_Message ) content ).get_arguments ( );
 				System.err.println ( "Type: Message\n" + "Source: " + message_source + " Symbol: " + symbol );
+				if ( symbol.equals ( "access_kb" ) )
+				{
+					String value = getAgent ( ).getKB ( ).readFact ( ( String ) arguments[ 0 ] );
+					if ( value != null )
+					{
+						for ( Actuator actuator : actuators.values ( ) )
+						{
+							String[ ] target_agent = message_source.split ( Pd_Constants.SEPARATOR );
+							String[ ] actuator_target = actuator.getParameter ( Pd_Constants.SCOPE ).split ( Pd_Constants.SEPARATOR );
+							if ( actuator_target[ 0 ].equals ( target_agent[ 0 ] ) ||
+									actuator_target[ 0 ].equals ( Pd_Constants.GLOBAL_KEY ) )
+							{
+								Pd_Message new_message = new Pd_Message ( agent_name + Pd_Constants.SEPARATOR + actuator.getComponentName ( ), value );
+								Pd_Event pd_event = new Pd_Event ( Pd_Constants.MESSAGE, new_message );
+								try 
+								{
+									actuator_memories.get ( actuator.getComponentName ( ) ).writeMemory ( pd_event );
+									actuator.act ( );
+								} 
+								catch ( MemoryException e ) 
+								{
+									e.printStackTrace ( );
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 		senses.clear ( );
