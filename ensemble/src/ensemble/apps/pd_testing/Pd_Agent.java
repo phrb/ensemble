@@ -42,9 +42,6 @@ public class Pd_Agent extends MusicalAgent
 				new_parameters.put( ( String ) attributes[ i ], ( String ) attributes[ i + 1 ] );
 				i += 1;
 			}
-			/*
-			 * TODO: Dinamically receive arguments. (arg, value)
-			 */
 			else
 			{
 				break;
@@ -165,6 +162,20 @@ public class Pd_Agent extends MusicalAgent
 			Parameters reasoning_parameters = new Parameters ( );
 			reasoning_parameters.put ( Pd_Constants.SUBPATCH, agent_name );
 			this.addComponent ( "Reasoning", Pd_Constants.PD_REASONING_CLASS, reasoning_parameters );
+			
+			Parameters self_actuator = new Parameters ( );
+			Parameters self_sensor = new Parameters ( );
+			self_actuator.put ( Pd_Constants.EVENT_TYPE, Pd_Constants.DEFAULT_EVENT_TYPE );
+			self_actuator.put ( Pd_Constants.SCOPE, agent_name + Pd_Constants.SEPARATOR +
+					"senseself" );
+			self_sensor.put ( Pd_Constants.EVENT_TYPE, Pd_Constants.DEFAULT_EVENT_TYPE );
+			self_sensor.put ( Pd_Constants.SCOPE, agent_name + Pd_Constants.SEPARATOR +
+					"actself" );
+			receiver.register_symbol( agent_name + Pd_Constants.SEPARATOR + "actself" );
+			receiver.register_symbol( agent_name + Pd_Constants.SEPARATOR + "senseself" );
+			this.addComponent( "actself", Pd_Constants.PD_ACTUATOR_CLASS, self_actuator );
+			this.addComponent( "senseself", Pd_Constants.PD_SENSOR_CLASS, self_sensor );
+			
 			process_subpatch_control_messages ( );
 			return true;
 		}

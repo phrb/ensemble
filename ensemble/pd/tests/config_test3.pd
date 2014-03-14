@@ -1,0 +1,60 @@
+#N canvas 0 47 1280 753 10;
+#X obj 145 37 loadbang;
+#X msg 328 201 \; environment world ensemble.apps.pd_testing.Pd_World
+;
+#X msg 416 62 \; global PROCESS_MODE BATCH;
+#X msg 406 96 \; global CLOCK_MODE CLOCK_USER;
+#X msg 328 148 \; environment class ensemble.apps.pd_testing.Pd_Environment
+arg AGENTS value 3;
+#N canvas 0 47 1280 753 simple_agent0 1;
+#X msg 271 171 \; simple_agent0 add_sensor sense1 type event scope
+global;
+#X obj 315 459 s simple_agent0:act1;
+#X obj 215 76 r simple_agent0:start;
+#X msg 284 112 \; simple_agent0 add_actuator act1 type event scope
+simple_agent1:eleanor;
+#X connect 2 0 3 0;
+#X connect 2 0 0 0;
+#X restore 798 81 pd simple_agent0;
+#X msg 202 239 \; add_agent name simple_agent0;
+#N canvas 0 47 1280 753 simple_agent1 1;
+#X obj 112 58 r simple_agent1:start;
+#X obj 803 136 r simple_agent1:eleanor;
+#X msg 92 222 \; simple_agent1 new_fact global satan 666;
+#X msg 115 162 \; simple_agent1 add_sensor eleanor type event scope
+simple_agent0:act1;
+#X msg 131 101 \; simple_agent1 add_actuator filisteu type event scope
+simple_agent0:sense1;
+#X obj 614 -23 loadbang;
+#X obj 609 -2 metro 500;
+#X obj 589 315 r simple_agent1:actself;
+#X obj 589 336 print;
+#X obj 596 40 s simple_agent1:senseself;
+#X msg 602 19 access_kb satan;
+#X obj 813 193 s simple_agent1:filisteu;
+#X connect 0 0 4 0;
+#X connect 0 0 3 0;
+#X connect 0 0 2 0;
+#X connect 5 0 6 0;
+#X connect 6 0 10 0;
+#X connect 7 0 8 0;
+#X connect 10 0 9 0;
+#X restore 827 113 pd simple_agent1;
+#N canvas 0 47 1280 753 simple_agent2 1;
+#X msg 107 52 \; simple_agent2 add_actuator lele1 type event scope
+global;
+#X msg 90 90 \; simple_agent2 add_sensor derp2 type event scope global
+;
+#X obj 44 21 r simple_agent2:start;
+#X connect 2 0 0 0;
+#X connect 2 0 1 0;
+#X restore 849 143 pd simple_agent2;
+#X msg 178 278 \; add_agent name simple_agent1;
+#X msg 155 317 \; add_agent name simple_agent2;
+#X connect 0 0 4 0;
+#X connect 0 0 1 0;
+#X connect 0 0 2 0;
+#X connect 0 0 3 0;
+#X connect 0 0 6 0;
+#X connect 0 0 9 0;
+#X connect 0 0 10 0;
