@@ -7,52 +7,50 @@
 #X msg 328 148 \; environment class ensemble.apps.pd_testing.Pd_Environment
 arg AGENTS value 3;
 #N canvas 0 47 1920 1033 simple_agent0 1;
-#X obj 672 245 outlet~;
-#X obj 667 199 osc~;
-#X obj 682 135 *~ 140;
-#X obj 674 161 +~ 440;
-#X obj 666 93 osc~ 2;
-#X msg 200 172 \; simple_agent0 add_sensor sense1 type event scope
+#X obj 670 189 outlet~;
+#X obj 672 165 osc~;
+#X obj 671 122 *~ 140;
+#X obj 672 146 +~ 440;
+#X obj 670 100 osc~ 2;
+#X msg 271 171 \; simple_agent0 add_sensor sense1 type event scope
 global;
-#X obj 902 86 r sense1;
-#X obj 923 234 loadbang;
-#X obj 923 262 metro 500;
-#X obj 937 292 s simple_agent0:act1;
-#X msg 229 110 \; simple_agent0 add_actuator act1 type event scope
-simple_agent1:eleanor;
-#X obj 812 259 loadbang;
-#X obj 814 287 metro 800;
+#X obj 83 232 metro 500;
+#X obj 81 351 s simple_agent0:act1;
 #X obj 215 76 r simple_agent0:start;
-#X msg 808 317 \; simple_agent0:act1 acess_kb pos 22;
+#X obj 81 211 loadbang;
+#X msg 284 112 \; simple_agent0 add_actuator act1 type event scope
+simple_agent1:eleanor;
+#X msg 81 253 \; simple_agent0:act1 access_kb satan;
 #X connect 1 0 0 0;
 #X connect 2 0 3 0;
 #X connect 3 0 1 0;
 #X connect 4 0 2 0;
-#X connect 7 0 8 0;
-#X connect 8 0 9 0;
-#X connect 11 0 12 0;
-#X connect 12 0 14 0;
-#X connect 13 0 10 0;
-#X connect 13 0 5 0;
+#X connect 6 0 11 0;
+#X connect 8 0 10 0;
+#X connect 8 0 5 0;
+#X connect 9 0 6 0;
 #X restore 788 200 pd simple_agent0;
 #X msg 202 239 \; add_agent name simple_agent0;
-#N canvas 0 47 1920 1033 simple_agent1 0;
+#N canvas 0 47 1920 1033 simple_agent1 1;
 #X obj 554 140 loadbang;
 #X msg 521 182 \; MUTE bang;
 #X obj 699 245 outlet~;
 #X obj 689 156 osc~ 200;
 #X obj 735 181 osc~ 300;
 #X obj 706 209 *~;
-#X msg 131 88 \; simple_agent1 add_actuator filisteu type event scope
-global;
-#X msg 114 131 \; simple_agent1 add_sensor eleanor type event scope
-AAaa;
 #X obj 112 58 r simple_agent1:start;
+#X obj 832 125 r simple_agent1:eleanor;
+#X msg 92 222 \; simple_agent1 new_fact global satan 666;
+#X msg 115 162 \; simple_agent1 add_sensor eleanor type event scope
+simple_agent0:act1;
+#X msg 131 101 \; simple_agent1 add_actuator filisteu type event scope
+simple_agent0:sense1;
 #X connect 3 0 5 0;
 #X connect 4 0 5 1;
 #X connect 5 0 2 0;
-#X connect 8 0 6 0;
-#X connect 8 0 7 0;
+#X connect 6 0 10 0;
+#X connect 6 0 9 0;
+#X connect 6 0 8 0;
 #X restore 856 222 pd simple_agent1;
 #N canvas 0 47 1920 1033 simple_agent2 1;
 #X obj 465 131 loadbang;
@@ -64,11 +62,9 @@ global;
 #X msg 90 90 \; simple_agent2 add_sensor derp2 type event scope global
 ;
 #X obj 44 21 r simple_agent2:start;
-#X msg 73 142 \; simple_agent2 new_fact global satan 666;
 #X connect 3 0 2 0;
 #X connect 6 0 4 0;
 #X connect 6 0 5 0;
-#X connect 6 0 7 0;
 #X restore 899 250 pd simple_agent2;
 #X msg 178 278 \; add_agent name simple_agent1;
 #X msg 155 317 \; add_agent name simple_agent2;

@@ -4,11 +4,16 @@ public class Pd_Message
 {
 	private String source;
 	private Object symbol;
-	private Object[ ] arguments;
+	private Object[ ] arguments = null;
 	
 	public Pd_Message ( String new_source, String new_symbol, Object... new_arguments )
 	{
 		arguments = new_arguments;
+		source = new_source;
+		symbol = new_symbol;
+	}
+	public Pd_Message ( String new_source, String new_symbol )
+	{
 		source = new_source;
 		symbol = new_symbol;
 	}
