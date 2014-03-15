@@ -25,7 +25,7 @@ public class Pd_Receiver extends PdDispatcher
 		 * Registering config symbols to pd receiver:
 		 */
 		register_symbol ( Pd_Constants.ENVIRONMENT_KEY );
-		register_symbol ( Pd_Constants.ADD_AGENT_KEY );
+		register_symbol ( Pd_Constants.ADD_AGENT );
 		register_symbol ( Pd_Constants.GLOBAL_KEY );
 		register_symbol ( Pd_Constants.SUBSCRIPTION );
 		register_symbol ( Pd_Constants.UNSUBSCRIPTION );
@@ -38,6 +38,10 @@ public class Pd_Receiver extends PdDispatcher
 	{
         return INSTANCE;
     }
+	public void send_float ( String target, Float value )
+	{
+		PdBase.sendFloat ( target, value );
+	}
 	public void send_bang ( String target )
 	{
 		PdBase.sendBang ( target );

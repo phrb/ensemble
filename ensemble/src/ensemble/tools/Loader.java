@@ -936,7 +936,7 @@ public class Loader {
 			/*
 			 * Instance of Musical Agent:
 			 */
-			else if (message.get_source().equals(Pd_Constants.ADD_AGENT_KEY)) {
+			else if (message.get_source().equals(Pd_Constants.ADD_AGENT)) {
 				String new_class_name = null;
 				Parameters new_class_parameters = null;
 				Parameters new_knowledge_base = new Parameters ( );
@@ -947,7 +947,7 @@ public class Loader {
 					config_receiver.register_symbol( new_name );
 					argument_position += 1;
 
-					new_class_name = Pd_Constants.PD_AGENT_CLASS;
+					new_class_name = Pd_Constants.AGENT_CLASS;
 					new_class_parameters = readArguments(message, argument_position);
 					argument_position = 0;
 					agent_classes.add(new Pd_Agent_Class_Information(new_name,
