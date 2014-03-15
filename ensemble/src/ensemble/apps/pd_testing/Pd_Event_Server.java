@@ -83,7 +83,7 @@ public class Pd_Event_Server extends EventServer
 	}
 	protected void new_message_event ( String target, Pd_Message new_message )
 	{
-		String[ ] event_target = target.split( Pd_Constants.SEPARATOR );
+		String[ ] event_target = target.split ( Pd_Constants.SEPARATOR );
 		
 		Pd_Event pd_event = new Pd_Event ( Pd_Constants.MESSAGE, new_message );
 		Event new_event = new Event ( );
@@ -93,9 +93,19 @@ public class Pd_Event_Server extends EventServer
 	}
 	protected void new_bang_event ( String target, String bang )
 	{
-		String[ ] event_target = target.split( Pd_Constants.SEPARATOR );
+		String[ ] event_target = target.split ( Pd_Constants.SEPARATOR );
 		
 		Pd_Event pd_event = new Pd_Event ( Pd_Constants.BANG, bang );
+		Event new_event = new Event ( );
+		new_event.objContent = pd_event;
+		
+		addOutputEvent ( event_target[ 0 ], event_target[ 1 ], new_event );
+	}
+	protected void new_float_event ( String target, Pd_Float value )
+	{
+		String[ ] event_target = target.split ( Pd_Constants.SEPARATOR );
+		
+		Pd_Event pd_event = new Pd_Event ( Pd_Constants.FLOAT, value );
 		Event new_event = new Event ( );
 		new_event.objContent = pd_event;
 		
@@ -141,11 +151,45 @@ public class Pd_Event_Server extends EventServer
 		{
 			String actuator_target = actuators.get ( bang ).get ( Pd_Constants.SCOPE );
 			Parameters targeted_sensor = sensors.get ( actuator_target );
-			if ( targeted_sensor != null && ( targeted_sensor.get ( Pd_Constants.SCOPE ).equals( bang ) ||		
+			if ( bang.split ( ":" )[ 1 ].equals ( Pd_Constants.SELF_ACTUATOR ) )
+			{
+				new_bang_event ( actuator_target, bang );
+			}
+			else if ( targeted_sensor != null && ( targeted_sensor.get ( Pd_Constants.SCOPE ).equals ( bang ) ||		
 					targeted_sensor.get ( Pd_Constants.SCOPE ).equals ( Pd_Constants.GLOBAL_KEY ) ) )
 			{
 				new_bang_event ( actuator_target, bang );
 				receiver.send_bang ( actuator_target );
+			}
+			else if ( actuator_target.equals ( Pd_Constants.GLOBAL_KEY ) )
+			{
+				for ( String sensor : sensors.keySet ( ) )
+				{
+					if ( sensors.get ( sensor ).get ( Pd_Constants.SCOPE ).equals ( Pd_Constants.GLOBAL_KEY ) )
+					{
+						new_bang_event ( sensor, bang );
+						receiver.send_bang ( sensor );
+					}
+				}
+			}
+		}
+	}
+	protected void process_float ( Pd_Float value )
+	{
+		String source = value.get_source ( );
+		if ( actuators.containsKey ( source ) )
+		{
+			String actuator_target = actuators.get ( source ).get ( Pd_Constants.SCOPE );
+			Parameters targeted_sensor = sensors.get ( actuator_target );
+			if ( source.split ( ":" )[ 1 ].equals ( Pd_Constants.SELF_ACTUATOR ) )
+			{
+				new_float_event ( actuator_target, value );
+			}
+			else if ( targeted_sensor != null && ( targeted_sensor.get ( Pd_Constants.SCOPE ).equals ( source ) ||		
+					targeted_sensor.get ( Pd_Constants.SCOPE ).equals ( Pd_Constants.GLOBAL_KEY ) ) )
+			{
+				new_float_event ( actuator_target, value );
+				receiver.send_float ( actuator_target, value.get_value ( ) );
 			}
 			else if ( actuator_target.equals( Pd_Constants.GLOBAL_KEY ) )
 			{
@@ -153,8 +197,8 @@ public class Pd_Event_Server extends EventServer
 				{
 					if ( sensors.get ( sensor ).get ( Pd_Constants.SCOPE ).equals( Pd_Constants.GLOBAL_KEY ) )
 					{
-						new_bang_event ( sensor, bang );
-						receiver.send_bang ( sensor );
+						new_float_event ( sensor, value );
+						receiver.send_float ( sensor, value.get_value ( ) );
 					}
 				}
 			}
@@ -174,6 +218,11 @@ public class Pd_Event_Server extends EventServer
 			{
 				Pd_Message message = ( Pd_Message ) event.get_content ( );
 				receiver.send_message ( message );
+			}
+			else if ( type.equals ( Pd_Constants.FLOAT ) )
+			{
+				Pd_Float new_float = ( Pd_Float ) event.get_content ( );
+				receiver.send_float ( new_float.get_source ( ), new_float.get_value ( )  );
 			}
 		}
 		events.clear ( );
@@ -195,9 +244,7 @@ public class Pd_Event_Server extends EventServer
 		}
 		for ( Pd_Float pd_float : receiver.get_floats ( ) )
 		{
-			/* TODO:
-			 * process_float ( );
-			 */
+			process_float ( pd_float );
 		}
 		receiver.start_new_cycle ( );
 		act ( );
