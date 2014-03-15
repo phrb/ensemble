@@ -81,6 +81,26 @@ public class Pd_Event_Server extends EventServer
 	    line.stop ( );
 		return true;
 	}
+	protected void new_message_event ( String target, Pd_Message new_message )
+	{
+		String[ ] event_target = target.split( Pd_Constants.SEPARATOR );
+		
+		Pd_Event pd_event = new Pd_Event ( Pd_Constants.MESSAGE, new_message );
+		Event new_event = new Event ( );
+		new_event.objContent = pd_event;
+		
+		addOutputEvent ( event_target[ 0 ], event_target[ 1 ], new_event );
+	}
+	protected void new_bang_event ( String target, String bang )
+	{
+		String[ ] event_target = target.split( Pd_Constants.SEPARATOR );
+		
+		Pd_Event pd_event = new Pd_Event ( Pd_Constants.BANG, bang );
+		Event new_event = new Event ( );
+		new_event.objContent = pd_event;
+		
+		addOutputEvent ( event_target[ 0 ], event_target[ 1 ], new_event );
+	}
 	protected void process_message ( Pd_Message message )
 	{
 		String source = message.get_source ( );
@@ -90,40 +110,28 @@ public class Pd_Event_Server extends EventServer
 		{
 			String actuator_target = actuators.get ( source ).get ( Pd_Constants.SCOPE );
 			Parameters targeted_sensor = sensors.get ( actuator_target );
-			if ( actuator_target.equals( Pd_Constants.GLOBAL_KEY ) )
+			if ( source.split ( ":" )[ 1 ].equals ( Pd_Constants.SELF_ACTUATOR ) )
+			{
+				new_message_event ( actuator_target, message );
+			}
+			else if ( targeted_sensor != null && ( targeted_sensor.get ( Pd_Constants.SCOPE ).equals( source ) ||		
+					targeted_sensor.get ( Pd_Constants.SCOPE ).equals ( Pd_Constants.GLOBAL_KEY ) ) )
+			{
+				new_message_event ( actuator_target, message );
+				Pd_Message sensor_message = new Pd_Message ( actuator_target, symbol, arguments );
+				receiver.send_message ( sensor_message );
+			}
+			else if ( actuator_target.equals( Pd_Constants.GLOBAL_KEY ) )
 			{
 				for ( String sensor : sensors.keySet ( ) )
 				{
 					if ( sensors.get ( sensor ).get ( Pd_Constants.SCOPE ).equals ( Pd_Constants.GLOBAL_KEY ) )
 					{
-						String[ ] event_target = sensor.split( Pd_Constants.SEPARATOR );
-						
-						Pd_Message new_message = new Pd_Message ( source, symbol, arguments );
-						Pd_Event pd_event = new Pd_Event ( Pd_Constants.MESSAGE, new_message );
-						Event new_event = new Event ( );
-						new_event.objContent = pd_event;
-						
-						addOutputEvent ( event_target[ 0 ], event_target[ 1 ], new_event );
-						
+						new_message_event ( sensor, message );						
 						Pd_Message sensor_message = new Pd_Message ( sensor, symbol, arguments );
 						receiver.send_message ( sensor_message );
 					}
 				}
-			}
-			else if ( targeted_sensor != null && ( targeted_sensor.get ( Pd_Constants.SCOPE ).equals( source ) ||		
-					targeted_sensor.get ( Pd_Constants.SCOPE ).equals ( Pd_Constants.GLOBAL_KEY ) ) )
-			{
-				String[ ] event_target = actuator_target.split ( Pd_Constants.SEPARATOR );
-				
-				Pd_Message new_message = new Pd_Message ( source, symbol, arguments );
-				Pd_Event pd_event = new Pd_Event ( Pd_Constants.MESSAGE, new_message );
-				Event new_event = new Event ( );
-				new_event.objContent = pd_event;
-				
-				addOutputEvent ( event_target[ 0 ], event_target[ 1 ], new_event );
-				
-				Pd_Message sensor_message = new Pd_Message ( actuator_target, symbol, arguments );
-				receiver.send_message ( sensor_message );
 			}
 		}
 	}
@@ -133,34 +141,22 @@ public class Pd_Event_Server extends EventServer
 		{
 			String actuator_target = actuators.get ( bang ).get ( Pd_Constants.SCOPE );
 			Parameters targeted_sensor = sensors.get ( actuator_target );
-			if ( actuator_target.equals( Pd_Constants.GLOBAL_KEY ) )
+			if ( targeted_sensor != null && ( targeted_sensor.get ( Pd_Constants.SCOPE ).equals( bang ) ||		
+					targeted_sensor.get ( Pd_Constants.SCOPE ).equals ( Pd_Constants.GLOBAL_KEY ) ) )
+			{
+				new_bang_event ( actuator_target, bang );
+				receiver.send_bang ( actuator_target );
+			}
+			else if ( actuator_target.equals( Pd_Constants.GLOBAL_KEY ) )
 			{
 				for ( String sensor : sensors.keySet ( ) )
 				{
 					if ( sensors.get ( sensor ).get ( Pd_Constants.SCOPE ).equals( Pd_Constants.GLOBAL_KEY ) )
 					{
-						String[ ] event_target = sensor.split( Pd_Constants.SEPARATOR );
-						
-						Pd_Event pd_event = new Pd_Event ( Pd_Constants.BANG, bang );
-						Event new_event = new Event ( );
-						new_event.objContent = pd_event;
-						
-						addOutputEvent ( event_target[ 0 ], event_target[ 1 ], new_event );
+						new_bang_event ( sensor, bang );
 						receiver.send_bang ( sensor );
 					}
 				}
-			}
-			else if ( targeted_sensor != null && ( targeted_sensor.get ( Pd_Constants.SCOPE ).equals( bang ) ||		
-					targeted_sensor.get ( Pd_Constants.SCOPE ).equals ( Pd_Constants.GLOBAL_KEY ) ) )
-			{
-				String[ ] event_target = actuator_target.split( Pd_Constants.SEPARATOR );
-				
-				Pd_Event pd_event = new Pd_Event ( Pd_Constants.BANG, bang );
-				Event new_event = new Event ( );
-				new_event.objContent = pd_event;
-				
-				addOutputEvent ( event_target[ 0 ], event_target[ 1 ], new_event );
-				receiver.send_bang ( actuator_target );
 			}
 		}
 	}
@@ -196,6 +192,12 @@ public class Pd_Event_Server extends EventServer
 		for ( String bang : receiver.get_bangs ( ) )
 		{
 			process_bang ( bang );
+		}
+		for ( Pd_Float pd_float : receiver.get_floats ( ) )
+		{
+			/* TODO:
+			 * process_float ( );
+			 */
 		}
 		receiver.start_new_cycle ( );
 		act ( );

@@ -1,16 +1,10 @@
 package ensemble.apps.pd_testing;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import ensemble.*;
 import ensemble.apps.pd_testing.Pd_Constants;
 import ensemble.clock.TimeUnit;
 import ensemble.memory.*;
-
-import org.puredata.core.*;
 
 /*
  * This ensemble.Reasoning extension
@@ -29,76 +23,101 @@ public class Pd_Reasoning extends Reasoning
 	private HashMap< String, Memory > sensor_memories = new HashMap<String, Memory> ( );
 	
 	private HashMap< String, Pd_Event > senses = new HashMap< String, Pd_Event > ( );
-
-    private Pd_Audio_Server sampler;
     
-	private int patch;
 	private String subpatch;
 	private String agent_name;
 	private Pd_Receiver receiver;
 	
-    private void process_ensemble_control_messages ( )
-    {
-    	CopyOnWriteArrayList< Pd_Message > messages = receiver.get_messages ( );
-    	for ( Pd_Message message : messages )
-    	{
-    		String source = message.get_source ( );
-    		if ( source.equals ( Pd_Constants.SUBSCRIPTION ) )
-    		{
-				System.err.println ( "PURE_DATA: REGISTERED_USER_SYMBOL: " + message.get_symbol ( ) );
-    			receiver.register_symbol ( agent_name + message.get_symbol ( ) );
-    		}
-    		else if ( source.equals ( Pd_Constants.UNSUBSCRIPTION ) )
-    		{
-				System.err.println ( "PURE_DATA: DEREGISTERED_USER_SYMBOL: " + message.get_symbol ( ) );
-    			receiver.deregister_symbol ( agent_name + message.get_symbol ( ) );
-    		}
-    	}
-    }
-	/*
-	 * User can implement message checking here.
-	 */
-    private void process_pd_messages ( ) 
-    { 
-    	CopyOnWriteArrayList< Pd_Message > messages = receiver.get_messages ( );
-    	CopyOnWriteArrayList< Pd_Float > floats = receiver.get_floats ( );
-    	CopyOnWriteArrayList< String > bangs = receiver.get_bangs ( );
-    	CopyOnWriteArrayList< String > user_symbols = receiver.get_symbols ( );
-    	int array_size;
-		for ( String symbol : user_symbols )
-		{		
-	    	for ( Pd_Message message : messages )
-	    	{
-				if ( message.get_source ( ).equals( symbol ) )
+	private void access_knowledge_base ( String source, Object[ ] arguments )
+	{
+		String value = getAgent ( ).getKB ( ).readFact ( ( String ) arguments[ 0 ] );
+		if ( value != null )
+		{
+			for ( Actuator actuator : actuators.values ( ) )
+			{
+				String[ ] target_agent = source.split ( Pd_Constants.SEPARATOR );
+				String[ ] actuator_target = actuator.getParameter ( Pd_Constants.SCOPE ).split ( Pd_Constants.SEPARATOR );
+				if ( actuator_target[ 0 ].equals ( target_agent[ 0 ] ) ||
+						actuator_target[ 0 ].equals ( Pd_Constants.GLOBAL_KEY ) )
 				{
-					System.err.println ( "PURE_DATA: MESSAGE: SRC=" + message.get_source ( ) + " SYM=" + message.get_symbol ( ) );
-					for ( Object argument : message.get_arguments ( ) )
+					Pd_Message new_message = new Pd_Message ( source, value );
+					Pd_Event pd_event = new Pd_Event ( Pd_Constants.MESSAGE, new_message );
+					try 
 					{
-						System.err.println ( "\tARGUMENT: " + argument );	
+						Float float_value = Float.parseFloat ( value );
+						receiver.send_float ( actuator.getParameter ( Pd_Constants.SCOPE ), float_value );
+						actuator_memories.get ( actuator.getComponentName ( ) ).writeMemory ( pd_event );
+						actuator.act ( );
+					}
+					catch ( MemoryException e ) 
+					{
+						e.printStackTrace ( );
+					}
+					catch ( NumberFormatException e )
+					{
+						receiver.send_message ( new Pd_Message ( actuator.getParameter ( Pd_Constants.SCOPE ), value ) );
 					}
 				}
-	    	}
-	    	for ( Pd_Float sent_float : floats )
-	    	{
-				if ( sent_float.get_source ( ).equals( symbol ) )
-				{
-					System.err.println ( "PURE_DATA: FLOAT: SRC=" + sent_float.get_source ( ) + " NUM=" + sent_float.get_value ( ) );
-				}
-	    	}
-	    	for ( String sent_bang : bangs )
-	    	{
-				if ( sent_bang.equals( symbol ) )
-				{
-					System.err.println ( "PURE_DATA: BANG: SRC=" + sent_bang );
-				}
-	    	}
-	    	array_size = PdBase.arraySize ( symbol );
-    		if ( array_size > 0 )
-    		{
-    			System.err.println ( "Array Name: " + symbol + " Size: " + array_size );
-    			float[ ] samples = new float[ array_size ];
-    			PdBase.readArray ( samples, 0, symbol, 0, array_size );
-    		}
+			}
+		}
+	}
+	private void add_to_fact ( Object[ ] arguments )
+	{
+		String value = getAgent ( ).getKB ( ).readFact ( ( String ) arguments[ 0 ] );
+		if ( value != null )
+		{
+			try
+			{
+				Float old_value = Float.parseFloat ( value );
+				Float new_value = old_value + ( Float ) arguments[ 1 ];
+				getAgent ( ).getKB ( ).updateFact( ( String ) arguments[ 0 ], new_value.toString ( ) );
+			}
+			catch ( NumberFormatException e )
+			{
+				System.err.println ( "Fact \"" + ( String ) arguments[ 0 ] + "\" not a number." );
+			}
+
+		}
+	}
+	private void multiply_fact ( Object[ ] arguments )
+	{
+		String value = getAgent ( ).getKB ( ).readFact ( ( String ) arguments[ 0 ] );
+		if ( value != null )
+		{
+			try
+			{
+				Float old_value = Float.parseFloat ( value );
+				Float new_value = old_value * ( Float ) arguments[ 1 ];
+				getAgent ( ).getKB ( ).updateFact( ( String ) arguments[ 0 ], new_value.toString ( ) );
+			}
+			catch ( NumberFormatException e )
+			{
+				System.err.println ( "Fact \"" + ( String ) arguments[ 0 ] + "\" not a number." );
+			}
+
+		}
+	}
+    private void process_messages ( Pd_Message message )
+    {
+		String message_source = message.get_source ( );
+		String symbol = message.get_symbol ( );
+		Object[ ] arguments = message.get_arguments ( );
+		System.err.println ( "Type: Message\n" + "Source: " + message_source + " Symbol: " + symbol );
+		if ( symbol.equals ( Pd_Constants.READ_FACT ) )
+		{
+			access_knowledge_base ( message_source, arguments );
+		}
+		else if ( symbol.equals ( Pd_Constants.ADD_TO_FACT ) )
+		{
+			add_to_fact ( arguments );
+		}
+		else if ( symbol.equals ( Pd_Constants.MULTIPLY_FACT ) )
+		{
+			multiply_fact ( arguments );
+		}
+		else if ( symbol.equals ( Pd_Constants.UPDATE_FACT ) )
+		{
+			getAgent ( ).getKB ( ).updateFact ( ( String ) arguments[ 0 ], ( String ) arguments[ 1 ] );
 		}
     }
 	@Override
@@ -106,30 +125,12 @@ public class Pd_Reasoning extends Reasoning
 	{
 		agent_name = getAgent ( ).getAgentName ( );
 
-		sampler = Pd_Audio_Server.get_instance ( );
 		receiver = Pd_Receiver.get_instance ( );
-
-		if ( parameters.get ( Pd_Constants.PATCH_ARGUMENT ) != null )
+		subpatch = parameters.get ( Pd_Constants.SUBPATCH ) + Pd_Constants.SEPARATOR;
+		if ( subpatch == null )
 		{
-			try 
-			{
-				patch = sampler.open_patch( parameters.get ( Pd_Constants.PATCH_ARGUMENT ) );
-				System.err.println ( "PURE_DATA: PATCH_ID=" + patch + " PATH=" + "\"" + parameters.get( Pd_Constants.PATCH_ARGUMENT ) + "\"" );
-				process_ensemble_control_messages ( );
-			} 
-			catch ( IOException e ) 
-			{
-				e.printStackTrace ( );
-			}
-		}
-		else if ( parameters.containsKey( Pd_Constants.SUBPATCH ) )
-		{
-			subpatch = parameters.get ( Pd_Constants.SUBPATCH ) + Pd_Constants.SEPARATOR;
-			process_ensemble_control_messages ( );
-		}
-		else
-		{
-			System.err.println ( "REASONING ERROR: NO SUBPATCH DEFINED!" );
+			System.err.println ( "Reasoning Error, no subpatch, this is embarassing!" );
+			return false;
 		}
 		return true;
 	}
@@ -150,37 +151,7 @@ public class Pd_Reasoning extends Reasoning
 			}
 			else if ( type.equals( Pd_Constants.MESSAGE ) )
 			{
-				String message_source = ( ( Pd_Message ) content ).get_source ( );
-				String symbol = ( ( Pd_Message ) content ).get_symbol ( );
-				Object[ ] arguments = ( ( Pd_Message ) content ).get_arguments ( );
-				System.err.println ( "Type: Message\n" + "Source: " + message_source + " Symbol: " + symbol );
-				if ( symbol.equals ( "access_kb" ) )
-				{
-					String value = getAgent ( ).getKB ( ).readFact ( ( String ) arguments[ 0 ] );
-					if ( value != null )
-					{
-						for ( Actuator actuator : actuators.values ( ) )
-						{
-							String[ ] target_agent = message_source.split ( Pd_Constants.SEPARATOR );
-							String[ ] actuator_target = actuator.getParameter ( Pd_Constants.SCOPE ).split ( Pd_Constants.SEPARATOR );
-							if ( actuator_target[ 0 ].equals ( target_agent[ 0 ] ) ||
-									actuator_target[ 0 ].equals ( Pd_Constants.GLOBAL_KEY ) )
-							{
-								Pd_Message new_message = new Pd_Message ( agent_name + Pd_Constants.SEPARATOR + actuator.getComponentName ( ), value );
-								Pd_Event pd_event = new Pd_Event ( Pd_Constants.MESSAGE, new_message );
-								try 
-								{
-									actuator_memories.get ( actuator.getComponentName ( ) ).writeMemory ( pd_event );
-									actuator.act ( );
-								} 
-								catch ( MemoryException e ) 
-								{
-									e.printStackTrace ( );
-								}
-							}
-						}
-					}
-				}
+				process_messages ( ( Pd_Message ) content );
 			}
 		}
 		senses.clear ( );
