@@ -7,51 +7,56 @@
 #N canvas 0 47 1920 1033 simple_agent1 1;
 #X obj 102 36 r simple_agent1:start;
 #X obj 641 31 loadbang;
-#X msg 153 117 \; simple_agent1 add_sensor sense1 type event scope
-simple_agent0:act1;
-#X obj 845 64 r simple_agent1:sense1;
-#X obj 633 126 s simple_agent1:actself;
-#X obj 622 376 r simple_agent1:senseself;
-#X obj 670 455 outlet~;
-#X obj 673 433 osc~;
+#X obj 861 78 r simple_agent1:sense1;
+#X obj 633 112 s simple_agent1:actself;
+#X obj 676 369 r simple_agent1:senseself;
+#X obj 682 433 outlet~;
+#X obj 685 411 osc~;
 #X msg 145 63 \; simple_agent1 add_actuator act1 type event scope simple_agent2:sense1
 ;
 #X msg 106 196 \; simple_agent1 new_fact global note 440;
 #X obj 579 57 metro 3000;
 #X obj 659 54 metro 500;
-#X msg 644 81 read note;
-#X msg 566 83 * note 1.5;
-#X obj 581 442 print;
-#X obj 828 452 s simple_agent1:act1;
+#X msg 666 79 read note;
+#X msg 557 80 * note 1.5;
+#X obj 766 405 s simple_agent1:act1;
+#X obj 882 110 print;
+#X msg 148 119 \; simple_agent1 add_sensor sense1 type event scope
+global;
+#X connect 0 0 7 0;
+#X connect 0 0 15 0;
 #X connect 0 0 8 0;
-#X connect 0 0 2 0;
-#X connect 0 0 9 0;
-#X connect 1 0 11 0;
 #X connect 1 0 10 0;
-#X connect 5 0 14 0;
-#X connect 5 0 15 0;
-#X connect 5 0 7 0;
-#X connect 7 0 6 0;
-#X connect 10 0 13 0;
-#X connect 11 0 12 0;
-#X connect 12 0 4 0;
-#X connect 13 0 4 0;
+#X connect 1 0 9 0;
+#X connect 2 0 14 0;
+#X connect 4 0 13 0;
+#X connect 4 0 6 0;
+#X connect 6 0 5 0;
+#X connect 9 0 12 0;
+#X connect 10 0 11 0;
+#X connect 11 0 3 0;
+#X connect 12 0 3 0;
 #X restore 986 246 pd simple_agent1;
 #N canvas 0 47 1920 1033 simple_agent2 1;
 #X obj 104 145 r simple_agent2:start;
-#X msg 167 176 \; simple_agent2 add_actuator act1 type event scope
-global;
-#X msg 150 214 \; simple_agent2 add_sensor sense1 type event scope
+#X msg 148 289 \; simple_agent2 add_sensor sense1 type event scope
 global;
 #X obj 762 98 r simple_agent2:sense1;
-#X obj 793 233 outlet~;
-#X obj 805 193 osc~;
-#X obj 791 158 * 1.5;
+#X obj 783 179 outlet~;
+#X obj 795 155 osc~;
+#X obj 791 126 * 1.5;
+#X obj 865 301 s simple_agent2:act1;
+#X obj 879 254 loadbang;
+#X obj 882 276 metro 2000;
+#X msg 176 188 \; simple_agent2 add_actuator act1 type event scope
+global;
+#X connect 0 0 9 0;
 #X connect 0 0 1 0;
-#X connect 0 0 2 0;
-#X connect 3 0 6 0;
+#X connect 2 0 5 0;
+#X connect 4 0 3 0;
 #X connect 5 0 4 0;
-#X connect 6 0 5 0;
+#X connect 7 0 8 0;
+#X connect 8 0 6 0;
 #X restore 1149 274 pd simple_agent2;
 #X msg 268 288 \; add_agent name simple_agent1;
 #X msg 246 335 \; add_agent name simple_agent2;

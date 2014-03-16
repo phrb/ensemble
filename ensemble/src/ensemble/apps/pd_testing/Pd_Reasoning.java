@@ -1,6 +1,8 @@
 package ensemble.apps.pd_testing;
 
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+
 import ensemble.*;
 import ensemble.apps.pd_testing.Pd_Constants;
 import ensemble.clock.TimeUnit;
@@ -16,13 +18,13 @@ import ensemble.memory.*;
  */
 public class Pd_Reasoning extends Reasoning
 {
-	private HashMap< String, Pd_Actuator > actuators = new HashMap<String, Pd_Actuator> ( );
-	private HashMap< String, Memory > actuator_memories = new HashMap<String, Memory> ( );
+	private ConcurrentHashMap< String, Pd_Actuator > actuators = new ConcurrentHashMap<String, Pd_Actuator> ( );
+	private ConcurrentHashMap< String, Memory > actuator_memories = new ConcurrentHashMap<String, Memory> ( );
 	
-	private HashMap< String, Pd_Sensor > sensors = new HashMap<String, Pd_Sensor> ( );
-	private HashMap< String, Memory > sensor_memories = new HashMap<String, Memory> ( );
+	private ConcurrentHashMap< String, Pd_Sensor > sensors = new ConcurrentHashMap<String, Pd_Sensor> ( );
+	private ConcurrentHashMap< String, Memory > sensor_memories = new ConcurrentHashMap<String, Memory> ( );
 	
-	private HashMap< String, Pd_Event > senses = new HashMap< String, Pd_Event > ( );
+	private ConcurrentHashMap< String, Pd_Event > senses = new ConcurrentHashMap< String, Pd_Event > ( );
     
 	private String subpatch;
 	private String agent_name;
