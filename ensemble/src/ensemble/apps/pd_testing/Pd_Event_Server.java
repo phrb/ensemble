@@ -114,33 +114,38 @@ public class Pd_Event_Server extends EventServer
 	}
 	protected void process_message ( Pd_Message message )
 	{
-		String[ ] source = message.get_source ( ).split ( Pd_Constants.SEPARATOR );
+		String source = message.get_source ( );
+		String[ ] split_source = source.split ( Pd_Constants.SEPARATOR );
 		String symbol = message.get_symbol ( );
 		Object[ ] arguments = message.get_arguments ( );
-		if ( actuators.containsKey ( source[ 0 ] + Pd_Constants.SEPARATOR + source[ 1 ] ) )
+		if ( actuators.containsKey ( source ) )
 		{
 			String actuator_target = ( String ) arguments[ 0 ];
 			Parameters targeted_sensor = sensors.get ( actuator_target );
-			if ( source[ 1 ].equals ( Pd_Constants.SELF_ACTUATOR ) )
+			if ( split_source[ 1 ].equals ( Pd_Constants.SELF_ACTUATOR ) )
 			{
-				new_message_event ( source[ 0 ] + Pd_Constants.SEPARATOR + Pd_Constants.SELF_SENSOR, message );
+				System.err.println ( "MESSAGE TO SENSOR: " + actuator_target + " NULITY OF SENSOR: " + targeted_sensor +
+						"\n Got to senseself though...");
+				new_message_event ( split_source[ 0 ] + Pd_Constants.SEPARATOR + Pd_Constants.SELF_SENSOR, message );
 			}
 			else if ( targeted_sensor != null )
 			{
+				System.err.println ( "MESSAGE TO SENSOR: " + actuator_target + " NULITY OF SENSOR: " + targeted_sensor +
+						"\n Got to directed message.");
 				new_message_event ( actuator_target, message );
-				Pd_Message sensor_message = new Pd_Message ( actuator_target, symbol, 
-						Arrays.copyOf ( arguments, arguments.length - 1 ) );
+				Pd_Message sensor_message = new Pd_Message ( actuator_target, symbol, arguments );
 				receiver.send_message ( sensor_message );
 			}
 			else if ( actuator_target.equals ( Pd_Constants.GLOBAL_KEY ) )
 			{
+				System.err.println ( "MESSAGE TO SENSOR: " + actuator_target + " NULITY OF SENSOR: " + targeted_sensor +
+						"\n Got to friggin global...");
 				for ( String sensor : sensors.keySet ( ) )
 				{
 					if ( ! ( sensor.split ( Pd_Constants.SEPARATOR )[ 1 ].equals ( Pd_Constants.SELF_SENSOR ) ) )
 					{
 						new_message_event ( sensor, message );						
-						Pd_Message sensor_message = new Pd_Message ( sensor, symbol, 
-								Arrays.copyOf ( arguments, arguments.length - 1 ) );
+						Pd_Message sensor_message = new Pd_Message ( sensor, symbol, arguments );
 						receiver.send_message ( sensor_message );
 					}
 				}
@@ -227,6 +232,14 @@ public class Pd_Event_Server extends EventServer
 			else if ( type.equals ( Pd_Constants.MESSAGE ) )
 			{
 				Pd_Message message = ( Pd_Message ) event.get_content ( );
+				System.err.println ( "========================================================" );
+				System.err.println ( "Processing Message: \nFrom: " + message.get_source ( ) +
+						" Symbol: " + message.get_symbol ( ) );
+				for ( Object object : message.get_arguments ( ) )
+				{
+					System.err.println ( "Arg: " + object );
+				}
+				System.err.println ( "========================================================" );
 				receiver.send_message ( message );
 			}
 			else if ( type.equals ( Pd_Constants.FLOAT ) )
@@ -246,6 +259,14 @@ public class Pd_Event_Server extends EventServer
 
 		for ( Pd_Message message : receiver.get_messages ( ) )
 		{
+			System.err.println ( "========================================================" );
+			System.err.println ( "Processing Message: \nFrom: " + message.get_source ( ) +
+					" Symbol: " + message.get_symbol ( ) );
+			for ( Object object : message.get_arguments ( ) )
+			{
+				System.err.println ( "Arg: " + object );
+			}
+			System.err.println ( "========================================================" );
 			process_message ( message );
 		}
 		for ( String bang : receiver.get_bangs ( ) )

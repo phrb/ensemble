@@ -35,30 +35,29 @@ public class Pd_Reasoning extends Reasoning
 		String value = getAgent ( ).getKB ( ).readFact ( ( String ) arguments[ 1 ] );
 		if ( value != null )
 		{
-			for ( Actuator actuator : actuators.values ( ) )
+			String actuator_target = ( String ) arguments[ 0 ];
+			String[ ] source_split = source.split ( Pd_Constants.SEPARATOR );
+			Actuator actuator = actuators.get ( source_split[ 1 ] );
+
+			Pd_Message new_message = new Pd_Message ( source, value, arguments );
+			Pd_Event pd_event = new Pd_Event ( Pd_Constants.MESSAGE, new_message );
+			try 
 			{
-				String[ ] target_agent = source.split ( Pd_Constants.SEPARATOR );
-				String actuator_target = ( String ) arguments[ 0 ];
-				if ( ! ( actuator_target.equals ( target_agent[ 0 ] ) ) )
-				{
-					Pd_Message new_message = new Pd_Message ( source, value );
-					Pd_Event pd_event = new Pd_Event ( Pd_Constants.MESSAGE, new_message );
-					try 
-					{
-						Float float_value = Float.parseFloat ( value );
-						receiver.send_float ( actuator_target, float_value );
-						actuator_memories.get ( actuator.getComponentName ( ) ).writeMemory ( pd_event );
-						actuator.act ( );
-					}
-					catch ( MemoryException e ) 
-					{
-						e.printStackTrace ( );
-					}
-					catch ( NumberFormatException e )
-					{
-						receiver.send_message ( new Pd_Message ( actuator.getParameter ( Pd_Constants.SCOPE ), value ) );
-					}
-				}
+				Float float_value = Float.parseFloat ( value );
+				receiver.send_float ( actuator_target, float_value );
+			}
+			catch ( NumberFormatException e )
+			{
+				receiver.send_message ( new Pd_Message ( actuator_target, value ) );
+			}
+			try
+			{				
+				actuator_memories.get ( source_split[ 1 ] ).writeMemory ( pd_event );			
+				actuator.act ( );		
+			}		
+			catch ( MemoryException e ) 		
+			{		
+				e.printStackTrace ( );
 			}
 		}
 	}
