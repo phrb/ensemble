@@ -32,22 +32,21 @@ public class Pd_Reasoning extends Reasoning
 	
 	private void access_knowledge_base ( String source, Object[ ] arguments )
 	{
-		String value = getAgent ( ).getKB ( ).readFact ( ( String ) arguments[ 0 ] );
+		String value = getAgent ( ).getKB ( ).readFact ( ( String ) arguments[ 1 ] );
 		if ( value != null )
 		{
 			for ( Actuator actuator : actuators.values ( ) )
 			{
 				String[ ] target_agent = source.split ( Pd_Constants.SEPARATOR );
-				String[ ] actuator_target = actuator.getParameter ( Pd_Constants.SCOPE ).split ( Pd_Constants.SEPARATOR );
-				if ( actuator_target[ 0 ].equals ( target_agent[ 0 ] ) ||
-						actuator_target[ 0 ].equals ( Pd_Constants.GLOBAL_KEY ) )
+				String actuator_target = ( String ) arguments[ 0 ];
+				if ( ! ( actuator_target.equals ( target_agent[ 0 ] ) ) )
 				{
 					Pd_Message new_message = new Pd_Message ( source, value );
 					Pd_Event pd_event = new Pd_Event ( Pd_Constants.MESSAGE, new_message );
 					try 
 					{
 						Float float_value = Float.parseFloat ( value );
-						receiver.send_float ( actuator.getParameter ( Pd_Constants.SCOPE ), float_value );
+						receiver.send_float ( actuator_target, float_value );
 						actuator_memories.get ( actuator.getComponentName ( ) ).writeMemory ( pd_event );
 						actuator.act ( );
 					}
@@ -119,7 +118,7 @@ public class Pd_Reasoning extends Reasoning
 		}
 		else if ( symbol.equals ( Pd_Constants.UPDATE_FACT ) )
 		{
-			getAgent ( ).getKB ( ).updateFact ( ( String ) arguments[ 0 ], ( String ) arguments[ 1 ] );
+			getAgent ( ).getKB ( ).updateFact ( ( String ) arguments[ 1 ], ( String ) arguments[ 2 ] );
 		}
     }
 	@Override
