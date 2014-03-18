@@ -36,4 +36,8 @@ public class Pd_Message
 	{
 		return arguments;
 	}
+	public void set_arguments ( Object[ ] new_arguments )
+	{
+		arguments = new_arguments;
+	}
 }

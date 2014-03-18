@@ -1,25 +1,25 @@
-#N canvas 0 47 1280 753 10;
-#X obj 145 37 loadbang;
-#X msg 46 293 \; environment world ensemble.apps.pd_testing.Pd_World
+#N canvas 0 47 1024 721 10;
+#X obj 67 15 loadbang;
+#X msg 37 330 \; environment world ensemble.apps.pd_testing.Pd_World
 ;
-#X msg 98 174 \; global PROCESS_MODE BATCH;
-#X msg 88 208 \; global CLOCK_MODE CLOCK_USER;
-#N canvas 0 47 1280 753 simple_agent1 1;
-#X obj 43 25 r simple_agent1:start;
-#X obj 564 16 loadbang;
-#X obj 538 93 s simple_agent1:actself;
-#X obj 542 164 r simple_agent1:senseself;
-#X obj 544 249 outlet~;
-#X obj 547 227 osc~;
-#X msg 86 52 \; simple_agent1 add_actuator act1 type event scope simple_agent2:sense1
+#X msg 101 207 \; global PROCESS_MODE BATCH;
+#X msg 91 241 \; global CLOCK_MODE CLOCK_USER;
+#N canvas 0 47 1024 721 simple_agent1 1;
+#X obj 24 8 r simple_agent1:start;
+#X obj 551 4 loadbang;
+#X obj 534 78 s simple_agent1:actself;
+#X obj 497 292 r simple_agent1:senseself;
+#X obj 485 364 outlet~;
+#X obj 492 341 osc~;
+#X msg 67 38 \; simple_agent1 add_actuator act1 type event scope simple_agent2:sense1
 ;
-#X msg 47 185 \; simple_agent1 new_fact global note 440;
-#X obj 502 42 metro 3000;
-#X obj 582 39 metro 500;
-#X msg 589 64 read note;
-#X msg 480 65 * note 1.5;
-#X obj 575 192 s simple_agent1:act1;
-#X msg 89 108 \; simple_agent1 add_sensor sense1 type event scope global
+#X msg 44 132 \; simple_agent1 new_fact global note 440;
+#X obj 488 29 metro 3000;
+#X obj 584 23 metro 500;
+#X msg 592 44 read note;
+#X msg 482 51 * note 1.5;
+#X obj 584 336 s simple_agent1:act1;
+#X msg 60 90 \; simple_agent1 add_sensor sense1 type event scope global
 ;
 #X connect 0 0 6 0;
 #X connect 0 0 13 0;
@@ -33,15 +33,15 @@
 #X connect 9 0 10 0;
 #X connect 10 0 2 0;
 #X connect 11 0 2 0;
-#X restore 595 269 pd simple_agent1;
-#N canvas 0 47 1280 753 simple_agent2 1;
+#X restore 564 293 pd simple_agent1;
+#N canvas 0 47 1024 721 simple_agent2 1;
 #X obj 42 29 r simple_agent2:start;
-#X msg 74 98 \; simple_agent2 add_sensor sense1 type event scope global
+#X msg 67 90 \; simple_agent2 add_sensor sense1 type event scope global
 ;
-#X obj 485 32 r simple_agent2:sense1;
-#X obj 506 113 outlet~;
-#X obj 518 89 osc~;
-#X obj 514 60 * 1.5;
+#X obj 457 26 r simple_agent2:sense1;
+#X obj 508 99 outlet~;
+#X obj 518 77 osc~;
+#X obj 514 51 * 1.5;
 #X msg 86 53 \; simple_agent2 add_actuator act1 type event scope global
 ;
 #X connect 0 0 6 0;
@@ -49,29 +49,29 @@
 #X connect 2 0 5 0;
 #X connect 4 0 3 0;
 #X connect 5 0 4 0;
-#X restore 711 290 pd simple_agent2;
-#X msg 311 43 \; add_agent name simple_agent1;
-#X msg 289 90 \; add_agent name simple_agent2;
-#X obj 698 378 dac~;
-#X obj 702 326 *~ 0.5;
-#X msg 61 253 \; environment class ensemble.apps.pd_testing.Pd_Environment
+#X restore 689 326 pd simple_agent2;
+#X msg 387 29 \; add_agent name simple_agent1;
+#X msg 386 70 \; add_agent name simple_agent2;
+#X obj 679 378 dac~;
+#X obj 690 353 *~ 0.5;
+#X msg 52 290 \; environment class ensemble.apps.pd_testing.Pd_Environment
 ;
-#X msg 268 135 \; add_agent name test;
-#N canvas 0 47 1280 753 test 1;
+#X msg 386 109 \; add_agent name test;
+#N canvas 0 47 1024 721 test 1;
 #X obj 37 33 r test:start;
-#X msg 44 56 \; test new_fact global nota 660;
-#X obj 277 28 loadbang;
-#X obj 282 51 metro 300;
-#X msg 280 70 read nota;
-#X obj 269 92 s test:actself;
-#X obj 269 117 r test:senseself;
-#X obj 270 141 print;
+#X msg 31 56 \; test new_fact global nota 660;
+#X obj 269 14 loadbang;
+#X obj 274 37 metro 300;
+#X msg 272 56 read nota;
+#X obj 261 78 s test:actself;
+#X obj 259 114 r test:senseself;
+#X obj 260 138 print;
 #X connect 0 0 1 0;
 #X connect 2 0 3 0;
 #X connect 3 0 4 0;
 #X connect 4 0 5 0;
 #X connect 6 0 7 0;
-#X restore 777 208 pd test;
+#X restore 650 260 pd test;
 #X connect 0 0 10 0;
 #X connect 0 0 1 0;
 #X connect 0 0 2 0;
