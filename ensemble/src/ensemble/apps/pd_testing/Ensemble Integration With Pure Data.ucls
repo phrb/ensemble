@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <class-diagram version="1.1.4" icons="true" automaticImage="JPEG" always-add-relationships="false" 
   generalizations="true" realizations="true" associations="true" dependencies="true" nesting-relationships="true">  
-  <class id="1" language="java" name="ensemble.apps.pd_testing.Pd_Reasoning" project="ensemble" 
-    file="/ensemble/src/ensemble/apps/pd_testing/Pd_Reasoning.java" binary="false" corner="BOTTOM_RIGHT">    
+  <class id="1" language="java" name="ensemble.apps.pd_testing.PdReasoning" project="ensemble" 
+    file="/ensemble/src/ensemble/apps/pd_testing/PdReasoning.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="890" y="365"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
@@ -10,8 +10,8 @@
       <operations public="true" package="true" protected="true" private="false" static="true"/>    
     </display>  
   </class>  
-  <class id="2" language="java" name="ensemble.apps.pd_testing.Pd_Agent_Class_Information" project="ensemble" 
-    file="/ensemble/src/ensemble/apps/pd_testing/Pd_Agent_Class_Information.java" binary="false" corner="BOTTOM_RIGHT">    
+  <class id="2" language="java" name="ensemble.apps.pd_testing.PdAgentClassInformation" project="ensemble" 
+    file="/ensemble/src/ensemble/apps/pd_testing/PdAgentClassInformation.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="749" y="128"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
@@ -37,8 +37,8 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="5" language="java" name="ensemble.apps.pd_testing.Pd_Receiver" project="ensemble" 
-    file="/ensemble/src/ensemble/apps/pd_testing/Pd_Receiver.java" binary="false" corner="BOTTOM_RIGHT">    
+  <class id="5" language="java" name="ensemble.apps.pd_testing.PdReceiver" project="ensemble" 
+    file="/ensemble/src/ensemble/apps/pd_testing/PdReceiver.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="890" y="619"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
@@ -55,8 +55,8 @@
       <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </class>  
-  <class id="7" language="java" name="ensemble.apps.pd_testing.Pd_Float" project="ensemble" 
-    file="/ensemble/src/ensemble/apps/pd_testing/Pd_Float.java" binary="false" corner="BOTTOM_RIGHT">    
+  <class id="7" language="java" name="ensemble.apps.pd_testing.PdFloat" project="ensemble" 
+    file="/ensemble/src/ensemble/apps/pd_testing/PdFloat.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="954" y="904"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
@@ -64,8 +64,8 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="8" language="java" name="ensemble.apps.pd_testing.Pd_Message" project="ensemble" 
-    file="/ensemble/src/ensemble/apps/pd_testing/Pd_Message.java" binary="false" corner="BOTTOM_RIGHT">    
+  <class id="8" language="java" name="ensemble.apps.pd_testing.PdMessage" project="ensemble" 
+    file="/ensemble/src/ensemble/apps/pd_testing/PdMessage.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="751" y="922"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
@@ -82,8 +82,8 @@
       <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </class>  
-  <class id="10" language="java" name="ensemble.apps.pd_testing.Pd_Event_Server" project="ensemble" 
-    file="/ensemble/src/ensemble/apps/pd_testing/Pd_Event_Server.java" binary="false" corner="BOTTOM_RIGHT">    
+  <class id="10" language="java" name="ensemble.apps.pd_testing.PdEventServer" project="ensemble" 
+    file="/ensemble/src/ensemble/apps/pd_testing/PdEventServer.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="1242" y="109"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
@@ -100,8 +100,8 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="12" language="java" name="ensemble.apps.pd_testing.Pd_World" project="ensemble" 
-    file="/ensemble/src/ensemble/apps/pd_testing/Pd_World.java" binary="false" corner="BOTTOM_RIGHT">    
+  <class id="12" language="java" name="ensemble.apps.pd_testing.PdWorld" project="ensemble" 
+    file="/ensemble/src/ensemble/apps/pd_testing/PdWorld.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="1354" y="352"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
@@ -109,8 +109,8 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="13" language="java" name="ensemble.apps.pd_testing.Pd_Constants" project="ensemble" 
-    file="/ensemble/src/ensemble/apps/pd_testing/Pd_Constants.java" binary="false" corner="BOTTOM_RIGHT">    
+  <class id="13" language="java" name="ensemble.apps.pd_testing.PdConstants" project="ensemble" 
+    file="/ensemble/src/ensemble/apps/pd_testing/PdConstants.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="209" y="313"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
