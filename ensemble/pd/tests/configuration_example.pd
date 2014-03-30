@@ -1,7 +1,5 @@
 #N canvas 0 47 1920 1033 10;
 #X obj 145 37 loadbang;
-#X msg 46 293 \; environment world ensemble.apps.pd_testing.Pd_World
-;
 #X msg 98 174 \; global PROCESS_MODE BATCH;
 #X msg 88 208 \; global CLOCK_MODE CLOCK_USER;
 #N canvas 0 47 1920 1033 simple_agent1 1;
@@ -67,8 +65,6 @@
 #X msg 289 90 \; add_agent name simple_agent2;
 #X obj 698 378 dac~;
 #X obj 702 326 *~ 0.5;
-#X msg 61 253 \; environment class ensemble.apps.pd_testing.Pd_Environment
-;
 #X msg 268 135 \; add_agent name test;
 #N canvas 0 47 1920 1033 test 1;
 #X obj 37 33 r test:start;
@@ -85,12 +81,18 @@
 #X connect 6 0 4 0;
 #X connect 7 0 5 0;
 #X restore 777 208 pd test;
-#X connect 0 0 10 0;
+#X msg 61 253 \; environment class ensemble.apps.pd_testing.PdEnvironment
+;
+#X msg 46 293 \; environment world ensemble.apps.pd_testing.PdWorld
+;
+#X connect 0 0 11 0;
+#X connect 0 0 12 0;
 #X connect 0 0 1 0;
 #X connect 0 0 2 0;
-#X connect 0 0 3 0;
+#X connect 0 0 5 0;
 #X connect 0 0 6 0;
-#X connect 0 0 7 0;
-#X connect 0 0 11 0;
-#X connect 4 0 9 0;
-#X connect 5 0 9 0;
+#X connect 0 0 9 0;
+#X connect 3 0 8 0;
+#X connect 4 0 8 0;
+#X connect 8 0 7 0;
+#X connect 8 0 7 1;
