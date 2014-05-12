@@ -101,7 +101,6 @@ public class PdReasoning extends Reasoning
 		String message_source = message.get_source ( );
 		String symbol = message.get_symbol ( );
 		Object[ ] arguments = message.get_arguments ( );
-		System.err.println ( "Type: Message\n" + "Source: " + message_source + " Symbol: " + symbol );
 		if ( symbol.equals ( PdConstants.READ_FACT ) )
 		{
 			access_knowledge_base ( message_source, arguments );
@@ -142,11 +141,8 @@ public class PdReasoning extends Reasoning
 			String type = event.get_type ( );
 			Object content = event.get_content ( );
 			
-			System.err.println ( getAgent ( ).getAgentName ( ) + ":" + sensor );
-			System.err.print ( "Received Event from: " );
 			if ( type.equals( PdConstants.BANG ) )
 			{
-				System.err.println ( "Type: Bang\n" + "Source: " + content );
 			}
 			else if ( type.equals( PdConstants.MESSAGE ) )
 			{

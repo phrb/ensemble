@@ -1,0 +1,11 @@
+#N canvas 0 47 1920 1033 10;
+#X obj 109 39 inlet;
+#X msg 109 82 read \$3:\$2 \$1;
+#X obj 109 133 r \$1:\$0;
+#X obj 109 60 list append \$0 \$1;
+#X obj 109 104 s \$1:actself;
+#X obj 109 153 outlet;
+#X connect 0 0 3 0;
+#X connect 1 0 4 0;
+#X connect 2 0 5 0;
+#X connect 3 0 1 0;

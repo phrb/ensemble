@@ -70,11 +70,13 @@ public class PdReceiver extends PdDispatcher
 	@Override
 	public void receiveBang ( String source )
 	{
+		System.err.println ( "Received bang from " + source );
 		bangs.add ( source );
 	}
 	@Override
 	public void receiveMessage ( String source, String symbol, Object... args )
 	{
+		System.err.println ( "Message from " + source + " that said " + symbol );
 		messages.add ( new PdMessage ( source, symbol, args ) );
 	}
 	@Override
@@ -105,6 +107,7 @@ public class PdReceiver extends PdDispatcher
 	}
 	public void register_symbol ( String new_symbol )
 	{
+		System.err.println ( "Registered symbol " + new_symbol );
 		control_symbols.add ( new_symbol );
 		PdBase.subscribe ( new_symbol );
 	}

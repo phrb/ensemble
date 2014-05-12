@@ -1,0 +1,15 @@
+#N canvas 0 47 1920 1033 10;
+#X obj 145 37 loadbang;
+#X obj 698 378 dac~;
+#X obj 702 326 *~ 0.5;
+#X obj 630 296 simple_agent1;
+#X obj 724 297 simple_agent2;
+#X msg 106 97 \; global clock_mode clock_user \; global process_mode
+batch \; environment class ensemble.apps.pd_testing.PdEnvironment \;
+environment world ensemble.apps.pd_testing.PdWorld \; add_agent name
+simple_agent1 \; add_agent name simple_agent2;
+#X connect 0 0 5 0;
+#X connect 2 0 1 0;
+#X connect 2 0 1 1;
+#X connect 3 0 2 0;
+#X connect 4 0 2 0;

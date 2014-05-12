@@ -1,0 +1,15 @@
+#N canvas 0 47 1920 1033 10;
+#X obj 497 123 outlet~;
+#X obj 506 99 osc~;
+#X obj 507 74 * 1.5;
+#X obj 49 38 r agent2:start;
+#X msg 68 70 \; agent2 add_actuator act1 type event scope global;
+#X msg 62 108 \; agent2 add_sensor sense1 type event scope global;
+#X msg 50 148 \; agent2 add_sensor sense2 type event scope global;
+#X obj 500 45 r agent2:sense1;
+#X connect 1 0 0 0;
+#X connect 2 0 1 0;
+#X connect 3 0 4 0;
+#X connect 3 0 5 0;
+#X connect 3 0 6 0;
+#X connect 7 0 2 0;

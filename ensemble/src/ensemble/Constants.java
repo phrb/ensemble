@@ -32,23 +32,23 @@ public final class Constants {
 	
 	// Modos do Clock
 	/** The Constant CLOCK_MODE. */
-	public static final String 	CLOCK_MODE 				= "CLOCK_MODE";
+	public static final String 	CLOCK_MODE 				= "clock_mode";
 	
 	/** The Constant CLOCK_USER. */
-	public static final String 	CLOCK_USER	 			= "CLOCK_USER";
+	public static final String 	CLOCK_USER	 			= "clock_user";
 	
 	/** The Constant CLOCK_CPU. */
-	public static final String 	CLOCK_CPU	 			= "CLOCK_CPU";
+	public static final String 	CLOCK_CPU	 			= "clock_cpu";
 	
 	// Modos de Processamento
 	/** The Constant PROCESS_MODE. */
-	public static final String 	PROCESS_MODE 			= "PROCESS_MODE";
+	public static final String 	PROCESS_MODE 			= "process_mode";
 	
 	/** The Constant MODE_BATCH. */
-	public static final String 	MODE_BATCH 				= "BATCH";
+	public static final String 	MODE_BATCH 				= "batch";
 	
 	/** The Constant MODE_REAL_TIME. */
-	public static final String 	MODE_REAL_TIME			= "REAL_TIME";
+	public static final String 	MODE_REAL_TIME			= "real_time";
 	
 	/** The Constant SCHEDULER_THREADS. */
 	public static final String SCHEDULER_THREADS 		= "SCHEDULER_THREADS";

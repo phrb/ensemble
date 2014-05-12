@@ -14,7 +14,7 @@ public final class PdConstants
 	public static final int INPUT_CHANNELS = 0;
 	public static final int OUTPUT_CHANNELS = 2;	
 	
-	public static final int DEFAULT_TICKS = 128;
+	public static final int DEFAULT_TICKS = 64;
 	/*
 	 * Text:
 	 */

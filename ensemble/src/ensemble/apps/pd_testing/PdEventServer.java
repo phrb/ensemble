@@ -123,22 +123,16 @@ public class PdEventServer extends EventServer
 			Parameters targeted_sensor = sensors.get ( actuator_target );
 			if ( split_source[ 1 ].equals ( PdConstants.SELF_ACTUATOR ) )
 			{
-				System.err.println ( "MESSAGE TO SENSOR: " + actuator_target + " NULITY OF SENSOR: " + targeted_sensor +
-						"\n Got to senseself though...");
 				new_message_event ( split_source[ 0 ] + PdConstants.SEPARATOR + PdConstants.SELF_SENSOR, message );
 			}
 			else if ( targeted_sensor != null )
 			{
-				System.err.println ( "MESSAGE TO SENSOR: " + actuator_target + " NULITY OF SENSOR: " + targeted_sensor +
-						"\n Got to directed message.");
 				new_message_event ( actuator_target, message );
 				PdMessage sensor_message = new PdMessage ( actuator_target, symbol, arguments );
 				receiver.send_message ( sensor_message );
 			}
 			else if ( actuator_target.equals ( PdConstants.GLOBAL_KEY ) )
 			{
-				System.err.println ( "MESSAGE TO SENSOR: " + actuator_target + " NULITY OF SENSOR: " + targeted_sensor +
-						"\n Got to friggin global...");
 				for ( String sensor : sensors.keySet ( ) )
 				{
 					if ( ! ( sensor.split ( PdConstants.SEPARATOR )[ 1 ].equals ( PdConstants.SELF_SENSOR ) ) )
@@ -231,14 +225,6 @@ public class PdEventServer extends EventServer
 			else if ( type.equals ( PdConstants.MESSAGE ) )
 			{
 				PdMessage message = ( PdMessage ) event.get_content ( );
-				System.err.println ( "========================================================" );
-				System.err.println ( "Processing Message: \nFrom: " + message.get_source ( ) +
-						" Symbol: " + message.get_symbol ( ) );
-				for ( Object object : message.get_arguments ( ) )
-				{
-					System.err.println ( "Arg: " + object );
-				}
-				System.err.println ( "========================================================" );
 				receiver.send_message ( message );
 			}
 			else if ( type.equals ( PdConstants.FLOAT ) )
@@ -258,14 +244,6 @@ public class PdEventServer extends EventServer
 
 		for ( PdMessage message : receiver.get_messages ( ) )
 		{
-			System.err.println ( "========================================================" );
-			System.err.println ( "Processing Message: \nFrom: " + message.get_source ( ) +
-					" Symbol: " + message.get_symbol ( ) );
-			for ( Object object : message.get_arguments ( ) )
-			{
-				System.err.println ( "Arg: " + object );
-			}
-			System.err.println ( "========================================================" );
 			process_message ( message );
 		}
 		for ( String bang : receiver.get_bangs ( ) )
@@ -288,20 +266,10 @@ public class PdEventServer extends EventServer
 	@Override
 	protected Parameters actuatorRegistered ( String agentName, String actuatorName, Parameters userParam ) throws Exception 
 	{
-		System.err.println ( "PdEventServer Says: " + agentName + " registered actuator: " + actuatorName );
-		for ( String parameter : userParam.keySet ( ) )
-		{
-			System.err.println ( parameter + ": " + userParam.get ( parameter ) );
-		}
 		return userParam;
 	}
 	protected Parameters sensorRegistered ( String agentName, String sensorName, Parameters userParam ) throws Exception 
 	{
-		System.err.println ( "PdEventServer Says: " + agentName + " registered sensor: " + sensorName );
-		for ( String parameter : userParam.keySet ( ) )
-		{
-			System.err.println ( parameter + ": " + userParam.get ( parameter ) );
-		}
 		return userParam;
 	}
 }
