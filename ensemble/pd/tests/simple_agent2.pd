@@ -1,0 +1,30 @@
+#N canvas 0 47 1920 1033 10;
+#X msg 84 108 \; simple_agent2 add_sensor sense1 type event scope global
+;
+#X obj 489 117 outlet~;
+#X obj 498 93 osc~;
+#X obj 503 68 * 1.5;
+#X msg 93 68 \; simple_agent2 add_actuator act1 type event scope global
+;
+#X obj 734 69 loadbang;
+#X obj 743 93 metro 500;
+#X obj 1006 126 print;
+#X msg 64 161 \; simple_agent2 add_sensor sense2 type event scope global
+;
+#X obj 52 39 r simple_agent2:start;
+#X obj 500 45 r simple_agent2:sense1;
+#X obj 990 96 r simple_agent2:sense2;
+#X msg 750 122 derply simple_agent2:sense2;
+#X obj 745 148 s simple_agent2:act1;
+#X msg 44 208 \; subscribe testing;
+#X connect 2 0 1 0;
+#X connect 3 0 2 0;
+#X connect 5 0 6 0;
+#X connect 6 0 12 0;
+#X connect 9 0 4 0;
+#X connect 9 0 0 0;
+#X connect 9 0 8 0;
+#X connect 9 0 14 0;
+#X connect 10 0 3 0;
+#X connect 11 0 7 0;
+#X connect 12 0 13 0;

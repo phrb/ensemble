@@ -6,12 +6,8 @@ import org.puredata.core.PdBase;
 
 public class PdAudioServer 
 {
-	private PdReceiver receiver;
 	private static final PdAudioServer INSTANCE = new PdAudioServer ( );
-	private PdAudioServer ( )
-	{
-		receiver = PdReceiver.get_instance ( );
-	}
+	private PdAudioServer ( ) { }
 	public static PdAudioServer get_instance ( )
 	{
 		return INSTANCE;
@@ -19,8 +15,6 @@ public class PdAudioServer
 	public boolean process_ticks ( int ticks, short[ ] input, short[ ] output )
 	{
 		PdBase.process( ticks, input, output );
-		/**/
-		receiver.fetch_pd_messages ( );
 		return true;
 	}
 	public void open_dsp ( String patch )

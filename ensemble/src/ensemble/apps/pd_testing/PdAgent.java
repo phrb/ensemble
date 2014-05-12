@@ -50,7 +50,11 @@ public class PdAgent extends MusicalAgent
     	{
     		String source = message.get_source ( );
     		String component_name = message.get_symbol ( );
-    		if ( source.equals ( agent_name ) &&
+    		if ( source.equals ( PdConstants.SUBSCRIPTION ) )
+    		{
+    			receiver.register_symbol ( agent_name + PdConstants.SEPARATOR + component_name );
+    		}
+    		else if ( source.equals ( agent_name ) &&
     				component_name.equals ( PdConstants.ADD_ACTUATOR ) )
     		{
        			String actuator_name = ( String ) message.get_arguments ( )[ 0 ];

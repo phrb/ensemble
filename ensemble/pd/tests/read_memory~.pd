@@ -1,0 +1,27 @@
+#N canvas 0 47 1920 1033 10;
+#X obj 262 185 outlet~;
+#X obj 66 56 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X obj 66 34 loadbang;
+#X obj 134 82 symbol \$1;
+#X obj 66 82 symbol \$2;
+#X obj 66 117 list;
+#X obj 261 46 bang~;
+#X obj 62 201 table memory_samples;
+#X msg 66 139 \; memory_samples resize 64 \; memory_samples rename
+\$2/\$1;
+#X obj 262 159 tabread~ \$1/\$2;
+#X obj 261 89 list append;
+#X msg 261 114 read_memory \$3 \$2 \$1;
+#X obj 261 68 f \$3;
+#X connect 1 0 3 0;
+#X connect 1 0 4 0;
+#X connect 2 0 1 0;
+#X connect 3 0 5 1;
+#X connect 4 0 5 0;
+#X connect 5 0 8 0;
+#X connect 5 0 10 1;
+#X connect 6 0 12 0;
+#X connect 9 0 0 0;
+#X connect 10 0 11 0;
+#X connect 12 0 10 0;

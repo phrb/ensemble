@@ -1,0 +1,23 @@
+#N canvas 0 47 1920 1033 10;
+#X obj 357 393 outlet;
+#X obj 334 144 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X obj 506 113 inlet;
+#X obj 327 117 loadbang;
+#X obj 361 230 list;
+#X obj 338 192 \$0;
+#X obj 343 320 s \$1:actself;
+#X obj 506 197 symbol \$1;
+#X obj 393 258 list append;
+#X msg 356 286 read \$3:\$2 \$1;
+#X obj 366 370 r \$1:\$0;
+#X connect 1 0 5 0;
+#X connect 1 0 7 0;
+#X connect 2 0 4 0;
+#X connect 3 0 1 0;
+#X connect 4 0 8 0;
+#X connect 5 0 4 1;
+#X connect 7 0 8 1;
+#X connect 8 0 9 0;
+#X connect 9 0 6 0;
+#X connect 10 0 0 0;

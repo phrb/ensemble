@@ -1,0 +1,30 @@
+#N canvas 0 47 1920 1033 10;
+#X obj 223 72 loadbang;
+#X msg 304 136 \; global PROCESS_MODE BATCH;
+#X msg 289 175 \; global CLOCK_MODE CLOCK_USER;
+#X msg 250 248 \; environment class ensemble.apps.pd_testing.PdEnvironment
+;
+#X msg 235 288 \; environment world ensemble.apps.pd_testing.PdWorld
+;
+#X msg 184 376 \; add_agent name agent1;
+#X text 283 226 Definindo Ambiente e Mundo;
+#X text 308 107 Definindo Parâmetros de Processamento;
+#X text 198 351 Adicionando um Agente;
+#N canvas 0 47 1920 1033 agent1 1;
+#X text 139 106 Adicionando Atuadores e Sensores;
+#X text 46 219 Adicionando Fatos na Base de Conhecimentos;
+#X text 32 38 Símbolo Para Inicialização do Agente;
+#X obj 62 60 r agent1:start;
+#X msg 115 126 \; agent1 add_actuator act1 type event;
+#X msg 96 169 \; agent1 add_sensor sense1 type event;
+#X msg 35 242 \; agent1 new_fact global note 440;
+#X connect 3 0 4 0;
+#X connect 3 0 5 0;
+#X connect 3 0 6 0;
+#X restore 430 379 pd agent1;
+#X text 376 354 Patch de Configuração do Agente;
+#X connect 0 0 3 0;
+#X connect 0 0 4 0;
+#X connect 0 0 1 0;
+#X connect 0 0 2 0;
+#X connect 0 0 5 0;
