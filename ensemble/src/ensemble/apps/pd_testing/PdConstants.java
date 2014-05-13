@@ -46,6 +46,7 @@ public final class PdConstants
 	public static final String BANG = "bang";
 	public static final String FLOAT = "float";
 	public static final String MESSAGE = "message";
+	public static final String AUDIO_BLOCK = "audio_block";
 	public static final String ENVIRONMENT_KEY = "environment";
 	public static final String GLOBAL_KEY = "global";
 	public static final String PRIVATE_KEY = "private";

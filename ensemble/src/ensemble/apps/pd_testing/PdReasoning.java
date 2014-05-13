@@ -1,5 +1,7 @@
 package ensemble.apps.pd_testing;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
 import ensemble.*;
@@ -24,6 +26,7 @@ public class PdReasoning extends Reasoning
 	private ConcurrentHashMap< String, Memory > sensor_memories = new ConcurrentHashMap<String, Memory> ( );
 	
 	private ConcurrentHashMap< String, PdEvent > senses = new ConcurrentHashMap< String, PdEvent > ( );
+	private ConcurrentHashMap< String, float[ ] > audio_buffers = new ConcurrentHashMap< String, float[ ]  > ( );
     
 	private String subpatch;
 	private String agent_name;
@@ -150,6 +153,22 @@ public class PdReasoning extends Reasoning
 			}
 		}
 		senses.clear ( );
+		for ( String sensor : audio_buffers.keySet ( ) )
+		{
+			System.err.println ( "Sensor processed: " + sensor + " Buffer Size: " + audio_buffers.get ( sensor ).length );
+			if ( audio_buffers.get ( sensor ).length >= 1024 )
+			{
+				System.err.println ( "\t Enough Samples to play." );
+				for ( String actuator : actuators.keySet ( ) )
+				{
+					if ( receiver.get_audio_actuators ( ).contains ( agent_name + PdConstants.SEPARATOR + actuator ) )
+					{
+						System.err.println ( "\t And we have a proper actuator, let's PLAY." );
+					}
+				}
+				audio_buffers.remove( sensor );
+			}
+		}
 	}
 	@Override
 	protected void eventHandlerRegistered ( EventHandler event_handler ) 
@@ -170,8 +189,33 @@ public class PdReasoning extends Reasoning
 	{
 		Memory source_memory = sensor_memories.get( source.getComponentName ( ) );
 		PdEvent event = ( PdEvent ) source_memory.readMemory ( instant, duration, TimeUnit.SECONDS );
-		
-		senses.put ( source.getComponentName ( ), event );
-
+		if ( event.get_type ( ).equals ( PdConstants.AUDIO_BLOCK ) )
+		{
+			System.err.println ( "Sensor Received Audio Block: " + event.get_type ( ) );
+			PdAudioBlock new_audio_block = ( PdAudioBlock ) event.get_content ( );
+			float[ ] sensed_samples = new_audio_block.get_samples ( );
+			if ( audio_buffers.containsKey ( source.getComponentName ( ) ) )
+			{
+				float[ ] old_samples = audio_buffers.get ( source.getComponentName ( ) );
+				float[ ] new_samples = new float [ old_samples.length + sensed_samples.length ];
+				for ( int i = 0; i < old_samples.length; i++ )
+				{
+					new_samples[ i ] = old_samples[ i ];
+				}
+				for ( int j = 0; j < sensed_samples.length; j++ )
+				{
+					new_samples[ old_samples.length + j ] = sensed_samples[ j ];
+				}
+				audio_buffers.replace( source.getComponentName ( ), new_samples );
+			}
+			else
+			{
+				audio_buffers.put ( source.getComponentName ( ), sensed_samples );
+			}
+		}
+		else
+		{
+			senses.put ( source.getComponentName ( ), event );			
+		}
 	}
 }
