@@ -55,8 +55,8 @@
       <operations public="false" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </class>  
-  <class id="7" language="java" name="ensemble.apps.pd_testing.PdEventServer" project="ensemble" 
-    file="/ensemble/src/ensemble/apps/pd_testing/PdEventServer.java" binary="false" corner="BOTTOM_RIGHT">    
+  <class id="7" language="java" name="ensemble.apps.pd_testing.PdServer" project="ensemble" 
+    file="/ensemble/src/ensemble/apps/pd_testing/PdServer.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="49" width="119" x="518" y="37"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
@@ -100,8 +100,8 @@
       <operations public="false" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </class>  
-  <class id="12" language="java" name="ensemble.apps.pd_testing.PdAudioServer" project="ensemble" 
-    file="/ensemble/src/ensemble/apps/pd_testing/PdAudioServer.java" binary="false" corner="BOTTOM_RIGHT">    
+  <class id="12" language="java" name="ensemble.apps.pd_testing.PdProcessor" project="ensemble" 
+    file="/ensemble/src/ensemble/apps/pd_testing/PdProcessor.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="553" y="151"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      

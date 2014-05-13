@@ -50,7 +50,10 @@ public final class PdConstants
 	public static final String GLOBAL_KEY = "global";
 	public static final String PRIVATE_KEY = "private";
 
-	public static final String DEFAULT_EVENT_TYPE = "event";
+	public static final String DEFAULT_EVENT_TYPE = "pd_event";
+	public static final String SUB_TYPE = "sub_type";
+	public static final String AUDIO_EVENT = "audio";
+	public static final String MISC_EVENTS = "event";
 	public static final String EVENT_TYPE = "type";
 	public static final String SUBPATCH = "subpatch_name";
 	public static final String SCOPE = "scope";

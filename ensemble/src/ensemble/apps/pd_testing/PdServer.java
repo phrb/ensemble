@@ -10,7 +10,7 @@ import javax.sound.sampled.*;
 
 import org.puredata.core.PdBase;
 
-public class PdEventServer extends EventServer 
+public class PdServer extends EventServer 
 {
 	PdWorld world;
 	protected String agent_name;
@@ -26,8 +26,8 @@ public class PdEventServer extends EventServer
     private byte[ ] output_samples;
     private short[ ] input_samples;
     private short[ ] short_samples;
-    private PdAudioServer sampler;
-    private PdReceiver receiver;
+    private PdProcessor pd_processor;
+    private PdReceiver pd_receiver;
     
     SourceDataLine line;
     
@@ -51,8 +51,8 @@ public class PdEventServer extends EventServer
 	    input_samples = new short[ frames * PdConstants.INPUT_CHANNELS ];
 	    short_samples = new short[ frames * PdConstants.OUTPUT_CHANNELS ];
 	    
-	    sampler = PdAudioServer.get_instance ( );
-	    receiver = PdReceiver.get_instance ( );
+	    pd_processor = PdProcessor.get_instance ( );
+	    pd_receiver = PdReceiver.get_instance ( );
 	    
 	    events = new ArrayList< PdEvent > ( );
 	    
@@ -129,7 +129,7 @@ public class PdEventServer extends EventServer
 			{
 				new_message_event ( actuator_target, message );
 				PdMessage sensor_message = new PdMessage ( actuator_target, symbol, arguments );
-				receiver.send_message ( sensor_message );
+				pd_receiver.send_message ( sensor_message );
 			}
 			else if ( actuator_target.equals ( PdConstants.GLOBAL_KEY ) )
 			{
@@ -139,7 +139,7 @@ public class PdEventServer extends EventServer
 					{
 						new_message_event ( sensor, message );						
 						PdMessage sensor_message = new PdMessage ( sensor, symbol, arguments );
-						receiver.send_message ( sensor_message );
+						pd_receiver.send_message ( sensor_message );
 					}
 				}
 			}
@@ -163,7 +163,7 @@ public class PdEventServer extends EventServer
 			else if ( targeted_sensor != null )
 			{
 				new_bang_event ( actuator_target, bang );
-				receiver.send_bang ( actuator_target );
+				pd_receiver.send_bang ( actuator_target );
 			}
 			else if ( actuator_target.equals ( PdConstants.GLOBAL_KEY ) )
 			{
@@ -172,7 +172,7 @@ public class PdEventServer extends EventServer
 					if ( ! ( sensor.split ( PdConstants.SEPARATOR )[ 1 ].equals( PdConstants.SELF_SENSOR ) ) )
 					{
 						new_bang_event ( sensor, bang );
-						receiver.send_bang ( sensor );
+						pd_receiver.send_bang ( sensor );
 					}
 				}
 			}
@@ -197,7 +197,7 @@ public class PdEventServer extends EventServer
 			else if ( targeted_sensor != null )
 			{
 				new_float_event ( actuator_target, value );
-				receiver.send_float ( actuator_target, value.get_value ( ) );
+				pd_receiver.send_float ( actuator_target, value.get_value ( ) );
 			}
 			else if ( actuator_target.equals( PdConstants.GLOBAL_KEY ) )
 			{
@@ -206,7 +206,7 @@ public class PdEventServer extends EventServer
 					if ( ! ( sensor.split ( PdConstants.SEPARATOR )[ 1 ].equals( PdConstants.SELF_SENSOR ) ) )
 					{
 						new_float_event ( sensor, value );
-						receiver.send_float ( sensor, value.get_value ( ) );
+						pd_receiver.send_float ( sensor, value.get_value ( ) );
 					}
 				}
 			}
@@ -220,41 +220,41 @@ public class PdEventServer extends EventServer
 			String type = event.get_type ( );
 			if ( type.equals( PdConstants.BANG ) )
 			{
-				receiver.send_bang( ( String ) event.get_content ( ) );
+				pd_receiver.send_bang( ( String ) event.get_content ( ) );
 			}
 			else if ( type.equals ( PdConstants.MESSAGE ) )
 			{
 				PdMessage message = ( PdMessage ) event.get_content ( );
-				receiver.send_message ( message );
+				pd_receiver.send_message ( message );
 			}
 			else if ( type.equals ( PdConstants.FLOAT ) )
 			{
 				PdFloat new_float = ( PdFloat ) event.get_content ( );
-				receiver.send_float ( new_float.get_source ( ), new_float.get_value ( )  );
+				pd_receiver.send_float ( new_float.get_source ( ), new_float.get_value ( )  );
 			}
 		}
 		events.clear ( );
 
-		sampler.process_ticks ( PdConstants.DEFAULT_TICKS, input_samples, short_samples );
+		pd_processor.process_ticks ( PdConstants.DEFAULT_TICKS, input_samples, short_samples );
 		short_buffer.rewind ( );
 		short_buffer.put( short_samples );
 		line.write ( output_samples, 0, output_samples.length );
 
-		receiver.fetch_pd_messages ( );
+		pd_receiver.fetch_pd_messages ( );
 
-		for ( PdMessage message : receiver.get_messages ( ) )
+		for ( PdMessage message : pd_receiver.get_messages ( ) )
 		{
 			process_message ( message );
 		}
-		for ( String bang : receiver.get_bangs ( ) )
+		for ( String bang : pd_receiver.get_bangs ( ) )
 		{
 			process_bang ( bang );
 		}
-		for ( PdFloat pd_float : receiver.get_floats ( ) )
+		for ( PdFloat pd_float : pd_receiver.get_floats ( ) )
 		{
 			process_float ( pd_float );
 		}
-		receiver.start_new_cycle ( );
+		pd_receiver.start_new_cycle ( );
 		act ( );
 	}
 	@Override
@@ -266,10 +266,24 @@ public class PdEventServer extends EventServer
 	@Override
 	protected Parameters actuatorRegistered ( String agentName, String actuatorName, Parameters userParam ) throws Exception 
 	{
+		System.err.println ( "Registered " + agentName + PdConstants.SEPARATOR + actuatorName );
+		String sub_type = userParam.get ( PdConstants.SUB_TYPE );
+		if ( ! ( actuatorName.equals( PdConstants.SELF_ACTUATOR ) ) && sub_type.equals ( PdConstants.AUDIO_EVENT ) )
+		{
+			System.err.println ( "Registered " + agentName + PdConstants.SEPARATOR + actuatorName + " into audio actuators list." );
+		}
+		pd_receiver.register_audio_actuator ( agentName + PdConstants.SEPARATOR + actuatorName );
 		return userParam;
 	}
 	protected Parameters sensorRegistered ( String agentName, String sensorName, Parameters userParam ) throws Exception 
 	{
+		System.err.println ( "Registered " + agentName + PdConstants.SEPARATOR + sensorName );
+		String sub_type = userParam.get ( PdConstants.SUB_TYPE );
+		if ( ! ( sensorName.equals( PdConstants.SELF_SENSOR ) ) && sub_type.equals ( PdConstants.AUDIO_EVENT ) )
+		{
+			System.err.println ( "Registered " + agentName + PdConstants.SEPARATOR + sensorName + " into audio sensors list." );
+		}
+		pd_receiver.register_audio_sensor ( agentName + PdConstants.SEPARATOR + sensorName );
 		return userParam;
 	}
 }

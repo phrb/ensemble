@@ -15,11 +15,11 @@ public class PdAgent extends MusicalAgent
 	private PdReceiver receiver;
 	String agent_name;
 	
-	private Parameters read_arguments ( PdMessage message, int offset ) 
+	private Parameters read_arguments ( PdMessage message ) 
 	{
 		Parameters new_parameters = new Parameters ( );	
 		Object[ ] attributes = message.get_arguments ( );
-		for ( int i = offset; i < attributes.length; i++ ) 
+		for ( int i = 1; i < attributes.length; i++ ) 
 		{
 			if ( attributes[ i ].equals ( PdConstants.SCOPE ) )
 			{
@@ -28,7 +28,9 @@ public class PdAgent extends MusicalAgent
 			}
 			else if ( attributes[ i ].equals ( PdConstants.EVENT_TYPE ) )
 			{
-				new_parameters.put( ( String ) attributes[ i ], ( String ) attributes[ i + 1 ] );
+				String sub_type = ( String ) attributes[ i + 1 ];
+				new_parameters.put( ( String ) attributes[ i ], PdConstants.DEFAULT_EVENT_TYPE );
+				new_parameters.put( PdConstants.SUB_TYPE, sub_type );
 				i += 1;
 			}
 			else
@@ -59,14 +61,14 @@ public class PdAgent extends MusicalAgent
     		{
        			String actuator_name = ( String ) message.get_arguments ( )[ 0 ];
        			receiver.register_symbol ( agent_name + PdConstants.SEPARATOR + actuator_name );
-				this.addComponent ( actuator_name, PdConstants.ACTUATOR_CLASS, read_arguments ( message, 1 ) );
+				this.addComponent ( actuator_name, PdConstants.ACTUATOR_CLASS, read_arguments ( message ) );
     		}
     		else if ( source.equals ( agent_name ) &&
     				component_name.equals ( PdConstants.ADD_SENSOR ) )
     		{
     			String sensor_name = ( String ) message.get_arguments ( )[ 0 ];
        			receiver.register_symbol ( agent_name + PdConstants.SEPARATOR + sensor_name );
-				this.addComponent ( sensor_name, PdConstants.SENSOR_CLASS, read_arguments ( message, 1 ) );
+				this.addComponent ( sensor_name, PdConstants.SENSOR_CLASS, read_arguments ( message ) );
     		}
     		else if ( source.equals ( agent_name ) &&
     				component_name.equals ( PdConstants.ADD_FACT ) )

@@ -1,21 +1,13 @@
 #N canvas 0 47 1920 1033 10;
-#X obj 66 56 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
--1;
-#X obj 66 34 loadbang;
-#X obj 131 96 symbol \$1;
-#X obj 66 121 list;
-#X obj 66 96 symbol \$2;
-#X obj 254 132 tabwrite~ \$1:\$2;
-#X obj 262 110 bang~;
-#X obj 253 86 inlet~;
-#X obj 182 38 table act_samples;
-#X msg 66 145 \; act_samples resize 64 \; act_samples rename \$2:\$1
-;
-#X connect 0 0 2 0;
-#X connect 0 0 4 0;
+#X obj 834 142 tabwrite~ \$1:\$2;
+#X obj 842 120 bang~;
+#X obj 833 96 inlet~;
+#X obj 616 92 table \$0:act_samples;
+#X msg 615 164 \; \$1:act_samples resize 64 \; \$1:act_samples rename
+\$2:\$3;
+#X obj 615 141 list append \$0 \$1 \$2;
+#X obj 615 120 loadbang;
 #X connect 1 0 0 0;
-#X connect 2 0 3 1;
-#X connect 3 0 9 0;
-#X connect 4 0 3 0;
+#X connect 2 0 0 0;
+#X connect 5 0 4 0;
 #X connect 6 0 5 0;
-#X connect 7 0 5 0;

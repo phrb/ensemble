@@ -10,6 +10,8 @@ public class PdReceiver extends PdDispatcher
 	private CopyOnWriteArrayList< PdFloat > floats;
 	private CopyOnWriteArrayList< String > bangs;
 	private CopyOnWriteArrayList< PdMessage > messages;
+	private CopyOnWriteArrayList< String > audio_actuators;
+	private CopyOnWriteArrayList< String > audio_sensors;
 	private CopyOnWriteArrayList< String > control_symbols;
 	
 	private static final PdReceiver INSTANCE = new PdReceiver ( );
@@ -20,6 +22,8 @@ public class PdReceiver extends PdDispatcher
 		bangs = new CopyOnWriteArrayList< String > ( );
 		messages = new CopyOnWriteArrayList< PdMessage > ( );
 		control_symbols = new CopyOnWriteArrayList< String > ( );
+		audio_actuators = new CopyOnWriteArrayList< String > ( );
+		audio_sensors = new CopyOnWriteArrayList< String > ( );
 		
 		/*
 		 * Registering config symbols to pd receiver:
@@ -76,7 +80,7 @@ public class PdReceiver extends PdDispatcher
 	@Override
 	public void receiveMessage ( String source, String symbol, Object... args )
 	{
-		System.err.println ( "Message from " + source + " that said " + symbol );
+		//System.err.println ( "Message from " + source + " that said " + symbol );
 		messages.add ( new PdMessage ( source, symbol, args ) );
 	}
 	@Override
@@ -105,11 +109,27 @@ public class PdReceiver extends PdDispatcher
 	{
 		return messages;
 	}
+	public CopyOnWriteArrayList< String > get_audio_actuators ( )
+	{
+		return audio_actuators;
+	}
+	public CopyOnWriteArrayList< String > get_audio_sensors ( )
+	{
+		return audio_sensors;
+	}
 	public void register_symbol ( String new_symbol )
 	{
-		System.err.println ( "Registered symbol " + new_symbol );
+		//System.err.println ( "Registered symbol " + new_symbol );
 		control_symbols.add ( new_symbol );
 		PdBase.subscribe ( new_symbol );
+	}
+	public void register_audio_actuator ( String new_symbol )
+	{
+		audio_actuators.add ( new_symbol );
+	}
+	public void register_audio_sensor ( String new_symbol )
+	{
+		audio_sensors.add ( new_symbol );
 	}
 	public void deregister_symbol ( String target )
 	{
