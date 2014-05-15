@@ -1,5 +1,4 @@
 #N canvas 0 47 1920 1033 10;
 #X obj 31 36 r agent2:start;
-#X msg 31 58 \; agent2 add_sensor sense1 type audio scope global \;
-agent2 add_actuator act1 type audio scope global;
+#X msg 31 58 \; agent2 add_sensor sense1 type audio scope global;
 #X connect 0 0 1 0;
