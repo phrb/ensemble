@@ -1,6 +1,7 @@
 package ensemble.apps.pd_testing;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
@@ -22,18 +23,18 @@ public class PdServer extends EventServer
 	/*
 	 * Audio
 	 */
-	int frames = PdBase.blockSize() * PdConstants.DEFAULT_TICKS;
+	int frames = PdConstants.DEFAULT_TICKS * PdConstants.PD_BLOCK_SIZE;
 	
-    private byte[ ] output_samples;
-    private short[ ] input_samples;
-    private short[ ] short_samples;
+    
+	short[ ] dummy_adc = new short[ frames * PdConstants.INPUT_CHANNELS ];
+	short[ ] dummy_dac = new short[ frames * PdConstants.OUTPUT_CHANNELS ];
+	private FloatBuffer float_buffer;
+    private ByteBuffer byte_buffer;
+    
     private PdProcessor pd_processor;
     private PdReceiver pd_receiver;
     
     private SourceDataLine line;
-    
-	private ByteBuffer byte_buffer;
-	private ShortBuffer short_buffer;
 	
 	
 	@Override
@@ -48,26 +49,22 @@ public class PdServer extends EventServer
 	 */
 	@Override
 	public boolean init ( ) 
-	{
-	    output_samples = new byte[ frames * PdConstants.OUTPUT_CHANNELS * PdConstants.BYTES_PER_SAMPLE ];
-	    input_samples = new short[ frames * PdConstants.INPUT_CHANNELS ];
-	    short_samples = new short[ frames * PdConstants.OUTPUT_CHANNELS ];
-	    
+	{  
 	    pd_processor = PdProcessor.get_instance ( );
 	    pd_receiver = PdReceiver.get_instance ( );
 	    
 	    events = new ArrayList< PdEvent > ( );
-	    
-		byte_buffer = ByteBuffer.wrap ( output_samples );
-		short_buffer = byte_buffer.asShortBuffer ( );
 		
+	    float_buffer = FloatBuffer.allocate ( PdConstants.DEFAULT_SAMPLES_PER_BUFFER );
+		byte_buffer = ByteBuffer.allocate ( float_buffer.capacity ( ) * 4 );
+				
 		world = ( PdWorld ) envAgent.getWorld ( );
 		AudioFormat format = new AudioFormat ( ( float ) PdConstants.SAMPLE_RATE, PdConstants.BITS_PER_SAMPLE, PdConstants.OUTPUT_CHANNELS, true, true );
 		DataLine.Info info = new DataLine.Info ( SourceDataLine.class, format );
 		try 
 		{
 			line = ( SourceDataLine ) AudioSystem.getLine ( info );
-			line.open ( format, PdBase.blockSize ( ) * PdConstants.DEFAULT_TICKS );
+			line.open ( format, PdConstants.DEFAULT_SAMPLES_PER_BUFFER * 8 );
 			line.start ( );
 		}
 		catch (LineUnavailableException e) 
@@ -224,9 +221,10 @@ public class PdServer extends EventServer
 			}
 		}
 	}
-	protected void process_audio_block ( PdAudioBlock audio_block )
+	protected void process_sensor_block ( PdAudioBlock audio_block )
 	{
 		String[ ] source = audio_block.get_source ( ).split( PdConstants.SEPARATOR );
+		
 		for ( String sensor : pd_receiver.get_audio_sensors ( ) )
 		{
 			if ( ! ( sensor.split ( PdConstants.SEPARATOR )[ 0 ].equals( source[ 0 ] ) ) )
@@ -234,6 +232,11 @@ public class PdServer extends EventServer
 				new_audio_block_event ( sensor, audio_block );
 			}
 		}
+	}
+	protected void process_actuator_block ( PdAudioBlock audio_block )
+	{
+		String[ ] source = audio_block.get_source ( ).split( PdConstants.SEPARATOR );
+		new_audio_block_event ( source[ 0 ] + PdConstants.SEPARATOR + PdConstants.SELF_SENSOR, audio_block );
 	}
 	protected void process ( )
 	{
@@ -255,14 +258,37 @@ public class PdServer extends EventServer
 				PdFloat new_float = ( PdFloat ) event.get_content ( );
 				pd_receiver.send_float ( new_float.get_source ( ), new_float.get_value ( )  );
 			}
+			else if ( type.equals ( PdConstants.AUDIO_BLOCK ) )
+			{
+				PdAudioBlock audio_block = ( PdAudioBlock ) event.get_content ( );
+				//float[ ] samples = audio_block.get_samples ( );
+				
+				/*System.err.println ( "Byte buffer: " + byte_buffer.array ( ).length );
+				System.err.println ( "Bytebuffer: " + byte_buffer.capacity ( ) );
+				System.err.println ( "Float buffer: " + samples.length );
+				System.err.println ( "Floatbuffer: " + float_buffer.capacity ( ) );*/
+
+				float[ ] samples = audio_block.get_samples ( );
+				FloatBuffer floatBuffer = FloatBuffer.wrap(samples);
+				ByteBuffer byteBuffer = ByteBuffer.allocate(floatBuffer.capacity() * 4);
+				byteBuffer.asFloatBuffer().put(samples);
+				byte[ ] bytes = new byte [ samples.length * 4 ]; 
+				byteBuffer.get ( bytes );				
+				//line.write ( bytes, 0, bytes.length );
+				
+				System.err.println ( "Server received audio buffer" );
+				System.err.println ( "\tSamples: \n[" );
+				for ( float sample : samples )
+				{
+					System.err.println ( sample );
+				}
+				System.err.println ( "]" );
+				/* Tocar? */
+			}
 		}
 		events.clear ( );
-
-		pd_processor.process_ticks ( PdConstants.DEFAULT_TICKS, input_samples, short_samples );
-		short_buffer.rewind ( );
-		short_buffer.put( short_samples );
-		line.write ( output_samples, 0, output_samples.length );
-
+		
+		pd_processor.process_ticks ( PdConstants.DEFAULT_TICKS, dummy_adc, dummy_dac );
 		pd_receiver.fetch_pd_messages ( );
 
 		for ( PdMessage message : pd_receiver.get_messages ( ) )
@@ -277,19 +303,21 @@ public class PdServer extends EventServer
 		{
 			process_float ( pd_float );
 		}
+		/* Loop for audio from actuators: */
+		for ( String actuator : pd_receiver.get_audio_actuators ( ) )
+		{
+			float[ ] samples = new float[ PdConstants.PD_BLOCK_SIZE ];
+			PdBase.readArray ( samples, 0 , actuator, 0, PdConstants.PD_BLOCK_SIZE );
+			process_actuator_block ( new PdAudioBlock ( samples, actuator ) );
+		}
+		/* Loop for audio TO audio sensors:
 		for ( String actuator : pd_receiver.get_audio_actuators ( ) )
 		{
 			float[ ] samples = new float[ PdConstants.PD_BLOCK_SIZE ];
 			PdBase.readArray ( samples, 0 , actuator, 0, PdConstants.PD_BLOCK_SIZE );
 			process_audio_block ( new PdAudioBlock ( samples, actuator ) );
-			/*System.err.println ( "Read samples from " + actuator + ". \n[" );
-			for ( float sample : samples )
-			{
-				System.err.println ( "val= " + sample );
-			}
-			System.err.println ( "]" );*/
-		}
-		pd_receiver.start_new_cycle ( );
+		}*/
+		pd_receiver.start_new_cycle ( );	
 		act ( );
 	}
 	@Override
