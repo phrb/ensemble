@@ -128,17 +128,7 @@ public class PdReasoning extends Reasoning
 		float[ ] sensed_samples = new_audio_block.get_samples ( );
 		if ( actuator_audio_buffers.containsKey (  actuator_name ) )
 		{
-			float[ ] old_samples = actuator_audio_buffers.get ( actuator_name );
-			float[ ] new_samples = new float [ old_samples.length + sensed_samples.length ];
-			for ( int i = 0; i < old_samples.length; i++ )
-			{
-				new_samples[ i ] = old_samples[ i ];
-			}
-			for ( int j = 0; j < sensed_samples.length; j++ )
-			{
-				new_samples[ old_samples.length + j ] = sensed_samples[ j ];
-			}
-			actuator_audio_buffers.replace( actuator_name, new_samples );
+			actuator_audio_buffers.replace( actuator_name, sensed_samples );
 		}
 		else
 		{
@@ -180,23 +170,20 @@ public class PdReasoning extends Reasoning
 		/* Audio from our Actuators in Pd */
 		for ( String buffer : actuator_audio_buffers.keySet ( ) )
 		{
-			if ( actuator_audio_buffers.get ( buffer ).length >= PdConstants.DEFAULT_SAMPLES_PER_BUFFER )
+			PdAudioBlock new_audio_block = new PdAudioBlock ( actuator_audio_buffers.get ( buffer ), agent_name + PdConstants.SEPARATOR + buffer );
+			PdEvent pd_event = new PdEvent ( PdConstants.AUDIO_BLOCK, new_audio_block );
+			PdActuator audio_actuator = actuators.get ( buffer );
+			Memory actuator_memory = actuator_memories.get ( buffer );
+			try 
 			{
-				PdAudioBlock new_audio_block = new PdAudioBlock ( actuator_audio_buffers.get ( buffer ), agent_name + PdConstants.SEPARATOR + buffer );
-				PdEvent pd_event = new PdEvent ( PdConstants.AUDIO_BLOCK, new_audio_block );
-				PdActuator audio_actuator = actuators.get ( buffer );
-				Memory actuator_memory = actuator_memories.get ( buffer );
-				try 
-				{
-					actuator_memory.writeMemory ( pd_event );
-				}
-				catch ( MemoryException e ) 
-				{
-					e.printStackTrace ( );
-				}
-				audio_actuator.act ( );
-				actuator_audio_buffers.remove( buffer );
+				actuator_memory.writeMemory ( pd_event );
 			}
+			catch ( MemoryException e ) 
+			{
+				e.printStackTrace ( );
+			}
+			audio_actuator.act ( );
+			actuator_audio_buffers.remove( buffer );
 		}
 	}
 	@Override
