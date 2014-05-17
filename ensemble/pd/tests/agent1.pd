@@ -1,11 +1,15 @@
 #N canvas 0 47 1920 1033 10;
 #X obj 37 38 r agent1:start;
 #X obj 38 167 read_fact agent1;
-#X obj 392 358 act~ agent1 act2;
+#X obj 225 344 act~ agent1 act2;
+#X obj 254 226 osc~ 440;
 #X msg 37 60 \; agent1 add_actuator act1 type event scope global \;
 agent1 add_sensor sense1 type event scope global \; agent1 add_actuator
 act2 type audio \; agent1 new_fact global TEST 440 \; subscribe symbol_test
 ;
-#X obj 403 325 osc~ 220;
-#X connect 0 0 3 0;
-#X connect 4 0 2 0;
+#X obj 220 314 *~;
+#X obj 306 265 osc~ 2;
+#X connect 0 0 4 0;
+#X connect 3 0 5 0;
+#X connect 5 0 2 0;
+#X connect 6 0 5 1;

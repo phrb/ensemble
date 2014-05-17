@@ -1,9 +1,8 @@
 package ensemble.apps.pd_testing;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import ensemble.*;
@@ -23,12 +22,10 @@ public class PdServer extends EventServer
 	/*
 	 * Audio
 	 */
-	int frames = PdConstants.DEFAULT_TICKS * PdConstants.PD_BLOCK_SIZE;
+	int frames = ( PdConstants.DEFAULT_TICKS * PdConstants.PD_BLOCK_SIZE ) / PdConstants.BYTES_PER_SAMPLE;
 	
 	short[ ] dummy_adc = new short[ frames * PdConstants.INPUT_CHANNELS ];
 	short[ ] dummy_dac = new short[ frames * PdConstants.OUTPUT_CHANNELS ];
-	private FloatBuffer float_buffer;
-    private ByteBuffer byte_buffer;
     
     private PdProcessor pd_processor;
     private PdReceiver pd_receiver;
@@ -53,20 +50,20 @@ public class PdServer extends EventServer
 	    pd_receiver = PdReceiver.get_instance ( );
 	    
 	    events = new ArrayList< PdEvent > ( );
-		
-	    float_buffer = FloatBuffer.allocate ( PdConstants.DEFAULT_SAMPLES_PER_BUFFER );
-		byte_buffer = ByteBuffer.allocate ( float_buffer.capacity ( ) * 4 );
-				
+						
 		world = ( PdWorld ) envAgent.getWorld ( );
-		AudioFormat format = new AudioFormat ( ( float ) PdConstants.SAMPLE_RATE, PdConstants.BITS_PER_SAMPLE, PdConstants.OUTPUT_CHANNELS, true, true );
+		//AudioFormat format = new AudioFormat ( ( float ) PdConstants.SAMPLE_RATE, PdConstants.BITS_PER_SAMPLE, PdConstants.OUTPUT_CHANNELS, true, true );
+		AudioFormat format = new AudioFormat ( AudioFormat.Encoding.PCM_SIGNED, ( float ) PdConstants.SAMPLE_RATE, 
+												  PdConstants.BITS_PER_SAMPLE, PdConstants.OUTPUT_CHANNELS, PdConstants.BYTES_PER_SAMPLE,
+												  ( float ) PdConstants.SAMPLE_RATE, true );
 		DataLine.Info info = new DataLine.Info ( SourceDataLine.class, format );
 		try 
 		{
 			line = ( SourceDataLine ) AudioSystem.getLine ( info );
-			line.open ( format, PdConstants.DEFAULT_SAMPLES_PER_BUFFER * 8 );
+			line.open ( format, PdConstants.DEFAULT_SAMPLES_PER_BUFFER * 16 );
 			line.start ( );
 		}
-		catch (LineUnavailableException e) 
+		catch ( LineUnavailableException e ) 
 		{
 			e.printStackTrace();
 		}
@@ -220,36 +217,30 @@ public class PdServer extends EventServer
 			}
 		}
 	}
-	protected void process_sensor_block ( PdAudioBlock audio_block )
+	protected void process_actuator_block ( String actuator )
 	{
-		String[ ] source = audio_block.get_source ( ).split( PdConstants.SEPARATOR );
-		
-		for ( String sensor : pd_receiver.get_audio_sensors ( ) )
-		{
-			if ( ! ( sensor.split ( PdConstants.SEPARATOR )[ 0 ].equals( source[ 0 ] ) ) )
-			{
-				new_audio_block_event ( sensor, audio_block );
-			}
-		}
-	}
-	protected void process_actuator_block ( PdAudioBlock audio_block )
-	{
-		String[ ] source = audio_block.get_source ( ).split( PdConstants.SEPARATOR );
+		float[ ] actuator_samples = new float[ PdConstants.PD_BLOCK_SIZE ];
+		PdBase.readArray ( actuator_samples, 0 , actuator, 0, PdConstants.PD_BLOCK_SIZE );
+		PdAudioBlock audio_block = new PdAudioBlock ( actuator_samples, actuator );
+		String[ ] source = audio_block.get_source ( ).split ( PdConstants.SEPARATOR );
 		new_audio_block_event ( source[ 0 ] + PdConstants.SEPARATOR + PdConstants.SELF_SENSOR, audio_block );
 	}
-	protected float[ ] add_samples ( float[ ] old_samples, float[ ] new_samples )
+	protected void play_audio_samples ( float[ ] samples )
 	{
-		System.err.println ( "Adding Buffers here." );
-		for ( int i = 0; i < old_samples.length; i++ )
+		byte[ ] byte_samples = new byte[ samples.length * 2 ];
+		int byte_index = 0;
+		for ( int i = 0; i < samples.length; i++ )
 		{
-			old_samples[ i ] += new_samples[ i ];
-			old_samples[ i ] /= 2;
+			float sample = samples[ i ];
+			int int_sample = Math.round( sample * 32767.0F );
+			byte_samples[ byte_index ] = ( byte ) ( ( int_sample >> 8 ) & 0xFF );
+			byte_samples[ byte_index + 1 ] = ( byte ) ( int_sample & 0xFF);
+			byte_index += 2;
 		}
-		return old_samples;
+		line.write ( byte_samples, 0, byte_samples.length );
 	}
 	protected void process ( )
 	{
-		float[ ] samples = null;
 		for ( int i = 0; i < events.size ( ); i++ )
 		{
 			PdEvent event = events.get ( i );
@@ -271,35 +262,22 @@ public class PdServer extends EventServer
 			else if ( type.equals ( PdConstants.AUDIO_BLOCK ) )
 			{
 				PdAudioBlock audio_block = ( PdAudioBlock ) event.get_content ( );
-
-				if ( samples == null )
+				String source = audio_block.get_source ( );
+				float[ ] samples = audio_block.get_samples ( );
+				
+				for ( String sensor : pd_receiver.get_audio_sensors ( ) )
 				{
-					samples = audio_block.get_samples ( );
+				/* if ( source.can_reach ( sensor ) )
+				 * { */
+					PdBase.writeArray ( sensor, 0, samples, 0, samples.length );
+					if ( sensor.equals ( PdConstants.AVATAR_SENSOR ) )
+					{
+						play_audio_samples ( samples );
+					}
+				/* }
+				 */
 				}
-				else
-				{
-					samples = add_samples( samples, audio_block.get_samples ( ) );
-				}
-				/*System.err.println ( "Server received audio buffer" );
-				System.err.println ( "\tSamples: \n[" );
-				int number = 0;
-				for ( float sample : samples )
-				{
-					System.err.println ( "Sample=" + number + ": " + sample );
-					number += 1;
-				}
-				System.err.println ( "]" );*/
 			}
-		}
-		if ( samples != null )
-		{
-			FloatBuffer floatBuffer = FloatBuffer.wrap ( samples );
-			ByteBuffer byteBuffer = ByteBuffer.allocate ( floatBuffer.capacity ( ) * 4 );
-			byteBuffer.asFloatBuffer ( ).put ( samples );
-			byte[ ] bytes = new byte [ samples.length * 4 ]; 
-			byteBuffer.get ( bytes );	
-			
-			line.write ( bytes, 0, bytes.length );
 		}
 		events.clear ( );
 		
@@ -318,20 +296,10 @@ public class PdServer extends EventServer
 		{
 			process_float ( pd_float );
 		}
-		/* Loop for audio from actuators: */
 		for ( String actuator : pd_receiver.get_audio_actuators ( ) )
 		{
-			float[ ] actuator_samples = new float[ PdConstants.PD_BLOCK_SIZE ];
-			PdBase.readArray ( actuator_samples, 0 , actuator, 0, PdConstants.PD_BLOCK_SIZE );
-			process_actuator_block ( new PdAudioBlock ( actuator_samples, actuator ) );
+			process_actuator_block ( actuator );
 		}
-		/* Loop for audio TO audio sensors:
-		for ( String actuator : pd_receiver.get_audio_actuators ( ) )
-		{
-			float[ ] samples = new float[ PdConstants.PD_BLOCK_SIZE ];
-			PdBase.readArray ( samples, 0 , actuator, 0, PdConstants.PD_BLOCK_SIZE );
-			process_audio_block ( new PdAudioBlock ( samples, actuator ) );
-		}*/
 		pd_receiver.start_new_cycle ( );	
 		act ( );
 	}
@@ -344,22 +312,18 @@ public class PdServer extends EventServer
 	@Override
 	protected Parameters actuatorRegistered ( String agentName, String actuatorName, Parameters userParam ) throws Exception 
 	{
-		System.err.println ( "Registered " + agentName + PdConstants.SEPARATOR + actuatorName );
 		String sub_type = userParam.get ( PdConstants.SUB_TYPE );
-		if ( ! ( actuatorName.equals( PdConstants.SELF_ACTUATOR ) ) && sub_type.equals ( PdConstants.AUDIO_EVENT ) )
+		if ( ! ( actuatorName.equals ( PdConstants.SELF_ACTUATOR ) ) && sub_type.equals ( PdConstants.AUDIO_EVENT ) )
 		{
-			System.err.println ( "Registered " + agentName + PdConstants.SEPARATOR + actuatorName + " into audio actuators list." );
 			pd_receiver.register_audio_actuator ( agentName + PdConstants.SEPARATOR + actuatorName );
 		}
 		return userParam;
 	}
 	protected Parameters sensorRegistered ( String agentName, String sensorName, Parameters userParam ) throws Exception 
 	{
-		System.err.println ( "Registered " + agentName + PdConstants.SEPARATOR + sensorName );
 		String sub_type = userParam.get ( PdConstants.SUB_TYPE );
-		if ( ! ( sensorName.equals( PdConstants.SELF_SENSOR ) ) && sub_type.equals ( PdConstants.AUDIO_EVENT ) )
+		if ( ! ( sensorName.equals ( PdConstants.SELF_SENSOR ) ) && sub_type.equals ( PdConstants.AUDIO_EVENT ) )
 		{
-			System.err.println ( "Registered " + agentName + PdConstants.SEPARATOR + sensorName + " into audio sensors list." );
 			pd_receiver.register_audio_sensor ( agentName + PdConstants.SEPARATOR + sensorName );
 		}
 		return userParam;
