@@ -52,7 +52,6 @@ public class PdServer extends EventServer
 	    events = new ArrayList< PdEvent > ( );
 						
 		world = ( PdWorld ) envAgent.getWorld ( );
-		//AudioFormat format = new AudioFormat ( ( float ) PdConstants.SAMPLE_RATE, PdConstants.BITS_PER_SAMPLE, PdConstants.OUTPUT_CHANNELS, true, true );
 		AudioFormat format = new AudioFormat ( AudioFormat.Encoding.PCM_SIGNED, ( float ) PdConstants.SAMPLE_RATE, 
 												  PdConstants.BITS_PER_SAMPLE, PdConstants.OUTPUT_CHANNELS, PdConstants.BYTES_PER_SAMPLE,
 												  ( float ) PdConstants.SAMPLE_RATE, true );
@@ -217,13 +216,23 @@ public class PdServer extends EventServer
 			}
 		}
 	}
-	protected void process_actuator_block ( String actuator )
+	protected float[ ] process_actuator_block ( float[ ] samples, String actuator )
 	{
+		float[ ] new_samples;
 		float[ ] actuator_samples = new float[ PdConstants.PD_BLOCK_SIZE ];
 		PdBase.readArray ( actuator_samples, 0 , actuator, 0, PdConstants.PD_BLOCK_SIZE );
 		PdAudioBlock audio_block = new PdAudioBlock ( actuator_samples, actuator );
 		String[ ] source = audio_block.get_source ( ).split ( PdConstants.SEPARATOR );
 		new_audio_block_event ( source[ 0 ] + PdConstants.SEPARATOR + PdConstants.SELF_SENSOR, audio_block );
+		if ( samples == null )
+		{			
+			new_samples = actuator_samples;
+		}
+		else
+		{
+			new_samples = add_samples ( samples, actuator_samples );
+		}
+		return new_samples;
 	}
 	protected void play_audio_samples ( float[ ] samples )
 	{
@@ -239,8 +248,18 @@ public class PdServer extends EventServer
 		}
 		line.write ( byte_samples, 0, byte_samples.length );
 	}
+	protected float[ ] add_samples ( float[ ] old_samples, float[ ] new_samples )
+	{
+		float[ ] samples = new float[ old_samples.length ];
+		for ( int i = 0; i < samples.length; i++ )
+		{
+			samples[ i ] = ( old_samples[ i ] + new_samples[ i ] ) / 2;
+		}
+		return samples;
+	}
 	protected void process ( )
 	{
+		float[ ] samples = null;
 		for ( int i = 0; i < events.size ( ); i++ )
 		{
 			PdEvent event = events.get ( i );
@@ -261,22 +280,6 @@ public class PdServer extends EventServer
 			}
 			else if ( type.equals ( PdConstants.AUDIO_BLOCK ) )
 			{
-				PdAudioBlock audio_block = ( PdAudioBlock ) event.get_content ( );
-				String source = audio_block.get_source ( );
-				float[ ] samples = audio_block.get_samples ( );
-				
-				for ( String sensor : pd_receiver.get_audio_sensors ( ) )
-				{
-				/* if ( source.can_reach ( sensor ) )
-				 * { */
-					PdBase.writeArray ( sensor, 0, samples, 0, samples.length );
-					if ( sensor.equals ( PdConstants.AVATAR_SENSOR ) )
-					{
-						play_audio_samples ( samples );
-					}
-				/* }
-				 */
-				}
 			}
 		}
 		events.clear ( );
@@ -298,7 +301,22 @@ public class PdServer extends EventServer
 		}
 		for ( String actuator : pd_receiver.get_audio_actuators ( ) )
 		{
-			process_actuator_block ( actuator );
+			samples = process_actuator_block ( samples, actuator );
+		}
+		if ( samples != null )
+		{
+			for ( String sensor : pd_receiver.get_audio_sensors ( ) )
+			{
+			/* if ( source.can_reach ( sensor ) )
+			 * { */
+				PdBase.writeArray ( sensor, 0, samples, 0,samples.length );
+				if ( sensor.equals ( PdConstants.AVATAR_SENSOR ) )
+				{
+					play_audio_samples ( samples );
+				}
+			/* }
+			 */
+			}
 		}
 		pd_receiver.start_new_cycle ( );	
 		act ( );

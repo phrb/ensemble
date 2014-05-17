@@ -106,7 +106,6 @@ public class EventMemory extends Memory {
 		
 		if (head == null) {
 			
-//			System.out.println("Memory is empty!");
 			return null;
 
 		} else {

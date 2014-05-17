@@ -24,7 +24,6 @@ public class PdReasoning extends Reasoning
 	private ConcurrentHashMap< String, Memory > sensor_memories = new ConcurrentHashMap<String, Memory> ( );
 	
 	private ConcurrentHashMap< String, PdEvent > senses = new ConcurrentHashMap< String, PdEvent > ( );
-	private ConcurrentHashMap< String, float[ ] > actuator_audio_buffers = new ConcurrentHashMap< String, float[ ]  > ( );
     
 	private String subpatch;
 	private String agent_name;
@@ -193,6 +192,6 @@ public class PdReasoning extends Reasoning
 	{
 		Memory source_memory = sensor_memories.get( source.getComponentName ( ) );
 		PdEvent event = ( PdEvent ) source_memory.readMemory ( instant, duration, TimeUnit.SECONDS );
-		senses.put ( source.getComponentName ( ), event );			
+		senses.put ( source.getComponentName ( ), event );
 	}
 }
