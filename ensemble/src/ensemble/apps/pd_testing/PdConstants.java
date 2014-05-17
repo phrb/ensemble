@@ -9,7 +9,7 @@ public final class PdConstants
 	public static final int SAMPLE_RATE = 44100;
 	public static final int PD_BLOCK_SIZE = 16384;
 	public static final int PD_EVENT_BUFFER_SIZE = 400;
-	public static final int BYTES_PER_SAMPLE = 4;
+	public static final int BYTES_PER_SAMPLE = 2;
 	public static final int BITS_PER_SAMPLE = 8 * BYTES_PER_SAMPLE;
 	public static final int INPUT_CHANNELS = 1;
 	public static final int OUTPUT_CHANNELS = 1;	
@@ -59,6 +59,8 @@ public final class PdConstants
 	public static final String EVENT_TYPE = "type";
 	public static final String SUBPATCH = "subpatch_name";
 	public static final String SCOPE = "scope";
+	public static final String AVATAR_SENSOR = "avatar:sensor";
+	public static final String AVATAR_ACTUATOR = "avatar:actuator";
 	/*
 	 * Ensemble will send bangs to these symbols:
 	 */

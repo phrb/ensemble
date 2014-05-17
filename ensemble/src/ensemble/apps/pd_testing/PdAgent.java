@@ -4,10 +4,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import ensemble.MusicalAgent;
 import ensemble.Parameters;
 
-/*
- * A simple extension of Ensemble default MusicalAgent class.
- */
-
 public class PdAgent extends MusicalAgent
 {
 	private static final long serialVersionUID = 1L;
@@ -42,11 +38,6 @@ public class PdAgent extends MusicalAgent
 	}
     private void process_config_messages ( )
     {
-    	/*
-    	 * Process all messages sent
-    	 * to default control symbols.
-    	 * 
-    	 */
     	CopyOnWriteArrayList< PdMessage > messages = receiver.get_messages ( );
     	for ( PdMessage message : messages )
     	{
@@ -96,13 +87,6 @@ public class PdAgent extends MusicalAgent
     		}
     	}
     }
-	/*
-	 * init and configure are called once every time an instance of
-	 * this Agent is inserted into the virtual environment.
-	 * 
-	 * (non-Javadoc)
-	 * @see ensemble.EnsembleAgent#configure()
-	 */
 	@Override
 	public boolean configure ( )
 	{	
@@ -113,12 +97,9 @@ public class PdAgent extends MusicalAgent
 	{
 		agent_name = getAgentName ( );
 		receiver = PdReceiver.get_instance ( );
-		/* 
-		 * Registering control symbols:
-		 */
-		receiver.register_symbol ( agent_name );
 
-		receiver.send_bang( agent_name + PdConstants.SEPARATOR + PdConstants.START_AGENT );
+		receiver.register_symbol ( agent_name );
+		receiver.send_bang ( agent_name + PdConstants.SEPARATOR + PdConstants.START_AGENT );
 		receiver.fetch_pd_messages ( );
 
 		Parameters reasoning_parameters = new Parameters ( );
@@ -136,11 +117,11 @@ public class PdAgent extends MusicalAgent
 		self_sensor.put ( PdConstants.SCOPE, agent_name + PdConstants.SEPARATOR +
 				PdConstants.SELF_ACTUATOR );
 		
-		receiver.register_symbol( agent_name + PdConstants.SEPARATOR + PdConstants.SELF_ACTUATOR );
-		receiver.register_symbol( agent_name + PdConstants.SEPARATOR + PdConstants.SELF_SENSOR );
+		receiver.register_symbol ( agent_name + PdConstants.SEPARATOR + PdConstants.SELF_ACTUATOR );
+		receiver.register_symbol ( agent_name + PdConstants.SEPARATOR + PdConstants.SELF_SENSOR );
 		
-		this.addComponent( PdConstants.SELF_ACTUATOR, PdConstants.ACTUATOR_CLASS, self_actuator );
-		this.addComponent( PdConstants.SELF_SENSOR, PdConstants.SENSOR_CLASS, self_sensor );
+		this.addComponent ( PdConstants.SELF_ACTUATOR, PdConstants.ACTUATOR_CLASS, self_actuator );
+		this.addComponent ( PdConstants.SELF_SENSOR, PdConstants.SENSOR_CLASS, self_sensor );
 		
 		process_config_messages ( );
 		return true;

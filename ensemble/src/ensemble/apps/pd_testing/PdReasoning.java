@@ -1,7 +1,5 @@
 package ensemble.apps.pd_testing;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
 import ensemble.*;
@@ -121,19 +119,22 @@ public class PdReasoning extends Reasoning
 			getAgent ( ).getKB ( ).updateFact ( ( String ) arguments[ 1 ], ( String ) arguments[ 2 ] );
 		}
     }
-    private void process_sensed_block ( PdEvent event, Sensor source )
+    private void process_audio_block ( PdAudioBlock audio_block )
     {
-		PdAudioBlock new_audio_block = ( PdAudioBlock ) event.get_content ( );
-		String actuator_name = new_audio_block.get_source ( ).split ( PdConstants.SEPARATOR )[ 1 ];
-		float[ ] sensed_samples = new_audio_block.get_samples ( );
-		if ( actuator_audio_buffers.containsKey (  actuator_name ) )
+		String actuator_name = audio_block.get_source ( ).split ( PdConstants.SEPARATOR )[ 1 ];
+		
+		PdEvent pd_event = new PdEvent ( PdConstants.AUDIO_BLOCK, audio_block );
+		PdActuator audio_actuator = actuators.get ( actuator_name );
+		Memory actuator_memory = actuator_memories.get ( actuator_name );
+		try 
 		{
-			actuator_audio_buffers.replace( actuator_name, sensed_samples );
+			actuator_memory.writeMemory ( pd_event );
 		}
-		else
+		catch ( MemoryException e ) 
 		{
-			actuator_audio_buffers.put ( actuator_name, sensed_samples );
+			e.printStackTrace ( );
 		}
+		audio_actuator.act ( );
     }
 	@Override
 	public boolean init ( ) 
@@ -152,39 +153,26 @@ public class PdReasoning extends Reasoning
 	@Override
 	public void process ( ) 
 	{
-		for ( String sensor : senses.keySet ( ) )
+		for ( String sense : senses.keySet ( ) )
 		{
-			PdEvent event = senses.get ( sensor );
+			PdEvent event = senses.get ( sense );
 			String type = event.get_type ( );
 			Object content = event.get_content ( );
 			
 			if ( type.equals( PdConstants.BANG ) )
 			{
+				
 			}
 			else if ( type.equals( PdConstants.MESSAGE ) )
 			{
 				process_messages ( ( PdMessage ) content );
 			}
+			else if ( type.equals ( PdConstants.AUDIO_BLOCK ) )
+			{
+				process_audio_block ( ( PdAudioBlock ) content );
+			}
 		}
 		senses.clear ( );
-		/* Audio from our Actuators in Pd */
-		for ( String buffer : actuator_audio_buffers.keySet ( ) )
-		{
-			PdAudioBlock new_audio_block = new PdAudioBlock ( actuator_audio_buffers.get ( buffer ), agent_name + PdConstants.SEPARATOR + buffer );
-			PdEvent pd_event = new PdEvent ( PdConstants.AUDIO_BLOCK, new_audio_block );
-			PdActuator audio_actuator = actuators.get ( buffer );
-			Memory actuator_memory = actuator_memories.get ( buffer );
-			try 
-			{
-				actuator_memory.writeMemory ( pd_event );
-			}
-			catch ( MemoryException e ) 
-			{
-				e.printStackTrace ( );
-			}
-			audio_actuator.act ( );
-			actuator_audio_buffers.remove( buffer );
-		}
 	}
 	@Override
 	protected void eventHandlerRegistered ( EventHandler event_handler ) 
@@ -196,7 +184,7 @@ public class PdReasoning extends Reasoning
 		}
 		else if ( event_handler instanceof Sensor )
 		{
-			event_handler.registerListener( this );
+			event_handler.registerListener ( this );
 			sensors.put ( event_handler.getComponentName ( ), ( PdSensor ) event_handler );
 			sensor_memories.put ( event_handler.getComponentName ( ), getAgent ( ).getKB ( ).getMemory ( event_handler.getComponentName ( ) ) );
 		}
@@ -205,13 +193,6 @@ public class PdReasoning extends Reasoning
 	{
 		Memory source_memory = sensor_memories.get( source.getComponentName ( ) );
 		PdEvent event = ( PdEvent ) source_memory.readMemory ( instant, duration, TimeUnit.SECONDS );
-		if ( event.get_type ( ).equals ( PdConstants.AUDIO_BLOCK ) )
-		{
-			process_sensed_block ( event, source );
-		}
-		else
-		{
-			senses.put ( source.getComponentName ( ), event );			
-		}
+		senses.put ( source.getComponentName ( ), event );			
 	}
 }
