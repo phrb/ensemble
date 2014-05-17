@@ -52,14 +52,6 @@ public class PdReceiver extends PdDispatcher
 	}
 	public void send_message ( PdMessage message )
 	{
-		System.err.println ( "Sending Message: " );
-		System.err.println ( "\tSource: " + message.get_source ( ) );
-		System.err.println ( "\tSymbol: " + message.get_symbol ( ) );
-		System.err.println ( "\tArguments:" );
-		for ( String argument : ( String [ ] ) message.get_arguments ( ) )
-		{
-			System.err.println ( "\t\tArg: " + argument );
-		}
 		if ( message.get_arguments ( ) == null )
 		{
 			PdBase.sendMessage ( message.get_source ( ), message.get_symbol ( ) );
