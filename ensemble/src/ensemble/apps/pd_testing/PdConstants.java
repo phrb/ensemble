@@ -24,6 +24,7 @@ public final class PdConstants
 	public static final String REASONING_CLASS = "ensemble.apps.pd_testing.PdReasoning";
 	public static final String DEFAULT_REASONING_NAME = "Reasoning";
 	public static final String TABREAD4_SIGNAL = ":play";
+	public static final String READ_MEMORY_T = "read_memory~";
 
 	public static final String MULTIPLY_FACT = "*";
 	public static final String ADD_TO_FACT = "+";

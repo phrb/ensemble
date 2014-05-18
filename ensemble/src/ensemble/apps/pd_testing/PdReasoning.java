@@ -24,6 +24,7 @@ public class PdReasoning extends Reasoning
 	private ConcurrentHashMap< String, Memory > sensor_memories = new ConcurrentHashMap<String, Memory> ( );
 	
 	private ConcurrentHashMap< String, PdEvent > senses = new ConcurrentHashMap< String, PdEvent > ( );
+	private ConcurrentHashMap< String, Float > memory_readers = new ConcurrentHashMap< String, Float > ( );
     
 	private String subpatch;
 	private String agent_name;
@@ -105,6 +106,24 @@ public class PdReasoning extends Reasoning
 		{
 			access_knowledge_base ( message_source, arguments );
 		}
+		else if ( symbol.equals ( PdConstants.READ_MEMORY_T ) )
+		{
+			String target_component = ( ( String ) arguments[ 0 ] );
+			String[ ] split_target = ( ( String ) arguments[ 0 ] ).split ( PdConstants.SEPARATOR );
+			Float memory_offset = ( ( Float ) arguments[ 1 ] );
+			if ( sensors.containsKey ( split_target[ 1 ] ) ||
+				 actuators.containsKey ( split_target[ 1 ] ) )
+			{
+				if ( memory_readers.containsKey ( target_component ) )
+				{
+					memory_readers.replace ( target_component, memory_offset );
+				}
+				else
+				{
+					memory_readers.put ( target_component, memory_offset );
+				}
+			}
+		}
 		else if ( symbol.equals ( PdConstants.ADD_TO_FACT ) )
 		{
 			add_to_fact ( arguments );
@@ -172,6 +191,45 @@ public class PdReasoning extends Reasoning
 			}
 		}
 		senses.clear ( );
+		for ( String memory_reader : memory_readers.keySet ( ) )
+		{
+			String[ ] split_reader = memory_reader.split ( PdConstants.SEPARATOR );
+			Memory target_memory;
+			PdAudioBlock old_block;
+			double offset = memory_readers.get ( memory_reader ).doubleValue ( );
+			double instant = getAgent( ).getClock ( ).getCurrentTime( TimeUnit.SECONDS ) - offset;
+			
+			if ( actuators.containsKey ( split_reader[ 1 ] ) )
+			{
+				target_memory = actuator_memories.get ( split_reader[ 1 ] );
+			}
+			else
+			{
+				target_memory = sensor_memories.get ( split_reader[ 1 ] );
+			}
+			PdEvent old_event = ( PdEvent ) target_memory.readMemory ( instant, TimeUnit.SECONDS );
+
+			if ( old_event != null )
+			{
+				old_block = ( PdAudioBlock ) old_event.get_content ( );
+								
+				old_block.set_source ( PdConstants.READ_MEMORY_T );
+				old_block.set_target ( memory_reader );
+				
+				PdEvent pd_event = new PdEvent ( PdConstants.AUDIO_BLOCK, old_block );
+				PdActuator audio_actuator = actuators.get ( PdConstants.SELF_ACTUATOR );
+				Memory actuator_memory = actuator_memories.get ( PdConstants.SELF_ACTUATOR );
+				try 
+				{
+					actuator_memory.writeMemory ( pd_event );
+				}
+				catch ( MemoryException e ) 
+				{
+					e.printStackTrace ( );
+				}
+				audio_actuator.act ( );
+			}
+		}
 	}
 	@Override
 	protected void eventHandlerRegistered ( EventHandler event_handler ) 
@@ -193,5 +251,26 @@ public class PdReasoning extends Reasoning
 		Memory source_memory = sensor_memories.get( source.getComponentName ( ) );
 		PdEvent event = ( PdEvent ) source_memory.readMemory ( instant, duration, TimeUnit.SECONDS );
 		senses.put ( source.getComponentName ( ), event );
+	}
+	/*DEBUG*/
+	private void print_message ( PdMessage message )
+	{
+		String message_source = message.get_source ( );
+		String symbol = message.get_symbol ( );
+		Object[ ] arguments = message.get_arguments ( );
+		System.err.println ( "Received Message: " );
+		System.err.println ( "\tSource: " + message_source );
+		System.err.println ( "\tSymbol: " + symbol );
+		for ( Object argument : arguments )
+		{
+			try
+			{
+				System.err.println ( "\tArg: \"" + ( Float ) argument + "\"" );
+			}
+			catch ( ClassCastException e )
+			{
+				System.err.println ( "\tArg: \"" + ( String ) argument + "\"" );
+			}
+		}
 	}
 }
