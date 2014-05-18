@@ -59,7 +59,7 @@ public class PdServer extends EventServer
 		try 
 		{
 			line = ( SourceDataLine ) AudioSystem.getLine ( info );
-			line.open ( format, PdConstants.DEFAULT_SAMPLES_PER_BUFFER * 16 );
+			line.open ( format, PdConstants.DEFAULT_SAMPLES_PER_BUFFER * PdConstants.BYTES_PER_SAMPLE );
 			line.start ( );
 		}
 		catch ( LineUnavailableException e ) 
@@ -236,15 +236,17 @@ public class PdServer extends EventServer
 	}
 	protected void play_audio_samples ( float[ ] samples )
 	{
-		byte[ ] byte_samples = new byte[ samples.length * 2 ];
+		byte[ ] byte_samples = new byte[ samples.length * PdConstants.BYTES_PER_SAMPLE ];
 		int byte_index = 0;
 		for ( int i = 0; i < samples.length; i++ )
 		{
 			float sample = samples[ i ];
 			int int_sample = Math.round( sample * 32767.0F );
+
 			byte_samples[ byte_index ] = ( byte ) ( ( int_sample >> 8 ) & 0xFF );
-			byte_samples[ byte_index + 1 ] = ( byte ) ( int_sample & 0xFF);
-			byte_index += 2;
+			byte_samples[ byte_index + 1 ] = ( byte ) ( int_sample & 0xFF );
+			
+			byte_index += PdConstants.BYTES_PER_SAMPLE;
 		}
 		line.write ( byte_samples, 0, byte_samples.length );
 	}
@@ -280,6 +282,7 @@ public class PdServer extends EventServer
 			}
 			else if ( type.equals ( PdConstants.AUDIO_BLOCK ) )
 			{
+				/* Check for "read_memory~" procedence. */
 			}
 		}
 		events.clear ( );
@@ -310,6 +313,7 @@ public class PdServer extends EventServer
 			/* if ( source.can_reach ( sensor ) )
 			 * { */
 				PdBase.writeArray ( sensor, 0, samples, 0,samples.length );
+				pd_receiver.send_bang ( sensor + PdConstants.TABREAD4_SIGNAL );
 				if ( sensor.equals ( PdConstants.AVATAR_SENSOR ) )
 				{
 					play_audio_samples ( samples );

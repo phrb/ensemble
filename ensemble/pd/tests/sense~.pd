@@ -1,11 +1,17 @@
 #N canvas 0 47 1920 1033 10;
-#X obj 56 206 outlet~;
+#X obj 275 142 outlet~;
 #X obj 55 55 table \$0:sense_samples;
 #X obj 56 102 list append \$0 \$1 \$2;
 #X obj 56 81 loadbang;
-#X obj 56 180 tabread4~ \$1:\$2;
 #X msg 56 123 \; \$1:sense_samples resize 16384 \; \$1:sense_samples
 rename \$2:\$3;
-#X connect 2 0 5 0;
+#X obj 275 120 tabread~ \$1:\$2;
+#X obj 275 98 line~;
+#X msg 275 75 0 \, 16382 371;
+#X obj 275 50 r \$1:\$2:play;
+#X connect 2 0 4 0;
 #X connect 3 0 2 0;
-#X connect 4 0 0 0;
+#X connect 5 0 0 0;
+#X connect 6 0 5 0;
+#X connect 7 0 6 0;
+#X connect 8 0 7 0;
