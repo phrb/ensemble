@@ -148,6 +148,6 @@ public class PdReceiver extends PdDispatcher
 	{
 		floats.clear ( );
 		bangs.clear ( );
-		messages.clear ( );
+		//messages.clear ( );
 	}
 }

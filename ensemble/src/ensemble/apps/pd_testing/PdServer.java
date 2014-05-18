@@ -18,20 +18,11 @@ public class PdServer extends EventServer
 	protected String agent_component_name;
 	
 	protected ArrayList < PdEvent > events;
-	
-	/*
-	 * Audio
-	 */
-	int frames = ( PdConstants.DEFAULT_TICKS * PdConstants.PD_BLOCK_SIZE ) / PdConstants.BYTES_PER_SAMPLE;
-	
-	short[ ] dummy_adc = new short[ frames * PdConstants.INPUT_CHANNELS ];
-	short[ ] dummy_dac = new short[ frames * PdConstants.OUTPUT_CHANNELS ];
-    
+  
     private PdProcessor pd_processor;
     private PdReceiver pd_receiver;
     
     private SourceDataLine line;
-	
 	
 	@Override
 	public boolean configure ( )
@@ -39,10 +30,6 @@ public class PdServer extends EventServer
 		setEventType ( PdConstants.DEFAULT_EVENT_TYPE );
 		return true;
 	}
-	
-	/* (non-Javadoc)
-	 * @see ensemble.EventServer#init()
-	 */
 	@Override
 	public boolean init ( ) 
 	{  
@@ -241,7 +228,7 @@ public class PdServer extends EventServer
 		for ( int i = 0; i < samples.length; i++ )
 		{
 			float sample = samples[ i ];
-			int int_sample = Math.round( sample * 32767.0F );
+			int int_sample = Math.round ( sample * 32767.0F );
 
 			byte_samples[ byte_index ] = ( byte ) ( ( int_sample >> 8 ) & 0xFF );
 			byte_samples[ byte_index + 1 ] = ( byte ) ( int_sample & 0xFF );
@@ -262,32 +249,8 @@ public class PdServer extends EventServer
 	protected void process ( )
 	{
 		float[ ] samples = null;
-		for ( int i = 0; i < events.size ( ); i++ )
-		{
-			PdEvent event = events.get ( i );
-			String type = event.get_type ( );
-			if ( type.equals( PdConstants.BANG ) )
-			{
-				pd_receiver.send_bang( ( String ) event.get_content ( ) );
-			}
-			else if ( type.equals ( PdConstants.MESSAGE ) )
-			{
-				PdMessage message = ( PdMessage ) event.get_content ( );
-				pd_receiver.send_message ( message );
-			}
-			else if ( type.equals ( PdConstants.FLOAT ) )
-			{
-				PdFloat new_float = ( PdFloat ) event.get_content ( );
-				pd_receiver.send_float ( new_float.get_source ( ), new_float.get_value ( )  );
-			}
-			else if ( type.equals ( PdConstants.AUDIO_BLOCK ) )
-			{
-				/* Check for "read_memory~" procedence. */
-			}
-		}
-		events.clear ( );
 		
-		pd_processor.process_ticks ( PdConstants.DEFAULT_TICKS, dummy_adc, dummy_dac );
+		pd_processor.process_ticks ( PdConstants.DEFAULT_TICKS );
 		pd_receiver.fetch_pd_messages ( );
 
 		for ( PdMessage message : pd_receiver.get_messages ( ) )
@@ -322,7 +285,39 @@ public class PdServer extends EventServer
 			 */
 			}
 		}
-		pd_receiver.start_new_cycle ( );	
+		pd_receiver.start_new_cycle ( );
+		for ( int i = 0; i < events.size ( ); i++ )
+		{
+			PdEvent event = events.get ( i );
+			String type = event.get_type ( );
+			if ( type.equals( PdConstants.BANG ) )
+			{
+				pd_receiver.send_bang( ( String ) event.get_content ( ) );
+			}
+			else if ( type.equals ( PdConstants.MESSAGE ) )
+			{
+				PdMessage message = ( PdMessage ) event.get_content ( );
+				pd_receiver.send_message ( message );
+			}
+			else if ( type.equals ( PdConstants.FLOAT ) )
+			{
+				PdFloat new_float = ( PdFloat ) event.get_content ( );
+				pd_receiver.send_float ( new_float.get_source ( ), new_float.get_value ( )  );
+			}
+			else if ( type.equals ( PdConstants.AUDIO_BLOCK ) )
+			{
+				/* Check for "read_memory~" procedence. */
+				PdAudioBlock audio_block = ( PdAudioBlock ) event.get_content ( );
+				if ( audio_block.get_source ( ).equals ( PdConstants.READ_MEMORY_T ) )
+				{
+					PdBase.writeArray ( audio_block.get_target ( ), 0, 
+							            audio_block.get_samples( ), 0, 
+							            audio_block.get_samples( ).length );
+					pd_receiver.send_bang ( audio_block.get_target ( ) + PdConstants.TABREAD4_SIGNAL );
+				}
+			}
+		}
+		events.clear ( );
 		act ( );
 	}
 	@Override
