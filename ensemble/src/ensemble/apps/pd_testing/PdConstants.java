@@ -12,7 +12,8 @@ public final class PdConstants
 	public static final int BYTES_PER_SAMPLE = 2;
 	public static final int BITS_PER_SAMPLE = 8 * BYTES_PER_SAMPLE;
 	public static final int INPUT_CHANNELS = 1;
-	public static final int OUTPUT_CHANNELS = 1;	
+	public static final int OUTPUT_CHANNELS = 1;
+	public static final int PD_AUDIO_BLOCKS_PERSISTENCE = 200;
 	
 	public static final int DEFAULT_TICKS = 256;
 	public static final int DEFAULT_SAMPLES_PER_BUFFER = PD_BLOCK_SIZE;
