@@ -1,0 +1,4 @@
+#N canvas 0 47 1920 1033 10;
+#X obj 31 36 r avatar:start;
+#X msg 31 58 \; avatar add_sensor sensor type audio \;;
+#X connect 0 0 1 0;

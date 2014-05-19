@@ -232,6 +232,22 @@ public class PdServer extends EventServer
 		}
 		return new_samples;
 	}
+	protected void process_sensor_block ( float[ ] samples, String sensor )
+	{
+		String[ ] source = sensor.split ( PdConstants.SEPARATOR );
+
+		PdAudioBlock audio_block = new PdAudioBlock ( samples, sensor );
+		for ( String memory_reader : memory_readers.keySet ( ) )
+		{
+			String[ ] target = memory_reader.split ( PdConstants.SEPARATOR );
+			if ( target[ 0 ].equals ( source[ 0 ] ) &&
+				 target[ 1 ].equals ( source[ 1 ] ) )
+			{
+				PdAudioBlockStream audio_stream = memory_readers.get ( memory_reader );
+				audio_stream.write_block ( audio_block );
+			}
+		}
+	}
 	protected void play_audio_samples ( float[ ] samples )
 	{
 		byte[ ] byte_samples = new byte[ samples.length * PdConstants.BYTES_PER_SAMPLE ];
@@ -289,7 +305,6 @@ public class PdServer extends EventServer
 				}
 				else
 				{
-					System.err.println ( "Adding new memory reader for " + source );
 					PdAudioBlockStream audio_stream = new PdAudioBlockStream ( memory_offset * 3 );
 					memory_readers.put ( source, audio_stream );
 				}
@@ -333,8 +348,10 @@ public class PdServer extends EventServer
 			{
 			/* if ( source.can_reach ( sensor ) )
 			 * { */
+				process_sensor_block ( samples, sensor );
 				PdBase.writeArray ( sensor, 0, samples, 0, samples.length );
 				pd_receiver.send_bang ( sensor + PdConstants.TABREAD4_SIGNAL );
+				/* TODO: TELL AGENTS OF THIS BLOCK!!! */
 				if ( sensor.equals ( PdConstants.AVATAR_SENSOR ) )
 				{
 					play_audio_samples ( samples );

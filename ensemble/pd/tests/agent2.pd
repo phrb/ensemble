@@ -2,7 +2,5 @@
 #X obj 31 36 r agent2:start;
 #X msg 31 58 \; agent2 add_actuator act1 type audio \; agent2 add_sensor
 sense1 type audio;
-#X obj 460 121 act~ agent2 act1;
-#X obj 460 98 osc~ 700;
+#X obj 294 88 sense~ agent2 sense1;
 #X connect 0 0 1 0;
-#X connect 3 0 2 0;

@@ -1,0 +1,15 @@
+#N canvas 0 47 1920 1033 10;
+#X obj 966 216 tabwrite~ \$1:\$2;
+#X obj 972 195 bang~;
+#X obj 965 153 inlet~;
+#X obj 616 92 table \$0:act_samples;
+#X obj 615 141 list append \$0 \$1 \$2;
+#X obj 615 120 loadbang;
+#X obj 965 174 clip~ -1 1;
+#X msg 615 162 \; \$1:act_samples resize 16384 \; \$1:act_samples rename
+\$2:\$3;
+#X connect 1 0 0 0;
+#X connect 2 0 6 0;
+#X connect 4 0 7 0;
+#X connect 5 0 4 0;
+#X connect 6 0 0 0;
