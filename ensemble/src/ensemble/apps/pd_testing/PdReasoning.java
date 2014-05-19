@@ -24,7 +24,6 @@ public class PdReasoning extends Reasoning
 	private ConcurrentHashMap< String, Memory > sensor_memories = new ConcurrentHashMap<String, Memory> ( );
 	
 	private ConcurrentHashMap< String, PdEvent > senses = new ConcurrentHashMap< String, PdEvent > ( );
-	private ConcurrentHashMap< String, Float[ ] > memory_readers = new ConcurrentHashMap< String, Float[ ] > ( );
     
 	private String subpatch;
 	protected String agent_name;
@@ -97,6 +96,28 @@ public class PdReasoning extends Reasoning
 
 		}
 	}
+	private void create_memory_reader ( Object[ ] arguments )
+	{
+		String target_component = ( ( String ) arguments[ 0 ] );
+		String[ ] split_target = target_component.split ( PdConstants.SEPARATOR );
+		Float memory_offset = ( ( Float ) arguments[ 1 ] );
+		if ( sensors.containsKey ( split_target[ 1 ] ) ||
+			 actuators.containsKey ( split_target[ 1 ] ) )
+		{
+			PdMessage new_message = new PdMessage ( target_component, memory_offset.toString ( ), new Object[ 0 ] );
+			PdEvent pd_event = new PdEvent ( PdConstants.READ_MEMORY_T, new_message );
+			try
+			{				
+				Actuator actuator = actuators.get ( PdConstants.SELF_ACTUATOR );
+				actuator_memories.get ( PdConstants.SELF_ACTUATOR ).writeMemory ( pd_event );			
+				actuator.act ( );		
+			}		
+			catch ( MemoryException e ) 		
+			{		
+				e.printStackTrace ( );
+			}
+		}
+	}
     private void process_messages ( PdMessage message )
     {
 		String message_source = message.get_source ( );
@@ -108,25 +129,7 @@ public class PdReasoning extends Reasoning
 		}
 		else if ( symbol.equals ( PdConstants.READ_MEMORY_T ) )
 		{
-			String target_component = ( ( String ) arguments[ 0 ] );
-			String[ ] split_target = ( ( String ) arguments[ 0 ] ).split ( PdConstants.SEPARATOR );
-			Float memory_offset = ( ( Float ) arguments[ 1 ] );
-			Float[ ] read_info = new Float[ 2 ];
-			read_info[ 0 ] = memory_offset;
-			read_info[ 1 ] = -1f;
-			if ( sensors.containsKey ( split_target[ 1 ] ) ||
-				 actuators.containsKey ( split_target[ 1 ] ) )
-			{
-				if ( memory_readers.containsKey ( target_component ) &&
-					 Math.round ( memory_readers.get ( target_component )[ 0 ] ) != Math.round ( memory_offset ) )
-				{
-					memory_readers.replace ( target_component, read_info );
-				}
-				else if ( ! ( memory_readers.containsKey ( target_component ) ) )
-				{
-					memory_readers.put ( target_component, read_info );
-				}
-			}
+			create_memory_reader ( arguments );
 		}
 		else if ( symbol.equals ( PdConstants.ADD_TO_FACT ) )
 		{
@@ -195,45 +198,6 @@ public class PdReasoning extends Reasoning
 			}
 		}
 		senses.clear ( );
-		for ( String memory_reader : memory_readers.keySet ( ) )
-		{
-			String[ ] split_reader = memory_reader.split ( PdConstants.SEPARATOR );
-			EventHandler target_component;
-			PdAudioBlock old_block;
-			int offset = Math.round ( memory_readers.get ( memory_reader )[ 0 ] );
-			int last_read = Math.round ( memory_readers.get ( memory_reader )[ 1 ] );
-			
-			if ( actuators.containsKey ( split_reader[ 1 ] ) )
-			{
-				target_component = ( PdActuator ) actuators.get ( split_reader[ 1 ] );
-				old_block = ( ( PdActuator ) target_component ).get_next ( offset );
-			}
-			else
-			{
-				target_component = ( PdSensor ) sensors.get ( split_reader[ 1 ] );
-				old_block = ( ( PdActuator ) target_component ).get_next ( offset );
-			}
-			if ( old_block != null &&
-				 Integer.parseInt ( old_block.get_source ( ) ) != last_read )
-			{
-				memory_readers.get ( memory_reader )[ 1 ] = Float.parseFloat ( old_block.get_source ( ) );
-				old_block.set_source ( PdConstants.READ_MEMORY_T );
-				old_block.set_target ( memory_reader );
-				
-				PdEvent pd_event = new PdEvent ( PdConstants.AUDIO_BLOCK, old_block );
-				PdActuator audio_actuator = actuators.get ( PdConstants.SELF_ACTUATOR );
-				Memory actuator_memory = actuator_memories.get ( PdConstants.SELF_ACTUATOR );
-				try 
-				{
-					actuator_memory.writeMemory ( pd_event );
-				}
-				catch ( MemoryException e ) 
-				{
-					e.printStackTrace ( );
-				}
-				audio_actuator.act ( );
-			}
-		}
 	}
 	@Override
 	protected void eventHandlerRegistered ( EventHandler event_handler ) 

@@ -1,6 +1,7 @@
 package ensemble.apps.pd_testing;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import ensemble.*;
 import ensemble.apps.pd_testing.PdWorld;
@@ -15,6 +16,7 @@ public class PdServer extends EventServer
 	protected String agent_component_name;
 	
 	protected ArrayList < PdEvent > events;
+	private HashMap < String, PdAudioBlockStream > memory_readers;
   
     private PdProcessor pd_processor;
     private PdReceiver pd_receiver;
@@ -34,6 +36,7 @@ public class PdServer extends EventServer
 	    pd_receiver = PdReceiver.get_instance ( );
 	    
 	    events = new ArrayList< PdEvent > ( );
+	    memory_readers = new HashMap< String, PdAudioBlockStream > ( );
 						
 		world = ( PdWorld ) envAgent.getWorld ( );
 		AudioFormat format = new AudioFormat ( AudioFormat.Encoding.PCM_SIGNED, ( float ) PdConstants.SAMPLE_RATE, 
@@ -204,9 +207,20 @@ public class PdServer extends EventServer
 	{
 		float[ ] new_samples;
 		float[ ] actuator_samples = new float[ PdConstants.PD_BLOCK_SIZE ];
+		String[ ] source = actuator.split ( PdConstants.SEPARATOR );
+
 		PdBase.readArray ( actuator_samples, 0 , actuator, 0, PdConstants.PD_BLOCK_SIZE );
 		PdAudioBlock audio_block = new PdAudioBlock ( actuator_samples, actuator );
-		String[ ] source = audio_block.get_source ( ).split ( PdConstants.SEPARATOR );
+		for ( String memory_reader : memory_readers.keySet ( ) )
+		{
+			String[ ] target = memory_reader.split ( PdConstants.SEPARATOR );
+			if ( target[ 0 ].equals ( source[ 0 ] ) &&
+				 target[ 1 ].equals ( source[ 1 ] ) )
+			{
+				PdAudioBlockStream audio_stream = memory_readers.get ( memory_reader );
+				audio_stream.write_block ( audio_block );
+			}
+		}
 		new_audio_block_event ( source[ 0 ] + PdConstants.SEPARATOR + PdConstants.SELF_SENSOR, audio_block );
 		if ( samples == null )
 		{			
@@ -246,7 +260,6 @@ public class PdServer extends EventServer
 	protected void process ( )
 	{
 		float[ ] samples = null;
-		ArrayList< String > memory_readers_processed = new ArrayList< String > ( );
 		
 		for ( int i = 0; i < events.size ( ); i++ )
 		{
@@ -266,19 +279,19 @@ public class PdServer extends EventServer
 				PdFloat new_float = ( PdFloat ) event.get_content ( );
 				pd_receiver.send_float ( new_float.get_source ( ), new_float.get_value ( )  );
 			}
-			else if ( type.equals ( PdConstants.AUDIO_BLOCK ) )
+			else if ( type.equals ( PdConstants.READ_MEMORY_T ) )
 			{
-				/* Check for "read_memory~" procedence. */
-				PdAudioBlock audio_block = ( PdAudioBlock ) event.get_content ( );
-				String source = audio_block.get_source ( );
-				String target = audio_block.get_target ( );
-				if ( ! ( memory_readers_processed.contains ( target ) ) && 
-					 source.equals ( PdConstants.READ_MEMORY_T ) )
+				PdMessage message = ( PdMessage ) event.get_content ( );
+				String source = message.get_source ( );
+				int memory_offset = Math.round ( Float.parseFloat ( message.get_symbol ( ) ) );
+				if ( memory_readers.containsKey ( source ) )
 				{
-					PdBase.writeArray ( audio_block.get_target ( ), 0, 
-							            audio_block.get_samples( ), 0, 
-							            audio_block.get_samples( ).length );
-					memory_readers_processed.add ( target );
+				}
+				else
+				{
+					System.err.println ( "Adding new memory reader for " + source );
+					PdAudioBlockStream audio_stream = new PdAudioBlockStream ( memory_offset * 3 );
+					memory_readers.put ( source, audio_stream );
 				}
 			}
 		}
@@ -304,9 +317,15 @@ public class PdServer extends EventServer
 		{
 			samples = process_actuator_block ( samples, actuator );
 		}
-		for ( String memory_reader : memory_readers_processed )
+		for ( String memory_reader : memory_readers.keySet ( ) )
 		{
-			pd_receiver.send_bang ( memory_reader + PdConstants.TABREAD4_SIGNAL );
+			PdAudioBlockStream audio_stream = memory_readers.get ( memory_reader );
+			float[ ] read_block = audio_stream.read_block ( );
+			if ( read_block != null )
+			{
+				PdBase.writeArray ( memory_reader, 0, read_block, 0, read_block.length );
+				pd_receiver.send_bang ( memory_reader + PdConstants.TABREAD4_SIGNAL );
+			}
 		}
 		if ( samples != null )
 		{
@@ -314,7 +333,7 @@ public class PdServer extends EventServer
 			{
 			/* if ( source.can_reach ( sensor ) )
 			 * { */
-				PdBase.writeArray ( sensor, 0, samples, 0,samples.length );
+				PdBase.writeArray ( sensor, 0, samples, 0, samples.length );
 				pd_receiver.send_bang ( sensor + PdConstants.TABREAD4_SIGNAL );
 				if ( sensor.equals ( PdConstants.AVATAR_SENSOR ) )
 				{
@@ -352,4 +371,25 @@ public class PdServer extends EventServer
 		}
 		return userParam;
 	}
+	/*DEBUG
+	private void print_message ( PdMessage message )
+	{
+		String message_source = message.get_source ( );
+		String symbol = message.get_symbol ( );
+		Object[ ] arguments = message.get_arguments ( );
+		System.err.println ( "Received Message: " );
+		System.err.println ( "\tSource: " + message_source );
+		System.err.println ( "\tSymbol: " + symbol );
+		for ( Object argument : arguments )
+		{
+			try
+			{
+				System.err.println ( "\tArg: \"" + ( Float ) argument + "\"" );
+			}
+			catch ( ClassCastException e )
+			{
+				System.err.println ( "\tArg: \"" + ( String ) argument + "\"" );
+			}
+		}
+	}*/
 }
