@@ -1,8 +1,5 @@
 package ensemble.apps.pd_testing;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import ensemble.*;
@@ -249,43 +246,8 @@ public class PdServer extends EventServer
 	protected void process ( )
 	{
 		float[ ] samples = null;
+		ArrayList< String > memory_readers_processed = new ArrayList< String > ( );
 		
-		pd_processor.process_ticks ( PdConstants.DEFAULT_TICKS );
-		pd_receiver.fetch_pd_messages ( );
-
-		for ( PdMessage message : pd_receiver.get_messages ( ) )
-		{
-			process_message ( message );
-		}
-		for ( String bang : pd_receiver.get_bangs ( ) )
-		{
-			process_bang ( bang );
-		}
-		for ( PdFloat pd_float : pd_receiver.get_floats ( ) )
-		{
-			process_float ( pd_float );
-		}
-		for ( String actuator : pd_receiver.get_audio_actuators ( ) )
-		{
-			samples = process_actuator_block ( samples, actuator );
-		}
-		if ( samples != null )
-		{
-			for ( String sensor : pd_receiver.get_audio_sensors ( ) )
-			{
-			/* if ( source.can_reach ( sensor ) )
-			 * { */
-				PdBase.writeArray ( sensor, 0, samples, 0,samples.length );
-				pd_receiver.send_bang ( sensor + PdConstants.TABREAD4_SIGNAL );
-				if ( sensor.equals ( PdConstants.AVATAR_SENSOR ) )
-				{
-					play_audio_samples ( samples );
-				}
-			/* }
-			 */
-			}
-		}
-		pd_receiver.start_new_cycle ( );
 		for ( int i = 0; i < events.size ( ); i++ )
 		{
 			PdEvent event = events.get ( i );
@@ -308,17 +270,62 @@ public class PdServer extends EventServer
 			{
 				/* Check for "read_memory~" procedence. */
 				PdAudioBlock audio_block = ( PdAudioBlock ) event.get_content ( );
-				if ( audio_block.get_source ( ).equals ( PdConstants.READ_MEMORY_T ) )
+				String source = audio_block.get_source ( );
+				String target = audio_block.get_target ( );
+				if ( ! ( memory_readers_processed.contains ( target ) ) && 
+					 source.equals ( PdConstants.READ_MEMORY_T ) )
 				{
 					PdBase.writeArray ( audio_block.get_target ( ), 0, 
 							            audio_block.get_samples( ), 0, 
 							            audio_block.get_samples( ).length );
-					pd_receiver.send_bang ( audio_block.get_target ( ) + PdConstants.TABREAD4_SIGNAL );
+					memory_readers_processed.add ( target );
 				}
 			}
 		}
 		events.clear ( );
 		act ( );
+		
+		pd_processor.process_ticks ( PdConstants.DEFAULT_TICKS );
+		pd_receiver.fetch_pd_messages ( );
+
+		for ( PdMessage message : pd_receiver.get_messages ( ) )
+		{
+			process_message ( message );
+		}
+		for ( String bang : pd_receiver.get_bangs ( ) )
+		{
+			process_bang ( bang );
+		}
+		for ( PdFloat pd_float : pd_receiver.get_floats ( ) )
+		{
+			process_float ( pd_float );
+		}
+		for ( String actuator : pd_receiver.get_audio_actuators ( ) )
+		{
+			samples = process_actuator_block ( samples, actuator );
+		}
+		for ( String memory_reader : memory_readers_processed )
+		{
+			pd_receiver.send_bang ( memory_reader + PdConstants.TABREAD4_SIGNAL );
+		}
+		if ( samples != null )
+		{
+			for ( String sensor : pd_receiver.get_audio_sensors ( ) )
+			{
+			/* if ( source.can_reach ( sensor ) )
+			 * { */
+				PdBase.writeArray ( sensor, 0, samples, 0,samples.length );
+				pd_receiver.send_bang ( sensor + PdConstants.TABREAD4_SIGNAL );
+				if ( sensor.equals ( PdConstants.AVATAR_SENSOR ) )
+				{
+					play_audio_samples ( samples );
+				}
+			/* }
+			 */
+			}
+		}
+		pd_receiver.start_new_cycle ( );
+
 	}
 	@Override
 	public void processSense ( Event new_event ) 
