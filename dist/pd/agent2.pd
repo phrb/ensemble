@@ -1,6 +1,12 @@
-#N canvas 0 47 1920 1033 10;
+#N canvas 0 47 1280 753 10;
 #X obj 31 36 r agent2:start;
 #X msg 31 58 \; agent2 add_actuator act1 type audio \; agent2 add_sensor
 sense1 type audio;
 #X obj 294 88 sense~ agent2 sense1;
+#X obj 294 155 act~ agent2 act1;
+#X obj 294 134 *~;
+#X obj 310 111 osc~ 3;
 #X connect 0 0 1 0;
+#X connect 2 0 4 0;
+#X connect 4 0 3 0;
+#X connect 5 0 4 1;

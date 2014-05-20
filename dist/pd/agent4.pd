@@ -1,0 +1,20 @@
+#N canvas 0 47 1280 753 10;
+#X obj 178 157 osc~ 440;
+#X obj 424 81 bang~;
+#X obj 424 185 *~;
+#X obj 439 160 osc~ 40;
+#X msg 424 103 2;
+#X obj 37 38 r agent4:start;
+#X msg 37 60 \; agent4 add_actuator act1 type event scope global \;
+agent4 add_sensor sense1 type audio \; agent4 add_actuator act2 type
+audio \; agent4 add_actuator act3 type audio;
+#X obj 177 185 act~ agent4 act2;
+#X obj 424 126 read_memory~ agent4 act2;
+#X obj 423 213 act~ agent4 act3;
+#X connect 0 0 7 0;
+#X connect 1 0 4 0;
+#X connect 2 0 9 0;
+#X connect 3 0 2 1;
+#X connect 4 0 8 0;
+#X connect 5 0 6 0;
+#X connect 8 0 2 0;
